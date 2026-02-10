@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  /* Apple-style Mesh Gradient Background (Subtle Light Mode) */
+  background-color: #f8fafc;
+  /* slate-50 base */
+  background-image:
+    radial-gradient(at 0% 0%, rgba(255, 200, 200, 0.15) 0px, transparent 50%),
+    radial-gradient(at 50% 0%, rgba(200, 220, 255, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(255, 240, 200, 0.15) 0px, transparent 50%);
+  background-attachment: fixed;
+  /* Parallax effect for background */
+  margin: 0;
+  overflow-y: scroll;
+}
+
+/* Glassmorphism Utility Class */
+@layer components {
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg shadow-stone-200/20;
+  }
+
+  .glass-hover {
+    @apply hover:bg-white/80 hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300;
+  }
+}
+
+/* Swiper Pagination Customization */
+.swiper-pagination-bullet {
+  background-color: #44403c !important;
+  opacity: 0.5 !important;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: #dc2626 !important;
+  opacity: 1 !important;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Fix for mobile navigation positioning */
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
+
+/* Ensure mobile nav is always visible at the bottom */
+@media (max-width: 767px) {
+
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .swiper-pagination {
+    bottom: 4px !important;
+  }
+}
+
+/* Tiptap Editor Styles (Ensure visibility even if Prose plugin fails) */
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin-top: 0.67em;
+  margin-bottom: 0.67em;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+}
+
+.ProseMirror ul {
+  list-style-type: disc !important;
+  padding-left: 1.5em !important;
+  margin: 1em 0;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em !important;
+  margin: 1em 0;
+}
+
+.ProseMirror p {
+  margin: 0.5em 0;
+}
+
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+}
