@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { MapPin, BarChart2 } from 'lucide-react';
-import { Shop } from '@/app/types';
+import { Shop } from '@/types';
 
 interface ShopCardProps {
   shop: Shop;

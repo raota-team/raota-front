@@ -1,9 +1,15 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
-import { Shop } from '@/app/types';
-import { initialShops, mockUserProfile } from '@/app/lib/data';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { usePathname } from "next/navigation";
+import { Shop } from "../types";
+import { initialShops, mockUserProfile } from "../lib/data";
 
 interface AppContextType {
   shops: Shop[];
@@ -31,7 +37,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   const handleVote = (shopId: number, menuIndex: number) => {
-    const updatedShops = shops.map(shop => {
+    const updatedShops = shops.map((shop) => {
       if (shop.id === shopId) {
         const newMenus = [...shop.menus];
         newMenus[menuIndex].votes += 1;
@@ -52,7 +58,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCurrentUser(null);
   };
 
-  const getTotalVotes = (shop: Shop) => shop.menus.reduce((acc, curr) => acc + curr.votes, 0);
+  const getTotalVotes = (shop: Shop) =>
+    shop.menus.reduce((acc: number, curr) => acc + curr.votes, 0);
 
   return (
     <AppContext.Provider
@@ -77,7 +84,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 export function useApp() {
   const context = useContext(AppContext);
   if (context === undefined) {
-    throw new Error('useApp must be used within an AppProvider');
+    throw new Error("useApp must be used within an AppProvider");
   }
   return context;
 }
