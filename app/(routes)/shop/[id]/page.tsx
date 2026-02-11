@@ -3,17 +3,18 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Camera, Star, Menu, MapPin, Award, ArrowLeft, Image as ImageIcon, Instagram, ExternalLink, Sparkles, Utensils, Filter, X } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
-import ProgressBar from '../../components/ProgressBar';
-import PhotoModal from '../../components/PhotoModal';
-import ReportModal from '../../components/ReportModal';
-import UploadPhotoModal from '../../components/UploadPhotoModal';
+import { useApp } from '../../../context/AppContext';
+import { UserPhoto, EventMenu, MenuItem } from '../../../types';
+import ProgressBar from '../../../components/ProgressBar';
+import PhotoModal from '../../../components/PhotoModal';
+import ReportModal from '../../../components/ReportModal';
+import UploadPhotoModal from '../../../components/UploadPhotoModal';
 
 export default function ShopDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { shops, handleVote, getTotalVotes } = useApp();
-  const shop = shops.find(s => s.id === parseInt(params.id as string));
+  const shop = shops.find((s) => s.id === parseInt(params.id as string));
 
   if (!shop) return <div>Shop not found</div>;
 
@@ -27,7 +28,7 @@ export default function ShopDetailPage() {
 
   // Filter logic
   const displayedPhotos = filterMenu
-    ? shop.userPhotos?.filter(photo => photo.menuName === filterMenu)
+    ? shop.userPhotos?.filter((photo: UserPhoto) => photo.menuName === filterMenu)
     : shop.userPhotos;
 
   return (
@@ -65,7 +66,7 @@ export default function ShopDetailPage() {
                 스페셜 이벤트 메뉴
               </h3>
               <div className="grid grid-cols-1 gap-6">
-                {shop.event_menus.map((event) => (
+                {shop.event_menus.map((event: EventMenu) => (
                   <div key={event.id} className="bg-white border border-stone-200 rounded-lg overflow-hidden flex flex-col md:flex-row group hover:border-pink-300 transition-colors shadow-sm">
                     <div className="md:w-1/3 h-48 md:h-auto overflow-hidden relative">
                       <img src={event.image_url} alt={event.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
@@ -144,7 +145,7 @@ export default function ShopDetailPage() {
 
             {displayedPhotos && displayedPhotos.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {displayedPhotos.map((photo) => (
+                {displayedPhotos.map((photo: UserPhoto) => (
                   <div
                     key={photo.id}
                     onClick={() => setSelectedPhoto(photo)}

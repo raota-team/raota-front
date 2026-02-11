@@ -4,18 +4,18 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Heart, Share2, MessageCircle, Send, Store } from 'lucide-react';
-import { mockCommunityPosts, mockComments } from '../../lib/community-data';
+import { mockCommunityPosts, mockComments, Comment, CommunityPost } from '../../../lib/community-data';
 
 export default function CommunityDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const post = mockCommunityPosts.find(p => p.id === parseInt(params.id as string));
+  const post = mockCommunityPosts.find((p) => p.id === parseInt(params.id as string));
   const comments = mockComments[parseInt(params.id as string)] || [];
 
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post?.likes || 0);
   const [newComment, setNewComment] = useState('');
-  const [localComments, setLocalComments] = useState(comments);
+  const [localComments, setLocalComments] = useState<Comment[]>(comments);
 
   if (!post) {
     return (
@@ -30,7 +30,7 @@ export default function CommunityDetailPage() {
 
   const handleLike = () => {
     setIsLiked(!isLiked);
-    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+    setLikeCount((prev) => isLiked ? prev - 1 : prev + 1);
   };
 
   const handleSubmitComment = (e: React.FormEvent) => {
@@ -166,7 +166,7 @@ export default function CommunityDetailPage() {
               <p className="text-sm mt-1">첫 댓글을 작성해보세요!</p>
             </div>
           ) : (
-            localComments.map(comment => (
+            localComments.map((comment) => (
               <div key={comment.id} className="p-4">
                 <div className="flex gap-3">
                   <span className="text-xl flex-shrink-0">{comment.avatar}</span>
