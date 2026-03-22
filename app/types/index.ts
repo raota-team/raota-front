@@ -36,6 +36,12 @@ export interface BusinessHours {
   close_time: string;
   break_start: string | null;
   break_end: string | null;
+  parking_info: string;
+}
+
+export interface ShopStats {
+  visit_count: number;
+  bookmark_count: number;
 }
 
 export interface Shop {
@@ -52,7 +58,9 @@ export interface Shop {
   event_menus?: EventMenu[];
   userPhotos: UserPhoto[];
   business_hours: BusinessHours;
+  stats: ShopStats;
   instagram_url: string;
+  catchTableUrl: string;
 }
 
 // User Types
