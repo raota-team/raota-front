@@ -4,10 +4,11 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { MessageCircle, Heart, ChevronDown, PenSquare, Store, Search } from 'lucide-react';
 import { communityCategories, mockCommunityPosts } from '../../lib/community-data';
-import { useApp } from '../../context/AppContext';
+import { useRamenShops } from '@/hooks/queries/useRamenShops';
 
 export default function CommunityPage() {
-  const { shops } = useApp();
+  const { data } = useRamenShops({ page: 0, size: 100 });
+  const shops = data?.shops ?? [];
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
