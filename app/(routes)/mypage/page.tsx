@@ -9,11 +9,11 @@ import { mockUserProfile, mockUserPhotos, mockUserVisits, mockUserBookmarks, moc
 
 export default function MyPageView() {
   const params = useParams();
-  const username = params?.username as string | undefined;
+  const userId = params?.id as string | undefined;
   const [activeTab, setActiveTab] = useState('photos');
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
   const profile = mockUserProfile.data;
-  const isOwnProfile = !username;
+  const isOwnProfile = !userId || Number(userId) === profile.user_id;
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -23,7 +23,7 @@ export default function MyPageView() {
     backgroundImage: null as string | null
   });
 
-  const displayProfile = username ? { ...profile, nickname: username } : { ...profile, nickname: editForm.nickname };
+  const displayProfile = { ...profile, nickname: isOwnProfile ? editForm.nickname : `유저 ${userId}` };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'profileImage' | 'backgroundImage') => {
     const file = e.target.files?.[0];
