@@ -46,6 +46,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const isTransparent = isHomePage && !scrolled && !isMobile;
+  const isFloating = isHomePage && scrolled;
   const navTextColor = isTransparent ? 'text-white/90 hover:text-white font-extrabold' : 'text-stone-500 hover:text-red-500 font-extrabold';
   const activeTextColor = isTransparent ? 'text-white font-black drop-shadow-md' : 'text-red-600 font-black';
   const logoTextColor = isTransparent ? 'text-white drop-shadow-md' : 'text-stone-900';
@@ -55,13 +56,13 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 flex justify-center w-full pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${scrolled ? 'md:px-6 md:lg:px-8 md:mt-4' : 'px-0 mt-0'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 flex justify-center w-full pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isFloating ? 'md:px-6 md:lg:px-8 md:mt-4' : 'px-0 mt-0'}`}>
         <nav className={`pointer-events-auto w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          scrolled 
+          isFloating 
             ? 'md:max-w-5xl bg-white/95 backdrop-blur-md shadow-lg border-b md:border border-stone-200/60 md:rounded-full'
             : `max-w-full ${isTransparent ? 'bg-transparent border-transparent' : 'bg-white/95 backdrop-blur-md border-b border-stone-200/50 shadow-sm'}`
         }`}>
-          <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${scrolled ? 'py-2 md:py-1' : 'py-2 md:py-0'}`}>
+          <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isFloating ? 'py-2 md:py-1' : 'py-2 md:py-0'}`}>
             <div className="flex items-center justify-between h-12 md:h-16">
               <Link href="/" className="flex items-center cursor-pointer">
                 <img src="/logo.png" alt="RAOTA Logo" className="w-8 h-8 md:w-10 md:h-10 transition-all duration-300" />
