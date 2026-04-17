@@ -306,7 +306,7 @@ export default function CommunityPage() {
                       <span 
                         onClick={(e) => {
                           e.preventDefault();
-                          router.push(`/user/${post.author}`);
+                          router.push(`/user/${post.authorId}`);
                         }}
                         className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer z-10"
                       >

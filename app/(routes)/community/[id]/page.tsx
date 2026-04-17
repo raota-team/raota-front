@@ -120,7 +120,7 @@ export default function CommunityDetailPage() {
 
           {/* Author Info */}
           <div className="flex items-center justify-between">
-            <Link href={`/user/${post.author}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
+            <Link href={`/user/${post.authorId}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
               <span className="text-2xl">{post.authorAvatar}</span>
               <div>
                 <div className="font-semibold text-stone-900 group-hover:text-red-600 group-hover:underline">{post.author}</div>
@@ -200,7 +200,7 @@ export default function CommunityDetailPage() {
                   <span className="text-xl flex-shrink-0">{comment.avatar}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <Link href={`/user/${comment.author}`} className="font-semibold text-stone-900 text-sm hover:text-red-600 hover:underline">
+                      <Link href={`/user/${comment.authorId}`} className="font-semibold text-stone-900 text-sm hover:text-red-600 hover:underline">
                         {comment.author}
                       </Link>
                       <span className="text-xs text-stone-400">{comment.date}</span>
