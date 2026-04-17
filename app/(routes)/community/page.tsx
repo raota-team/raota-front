@@ -303,9 +303,15 @@ export default function CommunityPage() {
                   {/* Meta */}
                   <div className="flex items-center justify-between text-xs text-stone-400">
                     <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1">
+                      <span 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          router.push(`/user/${post.author}`);
+                        }}
+                        className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer z-10"
+                      >
                         <span>{post.authorAvatar}</span>
-                        <span className="font-medium text-stone-600">{post.author}</span>
+                        <span className="font-medium text-stone-600 hover:text-red-600 hover:underline">{post.author}</span>
                       </span>
                       <span>{post.date}</span>
                     </div>
