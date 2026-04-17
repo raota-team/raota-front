@@ -83,7 +83,7 @@ export const initialShops: Shop[] = [
 // --- Mock Data: User Profile ---
 export const mockUserProfile = {
   data: {
-    user_id: 201,
+    user_id: 1,
     nickname: "이스프린",
     profile_image_url: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80",
     stats: { visited_restaurant_count: 12, total_photo_count: 4, total_bookmark_count: 2 }
