@@ -49,6 +49,31 @@ export default function CommunityDetailPage() {
     setNewComment('');
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `${post.title} - RAOTA 커뮤니티`,
+      text: '라멘 매니아들의 커뮤니티, RAOTA에서 확인해보세요!',
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('링크가 클립보드에 복사되었습니다!');
+      } catch (err) {
+        console.error('Failed to copy link:', err);
+        alert('링크 복사에 실패했습니다.');
+      }
+    }
+  };
+
   const getCategoryStyle = (categoryId: string) => {
     switch (categoryId) {
       case 'review': return 'bg-red-50 text-red-600 border-red-200';
@@ -137,7 +162,10 @@ export default function CommunityDetailPage() {
               <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
               <span className="font-semibold">{likeCount}</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-stone-200 text-stone-600 hover:border-stone-300 transition-colors">
+            <button 
+              onClick={handleShare}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-stone-200 text-stone-600 hover:border-stone-300 transition-colors"
+            >
               <Share2 className="w-4 h-4" />
               <span className="hidden sm:inline">공유</span>
             </button>
