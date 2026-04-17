@@ -37,8 +37,9 @@ export default function CommunityDetailPage() {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    const comment = {
+    const comment: Comment = {
       id: Date.now(),
+      authorId: 0,
       author: '나',
       avatar: '😊',
       content: newComment,
