@@ -1,11 +1,17 @@
 import Link from 'next/link';
 import { ChevronRight, Star, Users } from 'lucide-react';
+import { Do_Hyeon } from 'next/font/google';
+
+const doHyeon = Do_Hyeon({
+  weight: '400',
+  subsets: ['latin'],
+});
 
 export default function HomePage() {
   return (
     <div className="bg-stone-50">
       {/* Full Screen Hero Section */}
-      <section className="h-screen relative flex items-center justify-center overflow-hidden">
+      <section className="h-[100dvh] relative flex items-center justify-center overflow-hidden">
         {/* Background Image with Parallax Effect */}
         <div className="absolute inset-0">
           <img
@@ -23,20 +29,18 @@ export default function HomePage() {
         {/* Hero Content */}
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto -translate-y-12 md:-translate-y-16">
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full mb-6 border border-white/30 shadow-sm">
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span className="text-white text-sm font-bold">대한민국 라멘 리뷰 플랫폼</span>
+            <span className="text-xl">🍜</span>
+            <span className={`text-white text-sm md:text-base ${doHyeon.className} tracking-wide`}>라멘 매니아들의 성지</span>
           </div>
 
-          <h1 className="text-4xl md:text-7xl font-black text-white mb-6 leading-tight tracking-tight drop-shadow-lg">
-            라멘의 모든 것,<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-amber-400 to-amber-300">
-              RAOTA
-            </span>
+          <h1 className={`text-5xl md:text-7xl text-white mb-6 leading-tight drop-shadow-lg ${doHyeon.className} tracking-wide`}>
+            한 그릇에 담긴 진심,<br />
+            우리들의 라멘 지도 <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-amber-400 to-amber-300 font-sans font-black tracking-tighter">RAOTA</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed font-medium drop-shadow">
-            전국의 숨겨진 라멘 맛집을 발견하고, <br className="hidden md:block" />
-            라멘을 사랑하는 사람들과 리뷰를 공유하세요.
+          <p className={`text-lg md:text-2xl text-white/95 mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow ${doHyeon.className} tracking-wide`}>
+            숨겨진 로컬 맛집부터 웨이팅 필수 핫플까지.<br className="hidden md:block" />
+            진짜 라멘 매니아들의 생생하고 솔직한 리뷰를 만나보세요.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
