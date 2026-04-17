@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogIn, Menu, X, Home, MessageSquare, User, UtensilsCrossed } from 'lucide-react';
@@ -14,6 +14,29 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
   const pathname = usePathname();
   const currentPath = pathname;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  const isHomePage = currentPath === '/';
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Initial check
+    handleResize();
+    
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const isActive = (path: string) => {
     if (path === '/') return currentPath === '/';
@@ -22,52 +45,66 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
+  const isTransparent = isHomePage && !scrolled && !isMobile;
+  const navTextColor = isTransparent ? 'text-white/90 hover:text-white font-extrabold' : 'text-stone-500 hover:text-red-500 font-extrabold';
+  const activeTextColor = isTransparent ? 'text-white font-black drop-shadow-md' : 'text-red-600 font-black';
+  const logoTextColor = isTransparent ? 'text-white drop-shadow-md' : 'text-stone-900';
+  const loginBtnClass = isTransparent 
+    ? 'bg-white text-stone-900 hover:bg-stone-100' 
+    : 'bg-stone-900 text-white hover:bg-red-600';
+
   return (
     <>
-      <nav className="border-b-2 border-red-500/20 bg-white/95 backdrop-blur fixed md:sticky top-0 left-0 right-0 z-50 transition-all duration-300 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 md:h-16">
-            <Link href="/" className="flex items-center cursor-pointer">
-              <img src="/logo.png" alt="RAOTA Logo" className="w-10 h-10" />
-              <span className="text-xl font-black tracking-tighter text-stone-900">RAOTA<span className="text-red-600">.</span></span>
-            </Link>
+      <header className={`fixed top-0 left-0 right-0 z-50 flex justify-center w-full pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${scrolled ? 'md:px-6 md:lg:px-8 md:mt-4' : 'px-0 mt-0'}`}>
+        <nav className={`pointer-events-auto w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          scrolled 
+            ? 'md:max-w-5xl bg-white/95 backdrop-blur-md shadow-lg border-b md:border border-stone-200/60 md:rounded-full'
+            : `max-w-full ${isTransparent ? 'bg-transparent border-transparent' : 'bg-white/95 backdrop-blur-md border-b border-stone-200/50 shadow-sm'}`
+        }`}>
+          <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${scrolled ? 'py-2 md:py-1' : 'py-2 md:py-0'}`}>
+            <div className="flex items-center justify-between h-12 md:h-16">
+              <Link href="/" className="flex items-center cursor-pointer">
+                <img src="/logo.png" alt="RAOTA Logo" className="w-8 h-8 md:w-10 md:h-10 transition-all duration-300" />
+                <span className={`text-lg md:text-xl font-black tracking-tighter ml-1 transition-colors ${logoTextColor}`}>RAOTA<span className="text-red-500">.</span></span>
+              </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:block flex-1">
-              <div className="ml-10 flex items-baseline justify-end space-x-8">
-                <Link href="/" className={`px-4 py-2 text-sm font-bold transition-colors uppercase ${currentPath === '/' ? 'text-red-600' : 'text-stone-500 hover:text-red-500'}`}>홈</Link>
-                <Link href="/shops" className={`px-4 py-2 text-sm font-bold transition-colors uppercase ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? 'text-red-600' : 'text-stone-500 hover:text-red-500'}`}>가게</Link>
-                <Link href="/community" className={`px-4 py-2 text-sm font-bold transition-colors uppercase ${currentPath === '/community' || currentPath.startsWith('/community/') ? 'text-red-600' : 'text-stone-500 hover:text-red-500'}`}>커뮤니티</Link>
-                <Link href="/mypage" className={`px-4 py-2 text-sm font-bold transition-colors uppercase ${currentPath === '/mypage' ? 'text-red-600' : 'text-stone-500 hover:text-red-500'}`}>마이페이지</Link>
+              {/* Desktop Navigation */}
+              <div className="hidden md:block flex-1">
+                <div className="ml-10 flex items-baseline justify-end space-x-8">
+                  <Link href="/" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/' ? activeTextColor : navTextColor}`}>홈</Link>
+                  <Link href="/shops" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
+                  <Link href="/community" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
+                  <Link href="/mypage" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/mypage' ? activeTextColor : navTextColor}`}>마이페이지</Link>
 
-                {isLoggedIn ? (
-                  <button
-                    onClick={handleLogout}
-                    className="text-stone-500 hover:text-stone-900 font-bold text-sm transition-colors uppercase"
-                  >
-                    로그아웃
-                  </button>
-                ) : (
-                  <Link
-                    href="/login"
-                    className="bg-stone-900 text-white hover:bg-red-600 hover:text-white px-4 py-2 rounded-sm text-sm font-bold transition-all uppercase flex items-center"
-                  >
-                    <LogIn className="w-4 h-4 mr-2" /> Login
-                  </Link>
-                )}
+                  {isLoggedIn ? (
+                    <button
+                      onClick={handleLogout}
+                      className={`font-bold text-sm transition-colors uppercase ${navTextColor}`}
+                    >
+                      로그아웃
+                    </button>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className={`px-4 py-2 rounded-full text-sm font-bold transition-all uppercase flex items-center shadow-sm ${loginBtnClass}`}
+                    >
+                      <LogIn className="w-4 h-4 mr-2" /> Login
+                    </Link>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Mobile Hamburger Button */}
-            <button
-              className="md:hidden p-2 text-stone-600 hover:text-red-600 transition-colors"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+              {/* Mobile Hamburger Button */}
+              <button
+                className={`md:hidden p-2 transition-colors ${isTransparent ? 'text-white' : 'text-stone-600 hover:text-red-600'}`}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </header>
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
