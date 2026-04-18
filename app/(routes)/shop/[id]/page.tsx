@@ -287,9 +287,19 @@ export default function ShopDetailPage() {
               </div>
             ) : (
               <div className="py-12 text-center border-2 border-dashed border-stone-300 rounded-sm bg-stone-50">
-                <p className="text-stone-400">
+                <div className="p-3 rounded-full bg-stone-200 inline-block mb-3">
+                  <Camera className="w-6 h-6 text-stone-400" />
+                </div>
+                <p className="text-stone-400 mb-4">
                   아직 등록된 사진이 없습니다
                 </p>
+                <button
+                  onClick={() => setIsUploadModalOpen(true)}
+                  className="inline-flex items-center px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors shadow-md hover:shadow-lg"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  첫 번째 사진 올리기
+                </button>
               </div>
             )}
           </div>
