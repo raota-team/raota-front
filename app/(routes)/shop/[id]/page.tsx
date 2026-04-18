@@ -14,14 +14,13 @@ import {
   ExternalLink,
   Sparkles,
   Utensils,
-  Filter,
-  X,
 } from "lucide-react";
-import { Shop, UserPhoto, EventMenu } from "../../../types";
+import { Shop, UserPhoto, EventMenu, MenuItem } from "../../../types";
 import ProgressBar from "../../../components/ProgressBar";
 import PhotoModal from "../../../components/PhotoModal";
 import ReportModal from "../../../components/ReportModal";
 import UploadPhotoModal from "../../../components/UploadPhotoModal";
+import MenuDetailModal from "../../../components/MenuDetailModal";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
 import { getTotalVotes } from "@/lib/api/ramen-shops";
 
@@ -32,7 +31,7 @@ export default function ShopDetailPage() {
   const { data, isLoading, isError } = useRamenShopDetail(shopId);
   const [shopDetail, setShopDetail] = useState<Shop | null>(null);
 
-  const [filterMenu, setFilterMenu] = useState<string | null>(null);
+  const [selectedMenu, setSelectedMenu] = useState<MenuItem | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<UserPhoto | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -90,12 +89,7 @@ export default function ShopDetailPage() {
     );
   }
 
-  // Filter logic
-  const displayedPhotos = filterMenu
-    ? shop.userPhotos?.filter(
-        (photo: UserPhoto) => photo.menuName === filterMenu,
-      )
-    : shop.userPhotos;
+  const displayedPhotos = shop.userPhotos;
 
   return (
     <div className="animate-fade-in relative">
@@ -201,71 +195,51 @@ export default function ShopDetailPage() {
                 일반 메뉴
               </h3>
               <div className="bg-white border border-stone-200 rounded-lg p-2 shadow-sm">
-                {shop.menu_list.map((menu, idx) => {
-                  const isActive = filterMenu === menu.name;
-                  return (
-                    <div
-                      key={menu.id}
-                      onClick={() => setFilterMenu(isActive ? null : menu.name)}
-                      className={`flex items-center justify-between p-4 cursor-pointer transition-all ${idx !== shop.menu_list.length - 1 ? "border-b border-stone-200" : ""} ${isActive ? "bg-stone-100 border-l-4 border-l-red-600" : "hover:bg-stone-50 border-l-4 border-l-transparent"}`}
-                    >
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 rounded-sm overflow-hidden mr-4 bg-stone-100 flex-shrink-0 relative">
-                          <img
-                            src={menu.image_url}
-                            alt={menu.name}
-                            className="w-full h-full object-cover"
-                          />
-                          {isActive && (
-                            <div className="absolute inset-0 bg-red-600/20 flex items-center justify-center">
-                              <Filter className="w-4 h-4 text-red-600" />
-                            </div>
+                {shop.menu_list.map((menu, idx) => (
+                  <div
+                    key={menu.id}
+                    onClick={() => setSelectedMenu(menu)}
+                    className={`flex items-center justify-between p-4 cursor-pointer transition-all hover:bg-stone-50 border-l-4 border-l-transparent hover:border-l-red-500 ${idx !== shop.menu_list.length - 1 ? "border-b border-stone-200" : ""}`}
+                  >
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 rounded-sm overflow-hidden mr-4 bg-stone-100 flex-shrink-0">
+                        <img
+                          src={menu.image_url}
+                          alt={menu.name}
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center">
+                          <span className="font-bold mr-2 text-stone-900">
+                            {menu.name}
+                          </span>
+                          {menu.is_signature && (
+                            <span className="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-tighter">
+                              SIG
+                            </span>
                           )}
                         </div>
-                        <div>
-                          <div className="flex items-center">
-                            <span
-                              className={`font-bold mr-2 ${isActive ? "text-red-500" : "text-stone-900"}`}
-                            >
-                              {menu.name}
-                            </span>
-                            {menu.is_signature && (
-                              <span className="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-tighter">
-                                SIG
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-xs text-stone-400 hidden sm:inline-block">
-                            클릭하면 사진 보기
-                          </span>
-                        </div>
-                      </div>
-                      <div className="font-mono text-stone-700 font-bold">
-                        {menu.price.toLocaleString()}원
+                        <span className="text-xs text-stone-400 hidden sm:inline-block">
+                          클릭하면 자세히 보기
+                        </span>
                       </div>
                     </div>
-                  );
-                })}
+                    <div className="font-mono text-stone-700 font-bold">
+                      {menu.price.toLocaleString()}원
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
           <div className="mt-12 border-t border-stone-200 pt-8">
             <div className="flex justify-between items-end mb-6">
-              <div className="flex items-center">
-                <h3 className="text-xl font-bold text-stone-900 flex items-center mr-4">
-                  <ImageIcon className="w-5 h-5 mr-2 text-red-500" />
-                  {filterMenu ? `사진: ${filterMenu}` : "유저 메뉴 인증"}
-                </h3>
-                {filterMenu && (
-                  <button
-                    onClick={() => setFilterMenu(null)}
-                    className="flex items-center text-xs bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 px-2 py-1 rounded-sm transition-colors border border-red-200"
-                  >
-                    <X className="w-3 h-3 mr-1" /> 필터 해제
-                  </button>
-                )}
-              </div>
+              <h3 className="text-xl font-bold text-stone-900 flex items-center">
+                <ImageIcon className="w-5 h-5 mr-2 text-red-500" />
+                유저 메뉴 인증
+              </h3>
               <span className="text-xs text-stone-400 font-mono">
                 {displayedPhotos?.length || 0}개 사진
               </span>
@@ -313,16 +287,9 @@ export default function ShopDetailPage() {
               </div>
             ) : (
               <div className="py-12 text-center border-2 border-dashed border-stone-300 rounded-sm bg-stone-50">
-                <p className="text-stone-400 mb-2">
-                  No photos found for{" "}
-                  <span className="text-red-500 font-bold">{filterMenu}</span>
+                <p className="text-stone-400">
+                  아직 등록된 사진이 없습니다
                 </p>
-                <button
-                  className="text-sm text-stone-500 underline hover:text-stone-900"
-                  onClick={() => setFilterMenu(null)}
-                >
-                  View all photos
-                </button>
               </div>
             )}
           </div>
@@ -336,7 +303,7 @@ export default function ShopDetailPage() {
                     베스트 메뉴 투표
                   </h3>
                   <p className="text-xs text-stone-500 mt-1">
-                    이 가게의 필청(必聽) 메뉴는?
+                    이 가게의 베스트 메뉴는?
                   </p>
                 </div>
                 <Award className="w-8 h-8 text-yellow-500" />
@@ -448,6 +415,11 @@ export default function ShopDetailPage() {
           </div>
         </div>
       </div>
+
+      <MenuDetailModal
+        menu={selectedMenu}
+        onClose={() => setSelectedMenu(null)}
+      />
 
       <PhotoModal
         photo={selectedPhoto}
