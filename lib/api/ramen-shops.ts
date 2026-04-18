@@ -174,7 +174,7 @@ const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
       shop.region ||
       shop.address_simple ||
       "위치 정보 없음",
-    type: shop.type || shop.ramen_type || parsedTags[0] || "기타",
+    type: parsedTags.join(", ") || shop.type || shop.ramen_type || "기타",
     editorRating: toNumber(shop.editorRating ?? shop.editor_rating, 0),
     userRating: toNumber(shop.userRating ?? shop.user_rating, 0),
     description: shop.description || shop.tagLine || "가게 설명이 아직 등록되지 않았습니다.",
