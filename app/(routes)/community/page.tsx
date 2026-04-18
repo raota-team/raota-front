@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { MessageCircle, Heart, ChevronDown, PenSquare, Store, Search } from 'lucide-react';
 import { communityCategories, mockCommunityPosts } from '../../lib/community-data';
 import { useRamenShops } from '@/hooks/queries/useRamenShops';
+import { useRouter } from 'next/navigation';
 
 export default function CommunityPage() {
+  const router = useRouter();
   const { data } = useRamenShops({ page: 0, size: 100 });
   const shops = data?.shops ?? [];
   const [selectedCategory, setSelectedCategory] = useState('all');

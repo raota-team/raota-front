@@ -38,8 +38,10 @@ export const initialShops: Shop[] = [
       { id: 103, user: "SeoulEats", imageUrl: "https://images.unsplash.com/photo-1552611052-81315579d479?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80", menuName: "진한 츠케멘", date: "24.03.05", comment: "웨이팅이 좀 길었지만 기다린 보람이 있네요." },
       { id: 104, user: "FoodieJ", imageUrl: "https://images.unsplash.com/photo-1617380903332-9cb98f6d538e?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80", menuName: "차슈동", date: "24.02.28", comment: "차슈가 입에서 살살 녹습니다. 사이드로 강추!" },
     ],
-    business_hours: { closed_days: "연중무휴", open_time: "11:30", close_time: "21:30", break_start: "15:30", break_end: "17:00" },
-    instagram_url: "https://instagram.com/menyamusashi"
+    business_hours: { closed_days: "연중무휴", open_time: "11:30", close_time: "21:30", break_start: "15:30", break_end: "17:00", parking_info: "불가" },
+    stats: { visit_count: 100, bookmark_count: 50 },
+    instagram_url: "https://instagram.com/menyamusashi",
+    catchTableUrl: "https://catchtable.co.kr/menyamusashi"
   },
   {
     id: 2,
@@ -58,8 +60,10 @@ export const initialShops: Shop[] = [
     userPhotos: [
       { id: 201, user: "ChickenGod", imageUrl: "https://images.unsplash.com/photo-1618841557871-b4664fbf0cb3?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80", menuName: "토리 파이탄", date: "24.03.12", comment: "닭 육수가 이렇게 진할 수 있다니 놀랍습니다." },
     ],
-    business_hours: { closed_days: "매주 월요일", open_time: "11:30", close_time: "21:00", break_start: "15:00", break_end: "17:00" },
-    instagram_url: "https://instagram.com/oreno"
+    business_hours: { closed_days: "매주 월요일", open_time: "11:30", close_time: "21:00", break_start: "15:00", break_end: "17:00", parking_info: "주차 지원" },
+    stats: { visit_count: 80, bookmark_count: 40 },
+    instagram_url: "https://instagram.com/oreno",
+    catchTableUrl: "https://catchtable.co.kr/oreno"
   },
   {
     id: 3,
@@ -75,8 +79,10 @@ export const initialShops: Shop[] = [
       { id: 1, name: "쇼유 라멘", price: 9000, is_signature: true, image_url: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" }
     ],
     userPhotos: [{ id: 301, user: "BusanMan", imageUrl: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80", menuName: "특제 쇼유 라멘", date: "24.03.01", comment: "깔끔한 국물 맛이 일품입니다. 부산 오면 꼭 들러야 할 곳!" }],
-    business_hours: { closed_days: "매주 화요일", open_time: "11:00", close_time: "20:00", break_start: null, break_end: null },
-    instagram_url: "https://instagram.com/shoyuboss"
+    business_hours: { closed_days: "매주 화요일", open_time: "11:00", close_time: "20:00", break_start: null, break_end: null, parking_info: "공영 주차장" },
+    stats: { visit_count: 60, bookmark_count: 30 },
+    instagram_url: "https://instagram.com/shoyuboss",
+    catchTableUrl: "https://catchtable.co.kr/shoyuboss"
   }
 ];
 
