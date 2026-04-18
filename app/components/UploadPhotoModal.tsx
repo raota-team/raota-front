@@ -97,7 +97,7 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
               <select
                 value={selectedMenu}
                 onChange={(e) => setSelectedMenu(e.target.value)}
-                className="w-full appearance-none bg-stone-50 border border-stone-200 text-stone-700 py-3 px-4 pr-8 rounded-lg outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all font-medium text-sm"
+                className="w-full appearance-none bg-stone-50 border border-stone-200 text-stone-700 py-3 px-4 pr-8 rounded-lg outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all font-medium text-base"
               >
                 <option value="" disabled>어떤 메뉴를 드셨나요?</option>
                 {menuList?.map((menu) => (
