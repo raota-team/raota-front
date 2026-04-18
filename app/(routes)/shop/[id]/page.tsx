@@ -447,6 +447,23 @@ export default function ShopDetailPage() {
         onClose={() => setIsUploadModalOpen(false)}
         shopName={shop.name}
         menuList={shop.menu_list}
+        onUpload={(data) => {
+          const newPhoto: UserPhoto = {
+            id: Date.now(),
+            user: "게스트",
+            imageUrl: data.imageUrl,
+            menuName: data.menuName,
+            date: new Date().toISOString().slice(0, 10),
+            comment: data.comment,
+          };
+          setShopDetail((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              userPhotos: [...(prev.userPhotos || []), newPhoto],
+            };
+          });
+        }}
       />
     </div>
   );

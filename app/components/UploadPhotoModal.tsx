@@ -11,14 +11,21 @@ interface MenuItem {
   image_url?: string;
 }
 
+interface UploadedPhotoData {
+  menuName: string;
+  imageUrl: string;
+  comment: string;
+}
+
 interface UploadPhotoModalProps {
   isOpen: boolean;
   onClose: () => void;
   shopName: string;
   menuList?: MenuItem[];
+  onUpload?: (data: UploadedPhotoData) => void;
 }
 
-const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, shopName, menuList }) => {
+const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, shopName, menuList, onUpload }) => {
   const [selectedMenu, setSelectedMenu] = useState('');
   const [comment, setComment] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -56,10 +63,16 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
     setIsSubmitting(true);
 
     setTimeout(() => {
-      alert('사진이 성공적으로 업로드되었습니다! (관리자 승인 후 게시됩니다)');
+      if (onUpload) {
+        onUpload({
+          menuName: selectedMenu,
+          imageUrl: previewUrl,
+          comment,
+        });
+      }
       setIsSubmitting(false);
       onClose();
-    }, 1000);
+    }, 500);
   };
 
   return (
@@ -137,10 +150,10 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
               onChange={(e) => setComment(e.target.value)}
               placeholder="맛은 어떠셨나요?"
               className="w-full bg-stone-50 border border-stone-200 text-stone-700 py-3 px-4 rounded-lg outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all font-medium text-sm placeholder:text-stone-400"
-              maxLength={50}
+              maxLength={100}
             />
             <div className="text-right mt-1">
-              <span className="text-xs text-stone-400 font-mono">{comment.length}/50</span>
+              <span className="text-xs text-stone-400 font-mono">{comment.length}/100</span>
             </div>
           </div>
 
