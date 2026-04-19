@@ -13,6 +13,10 @@ export default function LoginPage() {
     router.push('/');
   };
 
+  const onKaKaoLogin = () => {
+    window.location.href = 'https://api.raota.net/oauth2/authorization/kakao';
+  };
+
   return (
     <div className="animate-fade-in flex flex-col items-center py-20">
       <div className="w-full max-w-md bg-white border border-stone-200 p-8 shadow-lg text-center rounded-lg">
@@ -25,7 +29,7 @@ export default function LoginPage() {
         <div className="space-y-3">
           {/* Kakao Login Button */}
           <button
-            onClick={onLogin}
+            onClick={onKaKaoLogin}
             className="w-full bg-[#FEE500] hover:bg-[#FDD835] text-[#000000] font-semibold py-3.5 px-4 rounded-lg transition-all flex items-center justify-center relative shadow-sm hover:shadow-md"
           >
             <MessageCircle className="w-5 h-5 absolute left-4" fill="currentColor" strokeWidth={0} />

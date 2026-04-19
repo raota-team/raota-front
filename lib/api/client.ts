@@ -1,3 +1,5 @@
+import { getAccessToken } from "@/lib/auth/accessToken";
+
 type QueryPrimitive = string | number | boolean | null | undefined;
 type QueryValue = QueryPrimitive | QueryPrimitive[];
 
@@ -46,10 +48,17 @@ export const apiClient = async <T>(
   path: string,
   options: ApiClientOptions = {},
 ): Promise<T> => {
+  const token = typeof window !== "undefined" ? getAccessToken() : null;
+  const authHeaders: Record<string, string> = {};
+  if (token) {
+    authHeaders.Authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(buildUrl(path, options.query), {
     method: options.method || "GET",
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders,
       ...options.headers,
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
