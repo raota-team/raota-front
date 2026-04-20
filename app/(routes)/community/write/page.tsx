@@ -95,7 +95,7 @@ export default function CommunityWritePage() {
   };
 
   return (
-    <div className="animate-fade-in max-w-2xl mx-auto pb-12">
+    <div className="max-w-2xl mx-auto pb-12">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <button

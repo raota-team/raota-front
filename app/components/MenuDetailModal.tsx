@@ -37,7 +37,7 @@ export default function MenuDetailModal({ menu, onClose }: MenuDetailModalProps)
 
       {/* Modal */}
       <div
-        className="relative z-10 bg-white rounded-xl overflow-hidden shadow-2xl w-full max-w-md animate-fade-in"
+        className="relative z-10 bg-white rounded-xl overflow-hidden shadow-2xl w-full max-w-md"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
