@@ -1,37 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageCircle, Fingerprint } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { handleLogin } = useApp();
-
-  useEffect(() => {
-    // 백엔드에서 리다이렉트된 해시 파라미터 처리
-    const hash = window.location.hash;
-    if (hash && hash.includes('accessToken')) {
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get('accessToken');
-      const newMember = params.get('newMember') === 'true';
-
-      if (accessToken) {
-        // 토큰이 있으면 로컬 스토리지 등에 저장 (필요한 경우)
-        localStorage.setItem('accessToken', accessToken);
-        
-        if (newMember) {
-          // 신규 회원이면 회원가입 페이지로 이동
-          router.push('/register');
-        } else {
-          // 기존 회원이면 로그인 처리 후 홈으로 이동
-          handleLogin();
-          router.push('/');
-        }
-      }
-    }
-  }, [handleLogin, router]);
 
   const onKaKaoLogin = () => {
     window.location.href = 'https://api.raota.net/oauth2/authorization/kakao';
