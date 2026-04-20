@@ -100,16 +100,6 @@ export default function LoginPage() {
             <span>패스키로 시작하기</span>
           </button>
         </div>
-
-        <div className="mt-8 pt-6 border-t border-stone-50 text-center">
-          <p className="text-stone-500 text-sm mb-4">처음이신가요?</p>
-          <button
-            onClick={() => router.push('/register')}
-            className="text-orange-600 font-bold hover:text-orange-700 transition-colors underline underline-offset-4"
-          >
-            이메일로 회원가입
-          </button>
-        </div>
       </div>
     </div>
   );
