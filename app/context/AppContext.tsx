@@ -11,7 +11,7 @@ import React, {
 import { usePathname } from "next/navigation";
 import { mockUserProfile } from "../lib/data";
 import type { UserProfile } from "../types";
-import { clearAccessToken, getAccessToken, loadOAuthSessionMeta } from "@/lib/auth/accessToken";
+import { clearAccessToken, getAccessToken, loadOAuthSessionMeta, saveRaotaOAuthSession } from "@/lib/auth/accessToken";
 
 interface AppContextType {
   isLoggedIn: boolean;
@@ -60,6 +60,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCurrentUser(null);
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const rawHash = window.location.hash;
+    if (!rawHash || !rawHash.includes("accessToken")) return;
+
+    const params = new URLSearchParams(rawHash.startsWith("#") ? rawHash.substring(1) : rawHash);
+    const token = params.get("accessToken")?.trim();
+    if (!token) return;
+
+    const expiresInRaw = params.get("expiresIn");
+    const memberIdRaw = params.get("memberId");
+    saveRaotaOAuthSession(token, {
+      tokenType: params.get("tokenType"),
+      expiresIn: expiresInRaw ? Number(expiresInRaw) : null,
+      memberId: memberIdRaw ? Number(memberIdRaw) : null,
+      newMember: params.get("newMember") === "true",
+      provider: params.get("provider"),
+    });
+    syncAuthFromStorage();
+
+    // URL hash에서 민감 정보 제거
+    window.history.replaceState(null, document.title, `${window.location.pathname}${window.location.search}`);
+  }, [syncAuthFromStorage]);
 
   useEffect(() => {
     syncAuthFromStorage();
