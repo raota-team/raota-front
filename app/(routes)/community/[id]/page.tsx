@@ -85,7 +85,7 @@ export default function CommunityDetailPage() {
   };
 
   return (
-    <div className="animate-fade-in max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       {/* Back Button */}
       <button
         onClick={() => router.back()}

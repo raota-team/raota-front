@@ -92,7 +92,7 @@ export default function ShopDetailPage() {
   const displayedPhotos = shop.userPhotos;
 
   return (
-    <div className="animate-fade-in relative">
+    <div className="relative">
       <button
         onClick={() => router.push("/")}
         className="mb-6 flex items-center text-stone-500 hover:text-red-500 transition-colors text-sm font-bold uppercase tracking-wider"

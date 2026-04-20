@@ -122,7 +122,7 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="animate-fade-in">
+    <div className="">
       {/* Header */}
       <div className="mb-8 relative rounded-2xl overflow-hidden shadow-lg h-48 md:h-80">
         <div

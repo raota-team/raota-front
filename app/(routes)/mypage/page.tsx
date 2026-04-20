@@ -56,7 +56,7 @@ export default function MyPageView() {
   );
 
   return (
-    <div className="animate-fade-in">
+    <div className="">
       {/* Profile Header */}
       <div className="bg-white border border-stone-200 mb-8 shadow-sm rounded-xl overflow-hidden relative group">
         {/* Cover Image */}
