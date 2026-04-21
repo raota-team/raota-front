@@ -4,21 +4,41 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Camera, ChevronRight, Check } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { updateUserProfile } from '@/lib/api/user';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { completeRegistration } = useApp();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     nickname: '',
     bio: '',
     agreeTerms: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 실제 백엔드 API 호출이 필요한 부분이지만, 현재는 상태 업데이트만 수행
-    completeRegistration();
-    router.push('/');
+    setIsLoading(true);
+
+    try {
+      // 1. 백엔드 회원가입(프로필 설정) API 호출
+      await updateUserProfile({
+        nickname: formData.nickname,
+        profile_image_url: '', // 이미지 업로드 로직 추가 시 업데이트 필요
+        background_image_url: '',
+      });
+
+      // 2. 프론트엔드 로그인 상태 동기화 및 newMember 플래그 해제
+      completeRegistration();
+      
+      // 3. 메인 페이지로 이동
+      router.push('/');
+    } catch (error: any) {
+      console.error('Registration failed:', error);
+      alert(error.message || '회원가입 처리 중 문제가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -94,11 +114,17 @@ export default function RegisterPage() {
 
                 <button
                   type="submit"
-                  disabled={!formData.nickname || !formData.agreeTerms}
+                  disabled={!formData.nickname || !formData.agreeTerms || isLoading}
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-orange-600/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 >
-                  <span>회원가입 완료</span>
-                  <ChevronRight className="w-5 h-5" />
+                  {isLoading ? (
+                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>회원가입 완료</span>
+                      <ChevronRight className="w-5 h-5" />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
