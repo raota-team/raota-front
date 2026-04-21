@@ -54,7 +54,7 @@ export default function MyPageView() {
   }, [isLoading, pageMeta]);
 
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
-  const isOwnProfile = !userId; // 현재 로그인 유저 프로필 조회 기준
+  const isOwnProfile = !userId;
 
   // 프로필 정보 로드
   useEffect(() => {
@@ -64,10 +64,8 @@ export default function MyPageView() {
         setProfile(res.data);
         setEditForm({
           nickname: res.data.nickname,
-          bio: (res.data.userDescription && res.data.userDescription !== res.data.nickname) 
-            ? res.data.userDescription 
-            : '자기소개가 아직 없습니다.',
-          profileImage: res.data.profile_image_url || '/logo.png',
+          bio: res.data.userDescription || '',
+          profileImage: res.data.profile_image_url || '',
           backgroundImage: res.data.background_image_url || ''
         });
       } catch (err) {
@@ -80,10 +78,8 @@ export default function MyPageView() {
     if (isLoggedIn) fetchProfile();
   }, [isLoggedIn]);
 
-  // 탭 변경 시 데이터 초기화 및 로드
+  // 탭 변경 시 데이터 로드
   useEffect(() => {
-    setItems([]);
-    setPageMeta(null);
     fetchTabData(0);
   }, [activeTab]);
 
@@ -101,7 +97,6 @@ export default function MyPageView() {
       }
       
       if (res && res.data) {
-        // ID가 없는 유령 데이터 필터링
         const validItems = (res.data.items || []).filter((item: any) => {
           if (activeTab === 'photos') return !!item.photo_id;
           if (activeTab === 'visits' || activeTab === 'bookmarks') return !!(item.restaurant_id || item.id);
@@ -131,21 +126,31 @@ export default function MyPageView() {
       await updateUserProfile({
         nickname: editForm.nickname,
         userDescription: editForm.bio,
-        profile_image_url: editForm.profileImage,
-        background_image_url: editForm.backgroundImage
+        profile_image_url: editForm.profileImage.startsWith('data:') ? editForm.profileImage : undefined,
+        background_image_url: editForm.backgroundImage.startsWith('data:') ? editForm.backgroundImage : undefined
       });
+      
       setIsEditing(false);
-      // 프로필 재로딩
+      // 서버 데이터 재로딩
       const res = await getMyProfile();
       setProfile(res.data);
-    } catch (err) {
-      alert('프로필 수정에 실패했습니다.');
+      setEditForm(prev => ({
+        ...prev,
+        nickname: res.data.nickname,
+        bio: res.data.userDescription || ''
+      }));
+    } catch (err: any) {
+      alert(err.message || '프로필 수정에 실패했습니다.');
     }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'profileImage' | 'backgroundImage') => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('이미지 크기는 2MB 이하여야 합니다.');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (e) => {
         setEditForm(prev => ({
@@ -189,15 +194,19 @@ export default function MyPageView() {
     );
   };
 
+  // 닉네임과 자기소개가 중복되는지 체크하는 유틸
+  const displayBio = (profile.userDescription && profile.userDescription !== profile.nickname)
+    ? profile.userDescription
+    : '자기소개가 아직 없습니다.';
+
   return (
     <div className="">
       {/* Profile Header */}
       <div className="bg-white border border-stone-200 mb-8 shadow-sm rounded-xl overflow-hidden relative group">
-        {/* Cover Image */}
         <div className="h-48 md:h-64 bg-stone-800 relative overflow-hidden">
-          {editForm.backgroundImage ? (
+          {editForm.backgroundImage || profile.background_image_url ? (
             <img
-              src={editForm.backgroundImage}
+              src={editForm.backgroundImage || profile.background_image_url}
               alt="Cover"
               className="w-full h-full object-cover"
             />
@@ -224,10 +233,9 @@ export default function MyPageView() {
         </div>
 
         <div className="px-6 pb-6 md:px-10 md:pb-10 flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16 md:-mt-20 relative z-10">
-          {/* Profile Image */}
           <div className="relative group/profile">
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white shadow-lg bg-white relative">
-              <img src={editForm.profileImage} alt="Profile" className="w-full h-full object-cover" />
+              <img src={editForm.profileImage || profile.profile_image_url || '/logo.png'} alt="Profile" className="w-full h-full object-cover" />
               {isEditing && (
                 <label className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer transition-opacity">
                   <div className="flex flex-col items-center gap-1 text-white">
@@ -250,7 +258,6 @@ export default function MyPageView() {
             )}
           </div>
 
-          {/* Nickname & Bio Section */}
           <div className="flex-1 w-full md:w-auto text-center md:text-left">
             {isEditing ? (
               <div className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm">
@@ -281,13 +288,12 @@ export default function MyPageView() {
               <>
                 <h2 className="text-2xl font-black text-stone-900 mb-2">{profile.nickname}</h2>
                 <p className="text-stone-500 text-sm max-w-md">
-                  {editForm.bio}
+                  {displayBio}
                 </p>
               </>
             )}
           </div>
 
-          {/* Edit Button */}
           <div className="mt-4 md:mt-0">
             {isOwnProfile && (
               isEditing ? (
@@ -318,7 +324,6 @@ export default function MyPageView() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex border-b border-stone-200 mb-8 overflow-x-auto">
         {[
           { id: 'photos', label: '내 사진', icon: Camera, count: profile.stats.total_photo_count },
@@ -344,8 +349,13 @@ export default function MyPageView() {
         ))}
       </div>
 
-      {/* Tab Content */}
-      <div className="min-h-[300px] pb-20">
+      <div className="min-h-[400px] pb-20 relative">
+        {isLoading && (!pageMeta || pageMeta.number === 0) && (
+          <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-[1px] flex justify-center pt-20">
+            <Loader2 className="w-10 h-10 text-red-600 animate-spin" />
+          </div>
+        )}
+
         {items.length > 0 ? (
           <div className={activeTab === 'photos' ? "grid grid-cols-3 gap-1 md:gap-4" : "flex flex-col gap-3"}>
             {items.map((item, index) => {
@@ -356,12 +366,7 @@ export default function MyPageView() {
 
               if (activeTab === 'photos') {
                 return (
-                  <div
-                    key={uniqueKey}
-                    {...itemProps}
-                    onClick={() => setSelectedPhoto(item)}
-                    className="group relative aspect-square bg-stone-100 cursor-pointer overflow-hidden rounded-lg"
-                  >
+                  <div key={uniqueKey} {...itemProps} onClick={() => setSelectedPhoto(item)} className="group relative aspect-square bg-stone-100 cursor-pointer overflow-hidden rounded-lg">
                     <img src={item.image_url} alt="User Upload" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
                       <p className="text-white text-sm font-bold truncate">{item.menuName}</p>
@@ -374,30 +379,17 @@ export default function MyPageView() {
               if (activeTab === 'visits') {
                 const shopId = item.restaurant_id || item.id;
                 return (
-                  <Link
-                    href={`/shop/${shopId}`}
-                    key={uniqueKey}
-                    {...(itemProps as any)}
-                    className="flex items-center gap-4 p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
-                  >
+                  <Link href={`/shop/${shopId}`} key={uniqueKey} {...(itemProps as any)} className="flex items-center gap-4 p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group">
                     <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-stone-100">
                       <img src={item.restaurant_image_url} alt={item.restaurant_name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">{item.restaurant_name}</h4>
-                      <p className="text-sm text-stone-500 flex items-center gap-1 mt-1">
-                        <MapPin className="w-3 h-3" />
-                        {item.simple_address}
-                      </p>
+                      <p className="text-sm text-stone-500 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3" /> {item.simple_address}</p>
                     </div>
                     <div className="text-right flex-shrink-0 min-w-[100px] flex flex-col items-end justify-center">
-                      <div className="flex items-center gap-1 text-red-600 font-bold">
-                        <Award className="w-4 h-4" />
-                        <span>{item.visit_count_for_user}회 방문</span>
-                      </div>
-                      <p className="text-xs text-stone-400 mt-1">
-                        {item.last_visited_at ? new Date(item.last_visited_at).toLocaleDateString('ko-KR') : '-'}
-                      </p>
+                      <div className="flex items-center gap-1 text-red-600 font-bold"><Award className="w-4 h-4" /> <span>{item.visit_count_for_user}회 방문</span></div>
+                      <p className="text-xs text-stone-400 mt-1">{item.last_visited_at ? new Date(item.last_visited_at).toLocaleDateString('ko-KR') : '-'}</p>
                     </div>
                   </Link>
                 );
@@ -406,27 +398,18 @@ export default function MyPageView() {
               if (activeTab === 'bookmarks') {
                 const shopId = item.restaurant_id || item.id;
                 return (
-                  <div
-                    key={uniqueKey}
-                    {...itemProps}
-                    className="flex items-center gap-4 p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
-                  >
+                  <div key={uniqueKey} {...itemProps} className="flex items-center gap-4 p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group">
                     <Link href={`/shop/${shopId}`} className="flex items-center gap-4 flex-1 min-w-0">
                       <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-stone-100">
                         <img src={item.restaurant_image_url} alt={item.restaurant_name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">{item.restaurant_name}</h4>
-                        <p className="text-sm text-stone-500 flex items-center gap-1 mt-1">
-                          <MapPin className="w-3 h-3" />
-                          {item.address_simple}
-                        </p>
+                        <p className="text-sm text-stone-500 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3" /> {item.simple_address}</p>
                       </div>
                     </Link>
                     <div className="flex-shrink-0 flex flex-col items-end justify-center gap-1">
-                      <p className="text-xs text-stone-400">
-                        {item.bookmarked_at ? new Date(item.bookmarked_at).toLocaleDateString('ko-KR') : '-'}
-                      </p>
+                      <p className="text-xs text-stone-400">{item.bookmarked_at ? new Date(item.bookmarked_at).toLocaleDateString('ko-KR') : '-'}</p>
                     </div>
                   </div>
                 );
@@ -434,36 +417,16 @@ export default function MyPageView() {
 
               if (activeTab === 'posts') {
                 return (
-                  <Link
-                    href={`/community/${item.post_id || item.id}`}
-                    key={uniqueKey}
-                    {...(itemProps as any)}
-                    className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
-                  >
+                  <Link href={`/community/${item.post_id || item.id}`} key={uniqueKey} {...(itemProps as any)} className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="px-2 py-1 bg-red-100 text-red-600 text-xs font-bold rounded">
-                            {item.category}
-                          </span>
-                          {item.storeName && (
-                            <span className="text-xs text-stone-500">
-                              @ {item.storeName}
-                            </span>
-                          )}
-                        </div>
-                        <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">
-                          {item.title}
-                        </h4>
+                        <div className="flex items-center gap-2 mb-2"><span className="px-2 py-1 bg-red-100 text-red-600 text-xs font-bold rounded">{item.category}</span> {item.storeName && <span className="text-xs text-stone-500">@ {item.storeName}</span>}</div>
+                        <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">{item.title}</h4>
                         <p className="text-sm text-stone-500 mt-2 line-clamp-1">{item.contentPreview}</p>
                         <div className="flex items-center gap-4 mt-3 text-sm text-stone-500">
                           <span>{item.createdAt ? new Date(item.createdAt).toLocaleDateString('ko-KR') : '-'}</span>
-                          <span className="flex items-center gap-1">
-                            <Heart className="w-4 h-4" /> {item.likeCount}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MessageSquare className="w-4 h-4" /> {item.commentCount}
-                          </span>
+                          <span className="flex items-center gap-1"><Heart className="w-4 h-4" /> {item.likeCount}</span>
+                          <span className="flex items-center gap-1"><MessageSquare className="w-4 h-4" /> {item.commentCount}</span>
                         </div>
                       </div>
                     </div>
@@ -473,68 +436,34 @@ export default function MyPageView() {
 
               if (activeTab === 'comments') {
                 return (
-                  <Link
-                    href={`/community/${item.post_id || item.postId}`}
-                    key={uniqueKey}
-                    {...(itemProps as any)}
-                    className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
-                  >
+                  <Link href={`/community/${item.post_id || item.postId}`} key={uniqueKey} {...(itemProps as any)} className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group">
                     <p className="text-stone-800 font-medium mb-2 line-clamp-2">"{item.content}"</p>
                     <div className="flex items-center justify-between text-sm text-stone-500">
                       <div className="flex items-center gap-2">
                         {item.postTitle && <span className="truncate max-w-[200px] md:max-w-[400px] text-stone-400">원본글: {item.postTitle}</span>}
                         <span>{item.createdAt ? new Date(item.createdAt).toLocaleDateString('ko-KR') : '-'}</span>
                       </div>
-                      {item.taggedParentAuthorNickname && (
-                        <span className="text-red-500 font-bold">@ {item.taggedParentAuthorNickname}</span>
-                      )}
+                      {item.taggedParentAuthorNickname && <span className="text-red-500 font-bold">@ {item.taggedParentAuthorNickname}</span>}
                     </div>
                   </Link>
                 );
               }
-
               return null;
             })}
           </div>
         ) : !isLoading && (
-          <EmptyState 
-            tab={activeTab}
-            message={`아직 ${
-              activeTab === 'photos' ? '업로드한 사진이' : 
-              activeTab === 'visits' ? '방문한 곳이' : 
-              activeTab === 'bookmarks' ? '찜한 가게가' : 
-              activeTab === 'posts' ? '작성한 글이' : '작성한 댓글이'
-            } 없습니다.`} 
-            icon={
-              activeTab === 'photos' ? Camera : 
-              activeTab === 'visits' ? MapPin : 
-              activeTab === 'bookmarks' ? Heart : 
-              activeTab === 'posts' ? FileText : MessageSquare
-            } 
-          />
+          <EmptyState tab={activeTab} message={`아직 ${activeTab === 'photos' ? '업로드한 사진이' : activeTab === 'visits' ? '방문한 곳이' : activeTab === 'bookmarks' ? '찜한 가게가' : activeTab === 'posts' ? '작성한 글이' : '작성한 댓글이'} 없습니다.`} icon={activeTab === 'photos' ? Camera : activeTab === 'visits' ? MapPin : activeTab === 'bookmarks' ? Heart : activeTab === 'posts' ? FileText : MessageSquare} />
         )}
 
-        {/* Loading Spinner for Infinite Scroll */}
-        {isLoading && (
+        {isLoading && pageMeta && pageMeta.number > 0 && (
           <div className="flex justify-center py-8">
             <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
           </div>
         )}
       </div>
 
-      {/* Photo Modal */}
       {selectedPhoto && (
-        <PhotoModal
-          photo={{
-            imageUrl: selectedPhoto.image_url,
-            menuName: selectedPhoto.menuName || selectedPhoto.restaurant_name,
-            user: profile.nickname,
-            date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-',
-            comment: selectedPhoto.oneLineComment || ''
-          }}
-          onClose={() => setSelectedPhoto(null)}
-          disableUserNavigation={true}
-        />
+        <PhotoModal photo={{ imageUrl: selectedPhoto.image_url, menuName: selectedPhoto.menuName || selectedPhoto.restaurant_name, user: profile.nickname, date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-', comment: selectedPhoto.oneLineComment || '' }} onClose={() => setSelectedPhoto(null)} disableUserNavigation={true} />
       )}
     </div>
   );
