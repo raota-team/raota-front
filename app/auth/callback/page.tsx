@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { saveRaotaOAuthSession } from '@/lib/auth/accessToken';
+import { loadOAuthSessionMeta, saveRaotaOAuthSession } from '@/lib/auth/accessToken';
 import { parseOAuthCallbackHash } from '@/lib/auth/parseOAuthCallbackHash';
 import { useApp } from '@/app/context/AppContext';
 
@@ -18,7 +18,11 @@ export default function AuthCallbackPage() {
   const [view, setView] = useState<ViewState>({ phase: 'loading' });
 
   useEffect(() => {
-    const parsed = parseOAuthCallbackHash();
+    let parsed = parseOAuthCallbackHash();
+
+    // 1. AppContext가 이미 지웠거나 파싱된 경우 대비: 로컬스토리지 메타 확인
+    const meta = loadOAuthSessionMeta();
+    const isNewFromMeta = meta && (meta.newMember === true || String(meta.newMember) === 'true');
 
     if (parsed.kind === 'token') {
       saveRaotaOAuthSession(parsed.accessToken, {
@@ -31,14 +35,25 @@ export default function AuthCallbackPage() {
       syncAuthFromStorage();
 
       if (typeof window !== 'undefined') {
-        window.history.replaceState(
-          null,
-          document.title,
-          `${window.location.pathname}${window.location.search}`,
-        );
+        window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+        
+        if (parsed.newMember) {
+          window.location.href = '/register';
+        } else {
+          window.location.href = '/';
+        }
       }
+      return;
+    }
 
-      router.replace('/');
+    if (parsed.kind === 'empty' && meta && meta.memberId) {
+      if (typeof window !== 'undefined') {
+        if (isNewFromMeta) {
+          window.location.href = '/register';
+        } else {
+          window.location.href = '/';
+        }
+      }
       return;
     }
 
