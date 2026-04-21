@@ -125,7 +125,7 @@ export default function MyPageView() {
     try {
       await updateUserProfile({
         nickname: editForm.nickname,
-        userDescription: editForm.bio,
+        bio: editForm.bio, // userDescription 대신 bio 필드로 전송
         profile_image_url: editForm.profileImage.startsWith('data:') ? editForm.profileImage : undefined,
         background_image_url: editForm.backgroundImage.startsWith('data:') ? editForm.backgroundImage : undefined
       });

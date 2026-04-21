@@ -4,7 +4,7 @@ export interface UserProfileUpdateParams {
   nickname: string;
   profile_image_url?: string;
   background_image_url?: string;
-  userDescription?: string;
+  bio?: string; // userDescription 대신 bio로 변경
 }
 
 export interface UserStats {
