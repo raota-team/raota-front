@@ -24,6 +24,7 @@ export default function RegisterPage() {
       // 1. 백엔드 회원가입(프로필 설정) API 호출
       await updateUserProfile({
         nickname: formData.nickname,
+        userDescription: formData.bio,
         profile_image_url: '', // 이미지 업로드 로직 추가 시 업데이트 필요
         background_image_url: '',
       });

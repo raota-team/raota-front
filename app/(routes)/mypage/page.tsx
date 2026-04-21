@@ -1,29 +1,147 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X } from 'lucide-react';
+import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight } from 'lucide-react';
 import PhotoModal from '../../components/PhotoModal';
-import { mockUserProfile, mockUserPhotos, mockUserVisits, mockUserBookmarks, mockUserPosts, mockUserComments } from '../../lib/data';
+import { useApp } from '../../context/AppContext';
+import { 
+  getMyProfile, 
+  getMyVisits, 
+  getMyBookmarks, 
+  getMyPosts, 
+  getMyPhotos, 
+  getMyComments,
+  updateUserProfile,
+  MyProfileData,
+  PageMeta
+} from '@/lib/api/user';
 
 export default function MyPageView() {
   const params = useParams();
   const userId = params?.id as string | undefined;
+  const { isLoggedIn } = useApp();
+  
   const [activeTab, setActiveTab] = useState('photos');
-  const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
-  const profile = mockUserProfile.data;
-  const isOwnProfile = !userId || Number(userId) === profile.user_id;
-
+  const [profile, setProfile] = useState<MyProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
-    nickname: profile.nickname,
-    bio: '라멘을 사랑하는 진정한 미식가. 서울의 모든 이에케 라멘을 정복하는 그날까지.',
-    profileImage: profile.profile_image_url,
-    backgroundImage: null as string | null
+    nickname: '',
+    bio: '',
+    profileImage: '',
+    backgroundImage: ''
   });
 
-  const displayProfile = { ...profile, nickname: isOwnProfile ? editForm.nickname : `유저 ${userId}` };
+  // 데이터 목록 및 페이징 상태
+  const [items, setItems] = useState<any[]>([]);
+  const [pageMeta, setPageMeta] = useState<PageMeta | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastItemRef = useCallback((node: HTMLDivElement) => {
+    if (isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && pageMeta?.hasNext) {
+        loadMore();
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [isLoading, pageMeta]);
+
+  const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
+  const isOwnProfile = !userId; // 현재 로그인 유저 프로필 조회 기준
+
+  // 프로필 정보 로드
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await getMyProfile();
+        setProfile(res.data);
+        setEditForm({
+          nickname: res.data.nickname,
+          bio: (res.data.userDescription && res.data.userDescription !== res.data.nickname) 
+            ? res.data.userDescription 
+            : '자기소개가 아직 없습니다.',
+          profileImage: res.data.profile_image_url || '/logo.png',
+          backgroundImage: res.data.background_image_url || ''
+        });
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+      } finally {
+        setIsInitialLoading(false);
+      }
+    };
+
+    if (isLoggedIn) fetchProfile();
+  }, [isLoggedIn]);
+
+  // 탭 변경 시 데이터 초기화 및 로드
+  useEffect(() => {
+    setItems([]);
+    setPageMeta(null);
+    fetchTabData(0);
+  }, [activeTab]);
+
+  const fetchTabData = async (page: number) => {
+    setIsLoading(true);
+    try {
+      let res;
+      switch (activeTab) {
+        case 'photos': res = await getMyPhotos(page); break;
+        case 'visits': res = await getMyVisits(page); break;
+        case 'bookmarks': res = await getMyBookmarks(page); break;
+        case 'posts': res = await getMyPosts(page); break;
+        case 'comments': res = await getMyComments(page); break;
+        default: return;
+      }
+      
+      if (res && res.data) {
+        // ID가 없는 유령 데이터 필터링
+        const validItems = (res.data.items || []).filter((item: any) => {
+          if (activeTab === 'photos') return !!item.photo_id;
+          if (activeTab === 'visits' || activeTab === 'bookmarks') return !!(item.restaurant_id || item.id);
+          if (activeTab === 'posts') return !!(item.post_id || item.id);
+          if (activeTab === 'comments') return !!item.commentId;
+          return true;
+        });
+
+        setItems(prev => page === 0 ? validItems : [...prev, ...validItems]);
+        setPageMeta(res.data.page || null);
+      }
+    } catch (err) {
+      console.error(`Failed to fetch ${activeTab}:`, err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadMore = () => {
+    if (pageMeta && pageMeta.hasNext) {
+      fetchTabData(pageMeta.number + 1);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      await updateUserProfile({
+        nickname: editForm.nickname,
+        userDescription: editForm.bio,
+        profile_image_url: editForm.profileImage,
+        background_image_url: editForm.backgroundImage
+      });
+      setIsEditing(false);
+      // 프로필 재로딩
+      const res = await getMyProfile();
+      setProfile(res.data);
+    } catch (err) {
+      alert('프로필 수정에 실패했습니다.');
+    }
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'profileImage' | 'backgroundImage') => {
     const file = e.target.files?.[0];
@@ -39,21 +157,37 @@ export default function MyPageView() {
     }
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-  };
-
-  const EmptyState = ({ message, icon: Icon }: { message: string; icon: React.ComponentType<any> }) => (
-    <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-stone-300 rounded-sm bg-stone-50">
-      <div className="bg-stone-200 p-4 rounded-full mb-4">
-        <Icon className="w-8 h-8 text-stone-400" />
+  if (isInitialLoading) {
+    return (
+      <div className="flex items-center justify-center py-40">
+        <Loader2 className="w-10 h-10 text-red-600 animate-spin" />
       </div>
-      <p className="text-stone-500 font-bold mb-6">{message}</p>
-      <Link href="/" className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-sm font-bold text-sm transition-colors">
-        맛집 찾아보기
-      </Link>
-    </div>
-  );
+    );
+  }
+
+  if (!profile) return null;
+
+  const EmptyState = ({ message, icon: Icon, tab }: { message: string; icon: React.ComponentType<any>; tab: string }) => {
+    const isCommunityTab = tab === 'posts' || tab === 'comments';
+    const targetPath = isCommunityTab ? '/community' : '/shops';
+    const btnText = isCommunityTab ? '커뮤니티 가기' : '맛집 찾아보기';
+
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-stone-300 rounded-xl bg-stone-50/50">
+        <div className="bg-white p-5 rounded-full mb-4 shadow-sm border border-stone-100">
+          <Icon className="w-10 h-10 text-stone-300" />
+        </div>
+        <p className="text-stone-500 font-bold mb-6">{message}</p>
+        <Link 
+          href={targetPath} 
+          className="inline-flex items-center gap-2 bg-stone-900 hover:bg-red-600 text-white px-8 py-3 rounded-full font-bold text-sm transition-all shadow-lg hover:shadow-red-600/20"
+        >
+          {btnText}
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    );
+  };
 
   return (
     <div className="">
@@ -145,7 +279,7 @@ export default function MyPageView() {
               </div>
             ) : (
               <>
-                <h2 className="text-2xl font-black text-stone-900 mb-2">{displayProfile.nickname}</h2>
+                <h2 className="text-2xl font-black text-stone-900 mb-2">{profile.nickname}</h2>
                 <p className="text-stone-500 text-sm max-w-md">
                   {editForm.bio}
                 </p>
@@ -187,11 +321,11 @@ export default function MyPageView() {
       {/* Tabs */}
       <div className="flex border-b border-stone-200 mb-8 overflow-x-auto">
         {[
-          { id: 'photos', label: '내 사진', icon: Camera, count: displayProfile.stats.total_photo_count },
-          { id: 'visits', label: '방문', icon: MapPin, count: displayProfile.stats.visited_restaurant_count },
-          { id: 'bookmarks', label: '북마크', icon: Heart, count: displayProfile.stats.total_bookmark_count },
-          { id: 'posts', label: '내 글', icon: FileText, count: mockUserPosts.data.posts.length },
-          { id: 'comments', label: '내 댓글', icon: MessageSquare, count: mockUserComments.data.comments.length }
+          { id: 'photos', label: '내 사진', icon: Camera, count: profile.stats.total_photo_count },
+          { id: 'visits', label: '방문', icon: MapPin, count: profile.stats.visited_restaurant_count },
+          { id: 'bookmarks', label: '북마크', icon: Heart, count: profile.stats.total_bookmark_count },
+          { id: 'posts', label: '내 글', icon: FileText, count: profile.stats.post_count },
+          { id: 'comments', label: '내 댓글', icon: MessageSquare, count: profile.stats.comment_count }
         ].map(tab => (
           <button
             key={tab.id}
@@ -211,188 +345,179 @@ export default function MyPageView() {
       </div>
 
       {/* Tab Content */}
-      <div className="min-h-[300px]">
-        {/* Photos Tab */}
-        {activeTab === 'photos' && (
-          <div className="grid grid-cols-3 gap-1 md:gap-4">
-            {mockUserPhotos.data.content.length > 0 ? (
-              mockUserPhotos.data.content.map(photo => (
-                <div
-                  key={photo.photo_id}
-                  onClick={() => setSelectedPhoto(photo)}
-                  className="group relative aspect-square bg-stone-100 cursor-pointer overflow-hidden"
-                >
-                  <img src={photo.image_url} alt="User Upload" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                    <p className="text-white text-sm font-bold truncate">{photo.menu_name}</p>
-                    <div className="flex justify-between items-center mt-1 border-t border-white/20 pt-1">
-                      <span className="text-stone-300 text-xs">@ {photo.restaurant_name}</span>
-                      <span className="text-stone-400 text-xs">{new Date(photo.uploaded_at).toLocaleDateString('ko-KR')}</span>
+      <div className="min-h-[300px] pb-20">
+        {items.length > 0 ? (
+          <div className={activeTab === 'photos' ? "grid grid-cols-3 gap-1 md:gap-4" : "flex flex-col gap-3"}>
+            {items.map((item, index) => {
+              const isLastElement = items.length === index + 1;
+              const itemProps = isLastElement ? { ref: lastItemRef } : {};
+              const itemId = item.photo_id || item.restaurant_id || item.post_id || item.id || 'no-id';
+              const uniqueKey = `${activeTab}-${itemId}-${index}`;
+
+              if (activeTab === 'photos') {
+                return (
+                  <div
+                    key={uniqueKey}
+                    {...itemProps}
+                    onClick={() => setSelectedPhoto(item)}
+                    className="group relative aspect-square bg-stone-100 cursor-pointer overflow-hidden rounded-lg"
+                  >
+                    <img src={item.image_url} alt="User Upload" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                      <p className="text-white text-sm font-bold truncate">{item.menuName}</p>
+                      <span className="text-stone-300 text-xs">@ {item.restaurant_name}</span>
                     </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-3">
-                <EmptyState message="아직 업로드한 사진이 없습니다." icon={Camera} />
-              </div>
-            )}
-          </div>
-        )}
+                );
+              }
 
-        {/* Visits Tab */}
-        {activeTab === 'visits' && (
-          <div className="flex flex-col gap-3">
-            {mockUserVisits.data.visits.length > 0 ? (
-              mockUserVisits.data.visits.map((visit, idx) => (
-                <Link
-                  href={`/shop/${visit.restaurant_id}`}
-                  key={idx}
-                  className="flex items-center gap-4 p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
-                >
-                  <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-stone-100">
-                    <img src={visit.restaurant_image_url} alt={visit.restaurant_name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">{visit.restaurant_name}</h4>
-                    <p className="text-sm text-stone-500 flex items-center gap-1 mt-1">
-                      <MapPin className="w-3 h-3" />
-                      {visit.address_simple}
-                    </p>
-                  </div>
-                  <div className="text-right flex-shrink-0 min-w-[100px] flex flex-col items-end justify-center">
-                    <div className="flex items-center gap-1 text-red-600 font-bold">
-                      <Award className="w-4 h-4" />
-                      <span>{visit.visit_count_for_user}회 방문</span>
-                    </div>
-                    <p className="text-xs text-stone-400 mt-1">
-                      {new Date(visit.last_visited_at).toLocaleDateString('ko-KR')}
-                    </p>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <EmptyState message="아직 방문한 곳이 없습니다." icon={MapPin} />
-            )}
-          </div>
-        )}
-
-        {/* Bookmarks Tab */}
-        {activeTab === 'bookmarks' && (
-          <div className="flex flex-col gap-3">
-            {mockUserBookmarks.data.bookmarks.length > 0 ? (
-              mockUserBookmarks.data.bookmarks.map((bm, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-4 p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
-                >
-                  <Link href={`/shop/${bm.restaurant_id}`} className="flex items-center gap-4 flex-1 min-w-0">
+              if (activeTab === 'visits') {
+                const shopId = item.restaurant_id || item.id;
+                return (
+                  <Link
+                    href={`/shop/${shopId}`}
+                    key={uniqueKey}
+                    {...(itemProps as any)}
+                    className="flex items-center gap-4 p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
+                  >
                     <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-stone-100">
-                      <img src={bm.restaurant_image_url} alt={bm.restaurant_name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+                      <img src={item.restaurant_image_url} alt={item.restaurant_name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">{bm.restaurant_name}</h4>
+                      <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">{item.restaurant_name}</h4>
                       <p className="text-sm text-stone-500 flex items-center gap-1 mt-1">
                         <MapPin className="w-3 h-3" />
-                        {bm.address_simple}
+                        {item.simple_address}
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0 min-w-[100px] flex flex-col items-end justify-center">
+                      <div className="flex items-center gap-1 text-red-600 font-bold">
+                        <Award className="w-4 h-4" />
+                        <span>{item.visit_count_for_user}회 방문</span>
+                      </div>
+                      <p className="text-xs text-stone-400 mt-1">
+                        {item.last_visited_at ? new Date(item.last_visited_at).toLocaleDateString('ko-KR') : '-'}
                       </p>
                     </div>
                   </Link>
-                  <div className="flex-shrink-0 flex flex-col items-end justify-center gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        alert(`${bm.restaurant_name} 북마크가 해제되었습니다.`);
-                      }}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-stone-100 hover:bg-red-100 text-stone-600 hover:text-red-600 rounded-full text-sm font-medium transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                      <span>해제</span>
-                    </button>
-                    <p className="text-xs text-stone-400">
-                      {new Date(bm.bookmarked_at).toLocaleDateString('ko-KR')}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <EmptyState message="아직 찜한 가게가 없습니다." icon={Heart} />
-            )}
-          </div>
-        )}
+                );
+              }
 
-        {/* My Posts Tab */}
-        {activeTab === 'posts' && (
-          <div className="flex flex-col gap-3">
-            {mockUserPosts.data.posts.length > 0 ? (
-              mockUserPosts.data.posts.map((post, idx) => (
-                <Link
-                  href={`/community/${post.post_id}`}
-                  key={idx}
-                  className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="px-2 py-1 bg-red-100 text-red-600 text-xs font-bold rounded">
-                          {post.categoryName}
-                        </span>
-                        {post.shopName && (
-                          <span className="text-xs text-stone-500">
-                            @ {post.shopName}
+              if (activeTab === 'bookmarks') {
+                const shopId = item.restaurant_id || item.id;
+                return (
+                  <div
+                    key={uniqueKey}
+                    {...itemProps}
+                    className="flex items-center gap-4 p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
+                  >
+                    <Link href={`/shop/${shopId}`} className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-stone-100">
+                        <img src={item.restaurant_image_url} alt={item.restaurant_name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">{item.restaurant_name}</h4>
+                        <p className="text-sm text-stone-500 flex items-center gap-1 mt-1">
+                          <MapPin className="w-3 h-3" />
+                          {item.address_simple}
+                        </p>
+                      </div>
+                    </Link>
+                    <div className="flex-shrink-0 flex flex-col items-end justify-center gap-1">
+                      <p className="text-xs text-stone-400">
+                        {item.bookmarked_at ? new Date(item.bookmarked_at).toLocaleDateString('ko-KR') : '-'}
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+
+              if (activeTab === 'posts') {
+                return (
+                  <Link
+                    href={`/community/${item.post_id || item.id}`}
+                    key={uniqueKey}
+                    {...(itemProps as any)}
+                    className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="px-2 py-1 bg-red-100 text-red-600 text-xs font-bold rounded">
+                            {item.category}
                           </span>
-                        )}
-                      </div>
-                      <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">
-                        {post.title}
-                      </h4>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-stone-500">
-                        <span>{post.date}</span>
-                        <span className="flex items-center gap-1">
-                          <Heart className="w-4 h-4" /> {post.likes}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MessageSquare className="w-4 h-4" /> {post.comments}
-                        </span>
+                          {item.storeName && (
+                            <span className="text-xs text-stone-500">
+                              @ {item.storeName}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">
+                          {item.title}
+                        </h4>
+                        <p className="text-sm text-stone-500 mt-2 line-clamp-1">{item.contentPreview}</p>
+                        <div className="flex items-center gap-4 mt-3 text-sm text-stone-500">
+                          <span>{item.createdAt ? new Date(item.createdAt).toLocaleDateString('ko-KR') : '-'}</span>
+                          <span className="flex items-center gap-1">
+                            <Heart className="w-4 h-4" /> {item.likeCount}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MessageSquare className="w-4 h-4" /> {item.commentCount}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <EmptyState message="아직 작성한 글이 없습니다." icon={FileText} />
-            )}
+                  </Link>
+                );
+              }
+
+              if (activeTab === 'comments') {
+                return (
+                  <Link
+                    href={`/community/${item.post_id || item.postId}`}
+                    key={uniqueKey}
+                    {...(itemProps as any)}
+                    className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
+                  >
+                    <p className="text-stone-800 font-medium mb-2 line-clamp-2">"{item.content}"</p>
+                    <div className="flex items-center justify-between text-sm text-stone-500">
+                      <div className="flex items-center gap-2">
+                        {item.postTitle && <span className="truncate max-w-[200px] md:max-w-[400px] text-stone-400">원본글: {item.postTitle}</span>}
+                        <span>{item.createdAt ? new Date(item.createdAt).toLocaleDateString('ko-KR') : '-'}</span>
+                      </div>
+                      {item.taggedParentAuthorNickname && (
+                        <span className="text-red-500 font-bold">@ {item.taggedParentAuthorNickname}</span>
+                      )}
+                    </div>
+                  </Link>
+                );
+              }
+
+              return null;
+            })}
           </div>
+        ) : !isLoading && (
+          <EmptyState 
+            tab={activeTab}
+            message={`아직 ${
+              activeTab === 'photos' ? '업로드한 사진이' : 
+              activeTab === 'visits' ? '방문한 곳이' : 
+              activeTab === 'bookmarks' ? '찜한 가게가' : 
+              activeTab === 'posts' ? '작성한 글이' : '작성한 댓글이'
+            } 없습니다.`} 
+            icon={
+              activeTab === 'photos' ? Camera : 
+              activeTab === 'visits' ? MapPin : 
+              activeTab === 'bookmarks' ? Heart : 
+              activeTab === 'posts' ? FileText : MessageSquare
+            } 
+          />
         )}
 
-        {/* My Comments Tab */}
-        {activeTab === 'comments' && (
-          <div className="flex flex-col gap-3">
-            {mockUserComments.data.comments.length > 0 ? (
-              mockUserComments.data.comments.map((comment, idx) => (
-                <Link
-                  href={`/community/${comment.post_id}`}
-                  key={idx}
-                  className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group"
-                >
-                  <p className="text-stone-800 font-medium mb-2 line-clamp-2">"{comment.content}"</p>
-                  <div className="flex items-center justify-between text-sm text-stone-500">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
-                      <span className="truncate max-w-[200px] md:max-w-[400px]">{comment.postTitle}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span>{comment.date}</span>
-                      <span className="flex items-center gap-1">
-                        <Heart className="w-3 h-3" /> {comment.likes}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <EmptyState message="아직 작성한 댓글이 없습니다." icon={MessageSquare} />
-            )}
+        {/* Loading Spinner for Infinite Scroll */}
+        {isLoading && (
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
           </div>
         )}
       </div>
@@ -402,10 +527,10 @@ export default function MyPageView() {
         <PhotoModal
           photo={{
             imageUrl: selectedPhoto.image_url,
-            menuName: selectedPhoto.menu_name || selectedPhoto.restaurant_name,
-            user: displayProfile.nickname,
-            date: new Date(selectedPhoto.uploaded_at).toLocaleDateString(),
-            comment: selectedPhoto.comment
+            menuName: selectedPhoto.menuName || selectedPhoto.restaurant_name,
+            user: profile.nickname,
+            date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-',
+            comment: selectedPhoto.oneLineComment || ''
           }}
           onClose={() => setSelectedPhoto(null)}
           disableUserNavigation={true}
