@@ -67,8 +67,10 @@ export const apiClient = async <T>(
     authHeaders.Authorization = `Bearer ${token}`;
   }
 
-  // 신규 회원이 데이터를 생성/수정하려고 할 때 가드 (GET은 허용)
-  if (typeof window !== "undefined" && options.method && options.method !== "GET") {
+  // 신규 회원이 데이터를 생성/수정하려고 할 때 가드 (GET은 허용, 프로필 업데이트는 예외)
+  const isRegistrationRequest = path.includes("/users/me/profile");
+  
+  if (typeof window !== "undefined" && options.method && options.method !== "GET" && !isRegistrationRequest) {
     const meta = loadOAuthSessionMeta();
     const isNewMember = meta && (meta.newMember === true || String(meta.newMember) === "true");
     if (isNewMember) {
