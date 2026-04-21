@@ -46,13 +46,14 @@ export function parseOAuthCallbackHash(): OAuthCallbackParsed {
       const n = parseInt(memberRaw, 10);
       memberId = Number.isFinite(n) ? n : null;
     }
+    const newMemberVal = p.get('newMember')?.toLowerCase().trim();
     return {
       kind: 'token',
       accessToken,
       tokenType: p.get('tokenType'),
       expiresIn,
       memberId,
-      newMember: p.get('newMember') === 'true',
+      newMember: newMemberVal === 'true' || newMemberVal === '1',
       provider: p.get('provider'),
     };
   }

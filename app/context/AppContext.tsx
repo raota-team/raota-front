@@ -11,7 +11,7 @@ import React, {
 import { usePathname } from "next/navigation";
 import { mockUserProfile } from "../lib/data";
 import type { UserProfile } from "../types";
-import { clearAccessToken, getAccessToken, loadOAuthSessionMeta, saveRaotaOAuthSession } from "@/lib/auth/accessToken";
+import { clearAccessToken, getAccessToken, loadOAuthSessionMeta, saveRaotaOAuthSession, updateNewMemberStatus } from "@/lib/auth/accessToken";
 
 interface AppContextType {
   isLoggedIn: boolean;
@@ -22,6 +22,8 @@ interface AppContextType {
   handleLogout: () => void;
   /** localStorage의 Bearer 토큰 존재 여부로 로그인 상태 동기화 (oauth2/redirect 직후 등) */
   syncAuthFromStorage: () => void;
+  /** 회원가입 완료 처리 (newMember 플래그를 false로 전환) */
+  completeRegistration: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -72,17 +74,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const expiresInRaw = params.get("expiresIn");
     const memberIdRaw = params.get("memberId");
+    const newMemberVal = params.get("newMember")?.toLowerCase().trim();
+    const isNewMember = newMemberVal === "true" || newMemberVal === "1";
+    
     saveRaotaOAuthSession(token, {
       tokenType: params.get("tokenType"),
       expiresIn: expiresInRaw ? Number(expiresInRaw) : null,
       memberId: memberIdRaw ? Number(memberIdRaw) : null,
-      newMember: params.get("newMember") === "true",
+      newMember: isNewMember,
       provider: params.get("provider"),
     });
     syncAuthFromStorage();
-
-    // URL hash에서 민감 정보 제거
-    window.history.replaceState(null, document.title, `${window.location.pathname}${window.location.search}`);
   }, [syncAuthFromStorage]);
 
   useEffect(() => {
@@ -100,6 +102,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCurrentUser(null);
   };
 
+  const completeRegistration = useCallback(() => {
+    updateNewMemberStatus(false);
+    syncAuthFromStorage();
+  }, [syncAuthFromStorage]);
+
   return (
     <AppContext.Provider
       value={{
@@ -110,6 +117,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         handleLogin,
         handleLogout,
         syncAuthFromStorage,
+        completeRegistration,
       }}
     >
       {children}

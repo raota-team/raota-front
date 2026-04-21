@@ -7,11 +7,13 @@ export default function LoginPage() {
   const router = useRouter();
 
   const onKaKaoLogin = () => {
-    window.location.href = 'https://api.raota.net/oauth2/authorization/kakao';
+    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
+    window.location.href = `https://api.raota.net/oauth2/authorization/kakao?redirect_uri=${redirectUri}`;
   };
 
   const onGoogleLogin = () => {
-    window.location.href = 'https://api.raota.net/oauth2/authorization/google';
+    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
+    window.location.href = `https://api.raota.net/oauth2/authorization/google?redirect_uri=${redirectUri}`;
   };
 
   const onPasskeyLogin = () => {

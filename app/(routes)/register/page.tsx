@@ -7,7 +7,7 @@ import { useApp } from '../../context/AppContext';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { handleLogin } = useApp();
+  const { completeRegistration } = useApp();
   const [formData, setFormData] = useState({
     nickname: '',
     bio: '',
@@ -16,8 +16,8 @@ export default function RegisterPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate registration
-    handleLogin();
+    // 실제 백엔드 API 호출이 필요한 부분이지만, 현재는 상태 업데이트만 수행
+    completeRegistration();
     router.push('/');
   };
 

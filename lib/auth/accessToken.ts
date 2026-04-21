@@ -14,6 +14,22 @@ export function getAccessToken(): string | null {
   return localStorage.getItem(STORAGE_KEY);
 }
 
+/** 신규 회원 여부 상태만 업데이트 */
+export function updateNewMemberStatus(isNewMember: boolean) {
+  if (typeof window === 'undefined') return;
+  const meta = loadOAuthSessionMeta();
+  if (meta) {
+    meta.newMember = isNewMember;
+    localStorage.setItem(META_KEY, JSON.stringify(meta));
+  }
+}
+
+/** 토큰만 업데이트 (기존 메타데이터 유지) */
+export function updateAccessToken(token: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEY, token);
+}
+
 /** 토큰만 저장(메타 제거). `/oauth2/redirect` 등 토큰만 넘길 때 사용 */
 export function setAccessToken(token: string) {
   if (typeof window === 'undefined') return;
