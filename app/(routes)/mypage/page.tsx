@@ -405,7 +405,7 @@ export default function MyPageView() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">{item.restaurant_name}</h4>
-                        <p className="text-sm text-stone-500 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3" /> {item.simple_address}</p>
+                        <p className="text-sm text-stone-500 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3" /> {item.address_simple}</p>
                       </div>
                     </Link>
                     <div className="flex-shrink-0 flex flex-col items-end justify-center gap-1">
