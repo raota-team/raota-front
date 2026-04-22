@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Sparkles,
   Utensils,
+  Heart,
 } from "lucide-react";
 import { Shop, UserPhoto, EventMenu, MenuItem } from "../../../types";
 import ProgressBar from "../../../components/ProgressBar";
@@ -22,14 +23,17 @@ import ReportModal from "../../../components/ReportModal";
 import UploadPhotoModal from "../../../components/UploadPhotoModal";
 import MenuDetailModal from "../../../components/MenuDetailModal";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
-import { getTotalVotes } from "@/lib/api/ramen-shops";
+import { getTotalVotes, toggleBookmark } from "@/lib/api/ramen-shops";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ShopDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const shopId = Number(params.id as string);
   const { data, isLoading, isError } = useRamenShopDetail(shopId);
   const [shopDetail, setShopDetail] = useState<Shop | null>(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const [selectedMenu, setSelectedMenu] = useState<MenuItem | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<UserPhoto | null>(null);
@@ -39,6 +43,7 @@ export default function ShopDetailPage() {
   useEffect(() => {
     if (data) {
       setShopDetail(data);
+      setIsBookmarked(data.isBookmarked);
     }
   }, [data]);
 
@@ -64,6 +69,28 @@ export default function ShopDetailPage() {
         menus: nextMenus,
       };
     });
+  };
+
+  const handleBookmarkToggle = async () => {
+    if (!shop) return;
+    try {
+      const newStatus = await toggleBookmark(shop.id);
+      setIsBookmarked(newStatus);
+      
+      // 서버 데이터가 업데이트되었으므로 캐시를 무효화하여 최신 정보를 가져옴
+      queryClient.invalidateQueries({ queryKey: ["ramenShopDetail", shopId] });
+      
+      setShopDetail(prev => prev ? {
+        ...prev,
+        stats: {
+          ...prev.stats,
+          bookmark_count: prev.stats.bookmark_count + (newStatus ? 1 : -1)
+        }
+      } : null);
+    } catch (error) {
+      console.error("Failed to toggle bookmark:", error);
+      alert("로그인이 필요한 기능입니다.");
+    }
   };
 
   if (isLoading && !shop) {
@@ -132,9 +159,22 @@ export default function ShopDetailPage() {
           </div>
 
           <div className="prose prose-stone max-w-none mb-12">
-            <h3 className="text-xl font-bold text-stone-900 mb-4 border-l-4 border-red-600 pl-4">
-              에디터 리뷰
-            </h3>
+            <div className="flex items-center justify-between mb-4 border-l-4 border-red-600 pl-4">
+              <h3 className="text-xl font-bold text-stone-900 m-0">
+                한줄평
+              </h3>
+              <button
+                onClick={handleBookmarkToggle}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all text-sm font-bold shadow-sm ${
+                  isBookmarked
+                    ? "bg-red-50 text-red-600 border border-red-200"
+                    : "bg-stone-50 text-stone-500 border border-stone-200 hover:bg-stone-100"
+                }`}
+              >
+                <Heart className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`} />
+                <span>{isBookmarked ? "찜 취소" : "가게 찜하기"}</span>
+              </button>
+            </div>
             <p className="text-stone-600 text-lg leading-relaxed">
               {shop.description}
             </p>

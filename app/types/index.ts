@@ -61,6 +61,7 @@ export interface Shop {
   stats: ShopStats;
   instagram_url: string;
   catchTableUrl: string;
+  isBookmarked: boolean;
 }
 
 // User Types
