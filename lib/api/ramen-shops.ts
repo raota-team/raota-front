@@ -43,6 +43,7 @@ interface ApiRamenShop {
   instagram_url?: string;
   catchTableUrl?: string;
   stats?: ApiShopStats;
+  is_bookmarked?: boolean;
 }
 
 interface ApiMenuItem {
@@ -202,6 +203,7 @@ const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
     },
     instagram_url: shop.instagram_url || "",
     catchTableUrl: shop.catchTableUrl || "",
+    isBookmarked: Boolean(shop.is_bookmarked),
   };
 };
 
@@ -229,6 +231,15 @@ export const getRamenShopDetail = async (shopId: number): Promise<Shop> => {
     buildApiUrl(`/ramen-shops/${shopId}`)
   );
   return normalizeShop(payload.data, 0);
+};
+
+/** 가게 북마크 토글 (찜하기/해제) */
+export const toggleBookmark = async (shopId: number): Promise<boolean> => {
+  const payload = await apiClient<{ data: boolean }>(
+    buildApiUrl(`/ramen-shops/${shopId}/bookmark`),
+    { method: "POST" }
+  );
+  return payload.data;
 };
 
 export const getTotalVotes = (shop: Shop) =>
