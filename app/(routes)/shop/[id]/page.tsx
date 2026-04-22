@@ -79,6 +79,9 @@ export default function ShopDetailPage() {
       
       // 서버 데이터가 업데이트되었으므로 캐시를 무효화하여 최신 정보를 가져옴
       queryClient.invalidateQueries({ queryKey: ["ramenShopDetail", shopId] });
+      // 마이페이지 북마크 목록 캐시도 무효화
+      queryClient.invalidateQueries({ queryKey: ["userBookmarks"] });
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       
       setShopDetail(prev => prev ? {
         ...prev,
