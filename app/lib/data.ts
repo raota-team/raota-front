@@ -41,7 +41,8 @@ export const initialShops: Shop[] = [
     business_hours: { closed_days: "연중무휴", open_time: "11:30", close_time: "21:30", break_start: "15:30", break_end: "17:00", parking_info: "불가" },
     stats: { visit_count: 100, bookmark_count: 50 },
     instagram_url: "https://instagram.com/menyamusashi",
-    catchTableUrl: "https://catchtable.co.kr/menyamusashi"
+    catchTableUrl: "https://catchtable.co.kr/menyamusashi",
+    isBookmarked: false
   },
   {
     id: 2,
@@ -63,7 +64,8 @@ export const initialShops: Shop[] = [
     business_hours: { closed_days: "매주 월요일", open_time: "11:30", close_time: "21:00", break_start: "15:00", break_end: "17:00", parking_info: "주차 지원" },
     stats: { visit_count: 80, bookmark_count: 40 },
     instagram_url: "https://instagram.com/oreno",
-    catchTableUrl: "https://catchtable.co.kr/oreno"
+    catchTableUrl: "https://catchtable.co.kr/oreno",
+    isBookmarked: false
   },
   {
     id: 3,
@@ -82,7 +84,8 @@ export const initialShops: Shop[] = [
     business_hours: { closed_days: "매주 화요일", open_time: "11:00", close_time: "20:00", break_start: null, break_end: null, parking_info: "공영 주차장" },
     stats: { visit_count: 60, bookmark_count: 30 },
     instagram_url: "https://instagram.com/shoyuboss",
-    catchTableUrl: "https://catchtable.co.kr/shoyuboss"
+    catchTableUrl: "https://catchtable.co.kr/shoyuboss",
+    isBookmarked: false
   }
 ];
 
