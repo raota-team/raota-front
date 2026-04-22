@@ -64,7 +64,7 @@ export interface BookmarkSummary {
   restaurant_id: number;
   restaurant_name: string;
   restaurant_image_url: string;
-  simple_address: string; // address_simple에서 변경
+  address_simple: string; // simple_address에서 address_simple로 변경
   bookmarked_at: string;
 }
 
