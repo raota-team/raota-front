@@ -83,18 +83,24 @@ export const apiClient = async <T>(
     }
   }
 
+  const isFormData = options.body instanceof FormData;
+
   const fetchOptions: RequestInit = {
     method: options.method || "GET",
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...authHeaders,
       ...options.headers,
     },
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: isFormData ? (options.body as FormData) : (options.body ? JSON.stringify(options.body) : undefined),
     cache: options.cache || "no-store",
-    // Refresh Token 쿠키 전송을 위해 필수
     credentials: "include",
   };
+
+  // FormData일 경우 브라우저가 boundary를 자동으로 붙일 수 있도록 Content-Type 헤더 제거
+  if (isFormData && (fetchOptions.headers as any)["Content-Type"]) {
+    delete (fetchOptions.headers as any)["Content-Type"];
+  }
 
   const response = await fetch(buildUrl(fullUrl, options.query), fetchOptions);
 

@@ -15,6 +15,7 @@ interface MenuItem {
 interface UploadedPhotoData {
   menuName: string;
   imageUrl: string;
+  imageName: string;
   comment: string;
 }
 
@@ -23,7 +24,7 @@ interface UploadPhotoModalProps {
   onClose: () => void;
   shopName: string;
   menuList?: MenuItem[];
-  onUpload?: (data: UploadedPhotoData) => void;
+  onUpload?: (data: UploadedPhotoData) => Promise<void>;
 }
 
 const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, shopName, menuList, onUpload }) => {
@@ -67,7 +68,7 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
     setIsSubmitting(true);
 
     try {
-      // 1. 업로드 티켓 발급
+      // 1단계: 티켓 발급
       const extension = selectedFile.name.split('.').pop() || 'jpg';
       const ticket = await getUploadTicket({
         type: 'PROOF',
@@ -75,20 +76,21 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
         contentType: selectedFile.type
       });
 
-      // 2. 저장소(OCI/Cloudinary)에 직접 업로드
+      // 2단계: 저장소 직접 업로드
       const finalImgUrl = await uploadFileToStorage(ticket, selectedFile);
 
-      // 3. 상위 컴포넌트로 전달 (상세 페이지에서 이 URL로 백엔드 API 호출)
+      // 3단계 준비: 상위 컴포넌트로 데이터 전달
       if (onUpload) {
-        onUpload({
+        await onUpload({
           menuName: selectedMenu,
           imageUrl: finalImgUrl,
+          imageName: selectedFile.name, // 원본 파일 이름 추가
           comment,
         });
       }
       onClose();
     } catch (error: any) {
-      console.error('Upload failed:', error);
+      console.error('Upload process failed:', error);
       alert(error.message || '사진 업로드 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
