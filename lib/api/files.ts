@@ -3,12 +3,16 @@ import { apiClient } from "./client";
 export type UploadType = "PROFILE" | "SHOP" | "COMMUNITY" | "PROOF";
 
 /**
- * 스웨거 명세에 따른 티켓 응답 구조 (data 래퍼 없음)
+ * 백엔드 권장 가이드에 따른 티켓 응답 구조
  */
 export interface PresignedUrlResponse {
-  uploadUrl: string;
-  imgUrl: string;
-  uploadParams?: Record<string, any>;
+  status: string;
+  message: string;
+  data: {
+    upload_url: string;    // 스네이크 케이스 준수
+    img_url: string;       // 스네이크 케이스 준수
+    upload_params?: Record<string, any>; // 스네이크 케이스 준수
+  };
 }
 
 /**
@@ -18,30 +22,35 @@ export const getUploadTicket = async (params: {
   type: UploadType;
   extension: string;
   contentType?: string;
-}): Promise<PresignedUrlResponse> => {
-  // 서버가 status/message/data 구조가 아닌 순수 객체를 반환하므로 타입을 직접 지정
-  const res = await apiClient<PresignedUrlResponse>("/files/upload-ticket", {
+}): Promise<PresignedUrlResponse["data"]> => {
+  // 경로에 /api/v1 추가 및 응답 구조 파싱
+  const res = await apiClient<PresignedUrlResponse>("/api/v1/files/upload-ticket", {
     query: params,
   });
-  return res;
+
+  if (res.status !== "SUCCESS") {
+    throw new Error(res.message || "티켓 발급에 실패했습니다.");
+  }
+
+  return res.data;
 };
 
 /**
  * 2. 이미지 업로드 수행 (OCI 또는 Cloudinary)
  */
 export const uploadFileToStorage = async (
-  ticket: PresignedUrlResponse,
+  ticket: PresignedUrlResponse["data"],
   file: File
 ): Promise<string> => {
-  if (!ticket || !ticket.uploadUrl) {
+  if (!ticket || !ticket.upload_url) {
     throw new Error("유효하지 않은 업로드 티켓입니다.");
   }
 
-  const { uploadUrl, uploadParams, imgUrl } = ticket;
+  const { upload_url, upload_params, img_url } = ticket;
 
-  if (!uploadParams || Object.keys(uploadParams).length === 0) {
+  if (!upload_params || Object.keys(upload_params).length === 0) {
     // 케이스 A: OCI (S3 방식) - PUT 요청
-    const response = await fetch(uploadUrl, {
+    const response = await fetch(upload_url, {
       method: "PUT",
       body: file,
       headers: {
@@ -53,12 +62,14 @@ export const uploadFileToStorage = async (
   } else {
     // 케이스 B: Cloudinary - FormData POST 요청
     const formData = new FormData();
-    Object.entries(uploadParams).forEach(([key, value]) => {
+    // 가이드에 따라 모든 파라미터를 FormData에 추가
+    Object.entries(upload_params).forEach(([key, value]) => {
       formData.append(key, String(value));
     });
+    // 마지막에 파일 추가
     formData.append("file", file);
 
-    const response = await fetch(uploadUrl, {
+    const response = await fetch(upload_url, {
       method: "POST",
       body: formData,
     });
@@ -66,5 +77,5 @@ export const uploadFileToStorage = async (
     if (!response.ok) throw new Error("Cloudinary 업로드에 실패했습니다.");
   }
 
-  return imgUrl;
+  return img_url;
 };
