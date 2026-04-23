@@ -264,6 +264,26 @@ export const getVoteStatus = async (shopId: number): Promise<any> => {
   return payload.data;
 };
 
+/** 가게 사진 목록 조회 */
+export const getShopPhotos = async (shopId: number, page = 0, size = 6): Promise<any> => {
+  const res = await apiClient<any>(buildApiUrl(`/ramen-shops/${shopId}/photos`), {
+    query: { page, size, sort: ["uploadedAt,desc"] }
+  });
+  
+  // 앱 내 UserPhoto 타입으로 변환
+  if (res && res.data && res.data.items) {
+    return res.data.items.map((item: any) => ({
+      id: item.photo_id,
+      user: item.uploader_nickname || "익명",
+      imageUrl: item.image_url,
+      menuName: item.menuName || "라멘",
+      date: item.uploaded_at ? new Date(item.uploaded_at).toLocaleDateString('ko-KR') : "-",
+      comment: item.oneLineComment || ""
+    }));
+  }
+  return [];
+};
+
 /** 인증샷 등록 (직접 파일 전송 방식) */
 export const addProofPicture = async (shopId: number, file: File): Promise<any> => {
   const formData = new FormData();
