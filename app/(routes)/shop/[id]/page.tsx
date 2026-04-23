@@ -25,11 +25,13 @@ import MenuDetailModal from "../../../components/MenuDetailModal";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
 import { getTotalVotes, toggleBookmark } from "@/lib/api/ramen-shops";
 import { useQueryClient } from "@tanstack/react-query";
+import { useApp } from "@/app/context/AppContext";
 
 export default function ShopDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { showToast } = useApp();
   const shopId = Number(params.id as string);
   const { data, isLoading, isError } = useRamenShopDetail(shopId);
   const [shopDetail, setShopDetail] = useState<Shop | null>(null);
@@ -95,7 +97,7 @@ export default function ShopDetailPage() {
       } : null);
     } catch (error) {
       console.error("Failed to toggle bookmark:", error);
-      alert("로그인이 필요한 기능입니다.");
+      showToast("로그인이 필요한 기능입니다.", "error");
     }
   };
 

@@ -24,6 +24,9 @@ interface AppContextType {
   syncAuthFromStorage: () => void;
   /** 회원가입 완료 처리 (newMember 플래그를 false로 전환) */
   completeRegistration: () => void;
+  /** 토스트 알림 표시 */
+  showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
+  toast: { message: string, type: 'success' | 'error' | 'info' } | null;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -31,6 +34,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -107,6 +111,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     syncAuthFromStorage();
   }, [syncAuthFromStorage]);
 
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
   return (
     <AppContext.Provider
       value={{
@@ -118,6 +127,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         handleLogout,
         syncAuthFromStorage,
         completeRegistration,
+        showToast,
+        toast,
       }}
     >
       {children}

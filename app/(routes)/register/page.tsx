@@ -8,7 +8,7 @@ import { updateUserProfile } from '@/lib/api/user';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { completeRegistration } = useApp();
+  const { completeRegistration, showToast } = useApp();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     nickname: '',
@@ -36,14 +36,14 @@ export default function RegisterPage() {
       router.push('/');
     } catch (error: any) {
       console.error('Registration failed:', error);
-      alert(error.message || '회원가입 처리 중 문제가 발생했습니다.');
+      showToast(error.message || '회원가입 처리 중 문제가 발생했습니다.', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="animate-fade-in flex flex-col items-center py-12 px-4 min-h-screen bg-stone-50">
+    <div className="animate-fade-in flex flex-col items-center py-12 px-4 min-h-screen bg-transparent">
       <div className="w-full max-w-lg">
         <div className="bg-white border border-stone-200 rounded-2xl shadow-xl overflow-hidden">
           <div className="p-8">
