@@ -33,12 +33,12 @@ export default function HomePage() {
             <span className={`text-white text-sm md:text-base ${doHyeon.className} tracking-wide`}>라멘 매니아들의 성지</span>
           </div>
 
-          <h1 className={`text-5xl md:text-7xl text-white mb-6 leading-tight drop-shadow-lg ${doHyeon.className} tracking-wide`}>
+          <h1 className={`text-5xl md:text-7xl text-white mb-8 leading-tight drop-shadow-lg ${doHyeon.className} tracking-wide`}>
             한 그릇에 담긴 진심,<br />
-            우리들의 라멘 지도 <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-amber-400 to-amber-300 font-sans font-black tracking-tighter">RAOTA</span>
+            우리들의 라멘 지도 <span className="text-red-600 font-sans font-black tracking-tighter drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]">RAOTA</span>
           </h1>
 
-          <p className={`text-lg md:text-2xl text-white/95 mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow ${doHyeon.className} tracking-wide`}>
+          <p className={`text-lg md:text-2xl text-white/95 mb-14 max-w-2xl mx-auto leading-relaxed drop-shadow ${doHyeon.className} tracking-wide`}>
             숨겨진 로컬 맛집부터 웨이팅 필수 핫플까지.<br className="hidden md:block" />
             진짜 라멘 매니아들의 생생하고 솔직한 리뷰를 만나보세요.
           </p>
