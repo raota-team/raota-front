@@ -270,13 +270,13 @@ export const getShopPhotos = async (shopId: number, page = 0, size = 6): Promise
     query: { page, size, sort: ["uploadedAt,desc"] }
   });
   
-  // 앱 내 UserPhoto 타입으로 변환
+  // 제공해주신 스웨거 응답 명세 및 메뉴 네임 연동
   if (res && res.data && res.data.items) {
     return res.data.items.map((item: any) => ({
       id: item.photo_id,
       user: item.uploader_nickname || "익명",
       imageUrl: item.image_url,
-      menuName: item.menuName || "라멘",
+      menuName: item.menuName || item.menu_name || "라멘", // 메뉴 네임 사용
       date: item.uploaded_at ? new Date(item.uploaded_at).toLocaleDateString('ko-KR') : "-",
       comment: item.oneLineComment || ""
     }));
@@ -284,24 +284,19 @@ export const getShopPhotos = async (shopId: number, page = 0, size = 6): Promise
   return [];
 };
 
-/** 인증샷 등록 (직접 파일 전송 방식) */
-export const addProofPicture = async (shopId: number, file: File): Promise<any> => {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  // apiClient는 JSON을 기본으로 하므로, FormData 전송을 위해 fetch를 직접 사용하거나
-  // apiClient에 멀티파트 지원 로직이 있어야 함. 여기서는 fetch를 활용.
-  const token = typeof window !== "undefined" ? localStorage.getItem("raota_access_token") : null;
-  const response = await fetch(buildApiUrl(`/ramen-shops/${shopId}/photos`), {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    body: formData,
-  });
-
-  if (!response.ok) throw new Error("인증샷 등록에 실패했습니다.");
-  return await response.json();
+/** 인증샷 등록 (URL 기반 최종 등록) */
+export const addProofPicture = async (shopId: number, data: {
+  imageUrl: string;
+  menuName: string;
+  description: string;
+}): Promise<any> => {
+  return await apiClient(
+    buildApiUrl(`/ramen-shops/${shopId}/photos`),
+    {
+      method: "POST",
+      body: data
+    }
+  );
 };
 
 export const getTotalVotes = (shop: Shop) =>

@@ -23,7 +23,7 @@ import ReportModal from "../../../components/ReportModal";
 import UploadPhotoModal from "../../../components/UploadPhotoModal";
 import MenuDetailModal from "../../../components/MenuDetailModal";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
-import { getTotalVotes, toggleBookmark, voteMenu, getVoteStatus, getShopPhotos } from "@/lib/api/ramen-shops";
+import { getTotalVotes, toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture } from "@/lib/api/ramen-shops";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
 
@@ -284,9 +284,39 @@ export default function ShopDetailPage() {
       </div>
 
       <MenuDetailModal menu={selectedMenu} onClose={() => setSelectedMenu(null)} />
-      <PhotoModal photo={selectedPhoto} onClose={() => setSelectedPhoto(null)} />
+      <PhotoModal 
+        photo={selectedPhoto ? {
+          imageUrl: selectedPhoto.imageUrl,
+          menuName: selectedPhoto.menuName,
+          user: selectedPhoto.user,
+          date: selectedPhoto.date,
+          comment: selectedPhoto.comment
+        } : null} 
+        onClose={() => setSelectedPhoto(null)} 
+      />
       <ReportModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} shopName={shop.name} />
-      <UploadPhotoModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} shopName={shop.name} menuList={shop.menu_list} onUpload={async () => { showToast("사진이 성공적으로 등록되었습니다!", "success"); await refreshShopData(); }} />
+      <UploadPhotoModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        shopName={shop.name}
+        menuList={shop.menu_list}
+        onUpload={async (uploadData) => {
+          try {
+            // 3단계: 백엔드에 최종 등록 (URL, menuName, description 전송)
+            await addProofPicture(shopId, {
+              imageUrl: uploadData.imageUrl,
+              menuName: uploadData.menuName,
+              description: uploadData.comment
+            });
+            
+            showToast("사진이 성공적으로 등록되었습니다!", "success");
+            await refreshShopData();
+          } catch (error: any) {
+            console.error("Backend registration failed:", error);
+            showToast(error.message || "사진 등록 중 오류가 발생했습니다.", "error");
+          }
+        }}
+      />
     </div>
   );
 }
