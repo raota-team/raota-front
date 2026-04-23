@@ -61,6 +61,9 @@ export const apiClient = async <T>(
   path: string,
   options: ApiClientOptions = {},
 ): Promise<T> => {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  const fullUrl = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
+
   const token = typeof window !== "undefined" ? getAccessToken() : null;
   const authHeaders: Record<string, string> = {};
   if (token) {
@@ -93,7 +96,7 @@ export const apiClient = async <T>(
     credentials: "include",
   };
 
-  const response = await fetch(buildUrl(path, options.query), fetchOptions);
+  const response = await fetch(buildUrl(fullUrl, options.query), fetchOptions);
 
   // 401 Unauthorized 발생 시 토큰 갱신 시도
   if (response.status === 401 && typeof window !== "undefined") {
@@ -113,7 +116,6 @@ export const apiClient = async <T>(
     }
 
     isRefreshing = true;
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
     try {
       const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
@@ -124,7 +126,6 @@ export const apiClient = async <T>(
 
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
-        // 백엔드 응답 구조에 따라 수정 필요 (data.accessToken 혹은 accessToken)
         const newToken = refreshData.data?.accessToken || refreshData.accessToken;
         
         if (newToken) {
