@@ -78,10 +78,13 @@ export default function ShopDetailPage() {
       setIsBookmarked(newStatus);
       
       // 서버 데이터가 업데이트되었으므로 캐시를 무효화하여 최신 정보를 가져옴
-      queryClient.invalidateQueries({ queryKey: ["ramenShopDetail", shopId] });
-      // 마이페이지 북마크 목록 캐시도 무효화
-      queryClient.invalidateQueries({ queryKey: ["userBookmarks"] });
+      queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
+      // 가게 목록 및 마이페이지 관련 캐시도 무효화
+      queryClient.invalidateQueries({ queryKey: ["ramen-shops"] });
       queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+      // 마이페이지 북마크 목록 등은 아직 전용 훅이 없을 수 있지만 관례에 따라 무효화
+      queryClient.invalidateQueries({ queryKey: ["user-bookmarks"] });
+      queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
       
       setShopDetail(prev => prev ? {
         ...prev,
