@@ -229,11 +229,12 @@ export const getRamenShops = async (
 };
 
 export const getRamenShopDetail = async (shopId: number, memberId?: number): Promise<Shop> => {
+  const query: Record<string, any> = {};
+  if (memberId) query.memberId = memberId;
+
   const payload = await apiClient<RamenShopDetailResponse>(
     `/ramen-shops/${shopId}`,
-    {
-      query: memberId ? { memberId } : { memberId: 0 } // 명세상 필수이므로 없으면 0 전송
-    }
+    { query }
   );
   return normalizeShop(payload.data, 0);
 };
