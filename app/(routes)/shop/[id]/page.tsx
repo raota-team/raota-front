@@ -59,6 +59,13 @@ export default function ShopDetailPage() {
   const bestMenu = sortedMenus[0];
 
   const handleVote = (menuIndex: number) => {
+    if (!isLoggedIn) {
+      showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => {
+        router.push("/login");
+      });
+      return;
+    }
+
     setShopDetail((prev) => {
       if (!prev) return prev;
       const nextMenus = [...prev.menus];
@@ -329,7 +336,15 @@ export default function ShopDetailPage() {
                   </div>
                 ))}
                 <div
-                  onClick={() => setIsUploadModalOpen(true)}
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => {
+                        router.push("/login");
+                      });
+                      return;
+                    }
+                    setIsUploadModalOpen(true);
+                  }}
                   className="aspect-square bg-stone-50 border-2 border-dashed border-stone-300 flex flex-col items-center justify-center text-stone-400 hover:text-red-500 hover:border-red-400 hover:bg-red-50/50 transition-all cursor-pointer group rounded-sm"
                 >
                   <div className="p-3 rounded-full bg-stone-200 group-hover:bg-red-100 mb-3 transition-colors">
@@ -349,7 +364,15 @@ export default function ShopDetailPage() {
                   아직 등록된 사진이 없습니다
                 </p>
                 <button
-                  onClick={() => setIsUploadModalOpen(true)}
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => {
+                        router.push("/login");
+                      });
+                      return;
+                    }
+                    setIsUploadModalOpen(true);
+                  }}
                   className="inline-flex items-center px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors shadow-md hover:shadow-lg"
                 >
                   <Camera className="w-4 h-4 mr-2" />
@@ -471,7 +494,15 @@ export default function ShopDetailPage() {
             {/* Report Button */}
             <div className="text-center">
               <button
-                onClick={() => setIsReportModalOpen(true)}
+                onClick={() => {
+                  if (!isLoggedIn) {
+                    showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => {
+                      router.push("/login");
+                    });
+                    return;
+                  }
+                  setIsReportModalOpen(true);
+                }}
                 className="text-xs text-stone-400 hover:text-stone-600 underline transition-colors"
               >
                 혹시 정보가 다른가요? 제보하기
