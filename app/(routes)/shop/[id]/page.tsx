@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Camera,
   Star,
@@ -226,12 +227,24 @@ export default function ShopDetailPage() {
                 <div key={photo.id} onClick={() => setSelectedPhoto(photo)} className="group relative aspect-square bg-stone-100 overflow-hidden cursor-pointer rounded-sm border border-stone-200 hover:border-red-400 transition-colors shadow-sm">
                   <img src={photo.imageUrl} alt={photo.menuName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                    <p className="text-white text-xs font-bold truncate">{photo.menuName}</p>
+                    <p className="text-white text-xs font-bold truncate">
+                      {photo.menuName}
+                    </p>
                     <div className="flex justify-between items-center mt-1 border-t border-white/20 pt-1">
-                      <span className="text-stone-300 text-[10px] font-mono">@{photo.user}</span>
-                      <span className="text-stone-400 text-[10px] font-mono">{photo.date}</span>
-                    </div>
+                        <Link
+                          href={`/user/${photo.uploaderId || photo.user}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-stone-300 text-[10px] font-mono hover:text-white hover:underline transition-all"
+                        >
+                          @{photo.user}
+                        </Link>
+                        <span className="text-stone-400 text-[10px] font-mono">
+                          {photo.date}
+                        </span>
+                      </div>
+
                   </div>
+
                 </div>
               ))}
               <div onClick={() => { if (!isLoggedIn) { showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login")); return; } setIsUploadModalOpen(true); }} className="aspect-square bg-stone-50 border-2 border-dashed border-stone-300 flex flex-col items-center justify-center text-stone-400 hover:text-red-500 hover:border-red-400 hover:bg-red-50/50 transition-all cursor-pointer group rounded-sm min-h-[160px]">
@@ -289,10 +302,12 @@ export default function ShopDetailPage() {
           imageUrl: selectedPhoto.imageUrl,
           menuName: selectedPhoto.menuName,
           user: selectedPhoto.user,
+          userId: selectedPhoto.uploaderId, // 유저 번호 추가
           date: selectedPhoto.date,
           comment: selectedPhoto.comment
         } : null} 
         onClose={() => setSelectedPhoto(null)} 
+        disableNavigation={false}
       />
       <ReportModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} shopName={shop.name} />
       <UploadPhotoModal

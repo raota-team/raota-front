@@ -23,6 +23,7 @@ export interface EventMenu {
 
 export interface UserPhoto {
   id: number;
+  uploaderId?: number; // 유저 번호 추가
   user: string;
   imageUrl: string;
   menuName: string;

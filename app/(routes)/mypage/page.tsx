@@ -366,15 +366,31 @@ export default function MyPageView() {
 
               if (activeTab === 'photos') {
                 return (
-                  <div key={uniqueKey} {...itemProps} onClick={() => setSelectedPhoto(item)} className="group relative aspect-square bg-stone-100 cursor-pointer overflow-hidden rounded-lg">
-                    <img src={item.image_url} alt="User Upload" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                      <p className="text-white text-sm font-bold truncate">{item.menuName}</p>
-                      <span className="text-stone-300 text-xs">@ {item.restaurant_name}</span>
+                  <div
+                    key={uniqueKey}
+                    {...itemProps}
+                    className="group relative aspect-square bg-stone-100 overflow-hidden rounded-lg shadow-sm border border-stone-200"
+                  >
+                    <img 
+                      src={item.image_url} 
+                      alt={item.menuName} 
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03] cursor-pointer" 
+                      onClick={() => setSelectedPhoto(item)}
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pointer-events-none">
+                      <p className="text-white text-xs font-bold truncate">{item.menuName}</p>
+                      <Link 
+                        href={`/shop/${item.restaurant_id}`}
+                        className="text-stone-300 text-[10px] hover:text-white hover:underline transition-all pointer-events-auto flex items-center gap-1 mt-0.5"
+                      >
+                        <MapPin className="w-2.5 h-2.5" />
+                        {item.restaurant_name}
+                      </Link>
                     </div>
                   </div>
                 );
               }
+
 
               if (activeTab === 'visits') {
                 const shopId = item.restaurant_id || item.id;
@@ -463,8 +479,20 @@ export default function MyPageView() {
       </div>
 
       {selectedPhoto && (
-        <PhotoModal photo={{ imageUrl: selectedPhoto.image_url, menuName: selectedPhoto.menuName || selectedPhoto.restaurant_name, user: profile.nickname, date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-', comment: selectedPhoto.oneLineComment || '' }} onClose={() => setSelectedPhoto(null)} disableUserNavigation={true} />
+        <PhotoModal
+          photo={{
+            imageUrl: selectedPhoto.image_url,
+            menuName: selectedPhoto.menuName || selectedPhoto.restaurant_name,
+            restaurantName: selectedPhoto.restaurant_name,
+            restaurantId: selectedPhoto.restaurant_id,
+            date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-',
+            comment: selectedPhoto.description || ''
+          }}
+          onClose={() => setSelectedPhoto(null)}
+          disableNavigation={false}
+        />
       )}
+
     </div>
   );
 }
