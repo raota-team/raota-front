@@ -31,7 +31,7 @@ export default function ShopDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { showToast } = useApp();
+  const { showToast, showConfirm, isLoggedIn } = useApp();
   const shopId = Number(params.id as string);
   const { data, isLoading, isError } = useRamenShopDetail(shopId);
   const [shopDetail, setShopDetail] = useState<Shop | null>(null);
@@ -74,6 +74,13 @@ export default function ShopDetailPage() {
   };
 
   const handleBookmarkToggle = async () => {
+    if (!isLoggedIn) {
+      showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => {
+        router.push("/login");
+      });
+      return;
+    }
+
     if (!shop) return;
     try {
       const newStatus = await toggleBookmark(shop.id);
@@ -97,7 +104,7 @@ export default function ShopDetailPage() {
       } : null);
     } catch (error) {
       console.error("Failed to toggle bookmark:", error);
-      showToast("로그인이 필요한 기능입니다.", "error");
+      showToast("북마크 처리 중 오류가 발생했습니다.", "error");
     }
   };
 

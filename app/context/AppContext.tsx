@@ -27,6 +27,10 @@ interface AppContextType {
   /** 토스트 알림 표시 */
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   toast: { message: string, type: 'success' | 'error' | 'info' } | null;
+  /** 확인 모달 표시 */
+  showConfirm: (message: string, onConfirm: () => void) => void;
+  confirm: { message: string, onConfirm: () => void } | null;
+  setConfirm: React.Dispatch<React.SetStateAction<{ message: string, onConfirm: () => void } | null>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -35,6 +39,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
+  const [confirm, setConfirm] = useState<{ message: string, onConfirm: () => void } | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -113,7 +118,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 2000);
+  }, []);
+
+  const showConfirm = useCallback((message: string, onConfirm: () => void) => {
+    setConfirm({ message, onConfirm });
   }, []);
 
   return (
@@ -129,6 +138,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         completeRegistration,
         showToast,
         toast,
+        showConfirm,
+        confirm,
+        setConfirm,
       }}
     >
       {children}
