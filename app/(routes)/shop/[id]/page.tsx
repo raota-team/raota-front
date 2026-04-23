@@ -494,15 +494,7 @@ export default function ShopDetailPage() {
             {/* Report Button */}
             <div className="text-center">
               <button
-                onClick={() => {
-                  if (!isLoggedIn) {
-                    showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => {
-                      router.push("/login");
-                    });
-                    return;
-                  }
-                  setIsReportModalOpen(true);
-                }}
+                onClick={() => setIsReportModalOpen(true)}
                 className="text-xs text-stone-400 hover:text-stone-600 underline transition-colors"
               >
                 혹시 정보가 다른가요? 제보하기
