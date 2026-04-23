@@ -2,9 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { MessageCircle, Fingerprint } from 'lucide-react';
+import { useApp } from '@/app/context/AppContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { showToast } = useApp();
 
   const onKaKaoLogin = () => {
     const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
@@ -17,8 +19,7 @@ export default function LoginPage() {
   };
 
   const onPasskeyLogin = () => {
-    // Redirect to register page since passkey is not yet integrated
-    router.push('/register');
+    showToast('패스키 로그인은 지원 예정입니다.', 'info');
   };
 
   return (
