@@ -251,11 +251,6 @@ export default function MyPageView() {
                 </label>
               )}
             </div>
-            {!isEditing && (
-              <div className="absolute bottom-2 right-2 bg-red-600 text-white p-1.5 rounded-full border-2 border-white shadow-sm">
-                <Award className="w-4 h-4" />
-              </div>
-            )}
           </div>
 
           <div className="flex-1 w-full md:w-auto text-center md:text-left">
