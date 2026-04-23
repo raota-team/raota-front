@@ -150,7 +150,6 @@ export default function ShopDetailPage() {
             <img src={shop.imageUrl} alt={shop.name} className="w-full h-full object-cover transition-all duration-700" />
             <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-8">
-              <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold tracking-widest mb-3 uppercase">EDITOR'S PICK</span>
               <h1 className="text-3xl lg:text-5xl font-black text-white mb-2 leading-tight truncate">{shop.name}</h1>
               <div className="flex items-center text-stone-200 space-x-4 text-sm font-mono">
                 <span className="flex items-center"><MapPin className="w-4 h-4 mr-1" /> {shop.location}</span>
