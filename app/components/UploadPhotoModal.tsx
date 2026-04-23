@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Upload, Check, ChevronDown, Camera } from 'lucide-react';
+import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
 
 interface MenuItem {
   id?: number;
@@ -28,6 +29,7 @@ interface UploadPhotoModalProps {
 const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, shopName, menuList, onUpload }) => {
   const [selectedMenu, setSelectedMenu] = useState('');
   const [comment, setComment] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -35,6 +37,7 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
     if (isOpen) {
       setSelectedMenu('');
       setComment('');
+      setSelectedFile(null);
       setPreviewUrl(null);
       setIsSubmitting(false);
     }
@@ -45,6 +48,7 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewUrl(reader.result as string);
@@ -53,26 +57,42 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMenu || !previewUrl) {
+    if (!selectedMenu || !selectedFile) {
       alert('메뉴를 선택하고 사진을 업로드해주세요.');
       return;
     }
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      // 1. 업로드 티켓 발급
+      const extension = selectedFile.name.split('.').pop() || 'jpg';
+      const ticket = await getUploadTicket({
+        type: 'PROOF',
+        extension,
+        contentType: selectedFile.type
+      });
+
+      // 2. 저장소(OCI/Cloudinary)에 직접 업로드
+      const finalImgUrl = await uploadFileToStorage(ticket, selectedFile);
+
+      // 3. 상위 컴포넌트로 전달 (상세 페이지에서 이 URL로 백엔드 API 호출)
       if (onUpload) {
         onUpload({
           menuName: selectedMenu,
-          imageUrl: previewUrl,
+          imageUrl: finalImgUrl,
           comment,
         });
       }
-      setIsSubmitting(false);
       onClose();
-    }, 500);
+    } catch (error: any) {
+      console.error('Upload failed:', error);
+      alert(error.message || '사진 업로드 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -159,8 +179,8 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
 
           <button
             type="submit"
-            disabled={isSubmitting || !selectedMenu || !previewUrl}
-            className={`w-full py-4 rounded-lg font-bold text-white shadow-lg flex items-center justify-center space-x-2 transition-all transform active:scale-[0.98] ${isSubmitting || !selectedMenu || !previewUrl
+            disabled={isSubmitting || !selectedMenu || !selectedFile}
+            className={`w-full py-4 rounded-lg font-bold text-white shadow-lg flex items-center justify-center space-x-2 transition-all transform active:scale-[0.98] ${isSubmitting || !selectedMenu || !selectedFile
                 ? 'bg-stone-300 cursor-not-allowed shadow-none'
                 : 'bg-red-600 hover:bg-red-700 hover:shadow-red-200 hover:shadow-xl'
               }`}
