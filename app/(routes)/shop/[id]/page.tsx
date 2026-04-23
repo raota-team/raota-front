@@ -23,7 +23,7 @@ import ReportModal from "../../../components/ReportModal";
 import UploadPhotoModal from "../../../components/UploadPhotoModal";
 import MenuDetailModal from "../../../components/MenuDetailModal";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
-import { getTotalVotes, toggleBookmark } from "@/lib/api/ramen-shops";
+import { getTotalVotes, toggleBookmark, voteMenu, addProofPicture, getVoteStatus } from "@/lib/api/ramen-shops";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
 
@@ -34,8 +34,10 @@ export default function ShopDetailPage() {
   const { showToast, showConfirm, isLoggedIn } = useApp();
   const shopId = Number(params.id as string);
   const { data, isLoading, isError } = useRamenShopDetail(shopId);
+  
   const [shopDetail, setShopDetail] = useState<Shop | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [voteData, setVoteStatus] = useState<any>(null);
 
   const [selectedMenu, setSelectedMenu] = useState<MenuItem | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<UserPhoto | null>(null);
@@ -46,19 +48,31 @@ export default function ShopDetailPage() {
     if (data) {
       setShopDetail(data);
       setIsBookmarked(data.isBookmarked);
+      // 투표 정보 별도 로드
+      getVoteStatus(shopId).then(setVoteStatus).catch(console.error);
     }
-  }, [data]);
+  }, [data, shopId]);
 
   const shop = shopDetail;
-  const totalVotes = useMemo(() => (shop ? getTotalVotes(shop) : 0), [shop]);
-  const sortedMenus = shop
-    ? [...shop.menus]
-        .map((menu, index) => ({ ...menu, originalIndex: index }))
-        .sort((a, b) => b.votes - a.votes)
-    : [];
+  
+  // 투표 현황 데이터 우선 사용
+  const totalVotes = voteData?.total_votes || 0;
+  const sortedMenus = useMemo(() => {
+    if (voteData?.vote_results && voteData.vote_results.length > 0) {
+      return voteData.vote_results.map((r: any) => ({
+        id: r.menu_id,
+        name: r.menu_name,
+        votes: r.vote_count,
+        percentage: r.percentage
+      })).sort((a: any, b: any) => b.votes - a.votes);
+    }
+    // 투표 데이터가 없으면 가게의 기본 메뉴 리스트 표시
+    return shop?.menus || [];
+  }, [voteData, shop]);
+  
   const bestMenu = sortedMenus[0];
 
-  const handleVote = (menuIndex: number) => {
+  const handleVote = async (menu: any) => {
     if (!isLoggedIn) {
       showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => {
         router.push("/login");
@@ -66,18 +80,23 @@ export default function ShopDetailPage() {
       return;
     }
 
-    setShopDetail((prev) => {
-      if (!prev) return prev;
-      const nextMenus = [...prev.menus];
-      nextMenus[menuIndex] = {
-        ...nextMenus[menuIndex],
-        votes: nextMenus[menuIndex].votes + 1,
-      };
-      return {
-        ...prev,
-        menus: nextMenus,
-      };
-    });
+    if (!menu?.id || !shop) return;
+
+    try {
+      await voteMenu(shop.id, menu.id);
+      showToast(`${menu.name}에 투표했습니다!`, "success");
+      
+      // 즉시 데이터 갱신 요청
+      await queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
+      // 투표 데이터 수동 갱신
+      const updatedVotes = await getVoteStatus(shopId);
+      setVoteStatus(updatedVotes);
+      
+    } catch (error: any) {
+      // 이미 투표했거나 다른 에러가 발생한 경우 토스트로 표시
+      const errorMessage = error.payload?.message || error.message || "이미 투표하셨습니다.";
+      showToast(errorMessage, "info");
+    }
   };
 
   const handleBookmarkToggle = async () => {
@@ -95,10 +114,8 @@ export default function ShopDetailPage() {
       
       // 서버 데이터가 업데이트되었으므로 캐시를 무효화하여 최신 정보를 가져옴
       queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
-      // 가게 목록 및 마이페이지 관련 캐시도 무효화
       queryClient.invalidateQueries({ queryKey: ["ramen-shops"] });
       queryClient.invalidateQueries({ queryKey: ["userProfile"] });
-      // 마이페이지 북마크 목록 등은 아직 전용 훅이 없을 수 있지만 관례에 따라 무효화
       queryClient.invalidateQueries({ queryKey: ["user-bookmarks"] });
       queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
       
@@ -401,7 +418,7 @@ export default function ShopDetailPage() {
                   <div key={menu.name} className="relative">
                     <div className="flex justify-between items-center mb-2">
                       <div className="flex items-center">
-                        {menu.name === bestMenu.name && (
+                        {menu.name === bestMenu?.name && (
                           <span className="mr-2 text-yellow-500">
                             <Star className="w-3 h-3" fill="currentColor" />
                           </span>
@@ -411,7 +428,7 @@ export default function ShopDetailPage() {
                         </span>
                       </div>
                       <button
-                        onClick={() => handleVote(menu.originalIndex)}
+                        onClick={() => handleVote(menu)}
                         className="text-xs bg-stone-100 hover:bg-red-600 text-stone-600 hover:text-white px-3 py-1 transition-colors uppercase font-bold tracking-wider"
                       >
                         투표
@@ -420,7 +437,7 @@ export default function ShopDetailPage() {
                     <ProgressBar
                       votes={menu.votes}
                       totalVotes={totalVotes}
-                      isSelected={menu.name === bestMenu.name}
+                      isSelected={menu.name === bestMenu?.name}
                     />
                     <div className="text-right text-xs font-mono text-stone-400">
                       {menu.votes} 표
@@ -525,22 +542,9 @@ export default function ShopDetailPage() {
         onClose={() => setIsUploadModalOpen(false)}
         shopName={shop.name}
         menuList={shop.menu_list}
-        onUpload={(data) => {
-          const newPhoto: UserPhoto = {
-            id: Date.now(),
-            user: "게스트",
-            imageUrl: data.imageUrl,
-            menuName: data.menuName,
-            date: new Date().toISOString().slice(0, 10),
-            comment: data.comment,
-          };
-          setShopDetail((prev) => {
-            if (!prev) return prev;
-            return {
-              ...prev,
-              userPhotos: [...(prev.userPhotos || []), newPhoto],
-            };
-          });
+        onUpload={async () => {
+          showToast("사진이 성공적으로 등록되었습니다!", "success");
+          queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
         }}
       />
     </div>

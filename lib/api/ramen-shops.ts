@@ -154,17 +154,18 @@ const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
   const votes = toNumber(shop.votes, 0);
   const menusFromApi = Array.isArray(shop.menus)
     ? shop.menus.map((menu, menuIndex) => ({
+        id: (menu as any)?.id || (menuList[menuIndex]?.id), // ID 정보 추가
         name: menu?.name || `메뉴 ${menuIndex + 1}`,
         votes: toNumber(menu?.votes, 0),
       }))
     : [];
-  const fallbackMenus =
-    menuList.length > 0
-      ? menuList.slice(0, 3).map((menu) => ({
-          name: menu.name,
-          votes: 0,
-        }))
-      : [{ name: "대표 메뉴", votes }];
+  
+  // 서버에서 투표 목록을 따로 주지 않으면 전체 메뉴 리스트를 투표 항목으로 사용
+  const fallbackMenus = menuList.map((menu) => ({
+    id: menu.id,
+    name: menu.name,
+    votes: 0,
+  }));
 
   return {
     id: toNumber(shop.id ?? shop.restaurant_id, index + 1),
@@ -185,7 +186,8 @@ const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
       shop.image_url ||
       shop.restaurant_image_url ||
       FALLBACK_IMAGE_URL,
-    menus: menusFromApi.length > 0 ? menusFromApi : fallbackMenus,
+    // menus에 ID 정보를 포함시킴
+    menus: (menusFromApi.length > 0 ? menusFromApi : fallbackMenus) as any,
     menu_list: menuList,
     event_menus: Array.isArray(shop.event_menus) ? shop.event_menus : [],
     userPhotos: Array.isArray(shop.userPhotos) ? shop.userPhotos : [],
@@ -240,6 +242,42 @@ export const toggleBookmark = async (shopId: number): Promise<boolean> => {
     { method: "POST" }
   );
   return payload.data;
+};
+
+/** 메뉴 투표 */
+export const voteMenu = async (shopId: number, menuId: number): Promise<any> => {
+  return await apiClient(
+    buildApiUrl(`/ramen-shops/${shopId}/votes/menus/${menuId}`),
+    { method: "POST" }
+  );
+};
+
+/** 투표 현황 조회 */
+export const getVoteStatus = async (shopId: number): Promise<any> => {
+  const payload = await apiClient<{ data: any }>(
+    buildApiUrl(`/ramen-shops/${shopId}/votes`)
+  );
+  return payload.data;
+};
+
+/** 인증샷 등록 (직접 파일 전송 방식) */
+export const addProofPicture = async (shopId: number, file: File): Promise<any> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  // apiClient는 JSON을 기본으로 하므로, FormData 전송을 위해 fetch를 직접 사용하거나
+  // apiClient에 멀티파트 지원 로직이 있어야 함. 여기서는 fetch를 활용.
+  const token = typeof window !== "undefined" ? localStorage.getItem("raota_access_token") : null;
+  const response = await fetch(buildApiUrl(`/ramen-shops/${shopId}/photos`), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) throw new Error("인증샷 등록에 실패했습니다.");
+  return await response.json();
 };
 
 export const getTotalVotes = (shop: Shop) =>
