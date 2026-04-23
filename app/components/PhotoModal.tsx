@@ -2,12 +2,15 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, User, Calendar } from 'lucide-react';
+import { X, User, MapPin, Calendar } from 'lucide-react';
 
 interface Photo {
   imageUrl: string;
   menuName: string;
-  user: string;
+  user?: string;           // 업로더 닉네임
+  userId?: number;         // 업로더 ID (이동용)
+  restaurantName?: string; // 식당 이름
+  restaurantId?: number;   // 식당 이동 ID
   date: string;
   comment?: string;
 }
@@ -15,10 +18,10 @@ interface Photo {
 interface PhotoModalProps {
   photo: Photo | null;
   onClose: () => void;
-  disableUserNavigation?: boolean;
+  disableNavigation?: boolean;
 }
 
-const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableUserNavigation = false }) => {
+const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableNavigation = false }) => {
   const router = useRouter();
 
   useEffect(() => {
@@ -31,10 +34,16 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableUserNavi
 
   if (!photo) return null;
 
-  const handleUserClick = (e: React.MouseEvent) => {
+  const handleInfoClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!disableUserNavigation) {
-      onClose();
+    if (disableNavigation) return;
+
+    onClose();
+    if (photo.restaurantId) {
+      router.push(`/shop/${photo.restaurantId}`);
+    } else if (photo.userId) {
+      router.push(`/user/${photo.userId}`);
+    } else if (photo.user) {
       router.push(`/user/${photo.user}`);
     }
   };
@@ -70,25 +79,30 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableUserNavi
             <div className="flex flex-col items-start space-y-2">
               <div className="flex items-center space-x-3 mb-1">
                 <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">{photo.menuName}</span>
-                {disableUserNavigation ? (
-                  <span className="text-stone-300 text-sm font-mono flex items-center">
-                    <User className="w-3 h-3 mr-1" /> @{photo.user}
-                  </span>
-                ) : (
-                  <button
-                    onClick={handleUserClick}
-                    className="text-stone-300 text-sm font-mono flex items-center hover:text-white hover:underline transition-all"
-                  >
-                    <User className="w-3 h-3 mr-1" /> @{photo.user}
-                  </button>
-                )}
+                
+                <button
+                  onClick={handleInfoClick}
+                  disabled={disableNavigation}
+                  className={`text-stone-300 text-sm font-mono flex items-center transition-all ${!disableNavigation ? 'hover:text-white hover:underline' : ''}`}
+                >
+                  {photo.restaurantName ? (
+                    <>
+                      <MapPin className="w-3.5 h-3.5 mr-1" /> {photo.restaurantName}
+                    </>
+                  ) : (
+                    <>
+                      <User className="w-3.5 h-3.5 mr-1" /> @{photo.user}
+                    </>
+                  )}
+                </button>
+                
                 <span className="text-stone-400 text-xs font-mono flex items-center">
                   <Calendar className="w-3 h-3 mr-1" /> {photo.date}
                 </span>
               </div>
 
               <p className="text-lg md:text-xl font-medium leading-relaxed text-stone-100">
-                "{photo.comment || "No comment provided."}"
+                "{photo.comment || "한줄평이 없습니다."}"
               </p>
             </div>
           </div>

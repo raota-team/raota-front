@@ -90,7 +90,7 @@ export interface MyPhotoSummary {
   restaurant_id: number;
   restaurant_name: string;
   uploaded_at: string;
-  oneLineComment?: string;
+  description?: string; // oneLineComment에서 description으로 변경
 }
 
 // 내 댓글

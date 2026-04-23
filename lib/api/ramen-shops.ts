@@ -274,6 +274,7 @@ export const getShopPhotos = async (shopId: number, page = 0, size = 6): Promise
   if (res && res.data && res.data.items) {
     return res.data.items.map((item: any) => ({
       id: item.photo_id,
+      uploaderId: item.uploaderId,          // 유저 ID 추가
       user: item.uploader_nickname || "익명",
       imageUrl: item.image_url,
       menuName: item.menuName || item.menu_name || "라멘", // 메뉴 네임 사용
