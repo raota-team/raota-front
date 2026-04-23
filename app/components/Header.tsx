@@ -47,11 +47,11 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
 
   const isTransparent = isHomePage && !scrolled && !isMobile;
   const isFloating = isHomePage && scrolled;
-  const navTextColor = isTransparent ? 'text-white/90 hover:text-white font-extrabold' : 'text-stone-500 hover:text-red-500 font-extrabold';
-  const activeTextColor = isTransparent ? 'text-white font-black drop-shadow-md' : 'text-red-600 font-black';
-  const logoTextColor = isTransparent ? 'text-white drop-shadow-md' : 'text-stone-900';
+  const navTextColor = isTransparent ? 'text-white/95 hover:text-white font-extrabold drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]' : 'text-stone-500 hover:text-red-500 font-extrabold';
+  const activeTextColor = isTransparent ? 'text-white font-black drop-shadow-[0_2px_2px_rgba(0,0,0,1)] scale-105' : 'text-red-600 font-black';
+  const logoTextColor = isTransparent ? 'text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]' : 'text-stone-900';
   const loginBtnClass = isTransparent 
-    ? 'bg-white text-stone-900 hover:bg-stone-100' 
+    ? 'bg-white text-stone-900 hover:bg-stone-100 shadow-xl' 
     : 'bg-stone-900 text-white hover:bg-red-600';
 
   return (
