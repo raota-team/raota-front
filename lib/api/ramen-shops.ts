@@ -228,9 +228,12 @@ export const getRamenShops = async (
   };
 };
 
-export const getRamenShopDetail = async (shopId: number): Promise<Shop> => {
+export const getRamenShopDetail = async (shopId: number, memberId?: number): Promise<Shop> => {
   const payload = await apiClient<RamenShopDetailResponse>(
-    buildApiUrl(`/ramen-shops/${shopId}`)
+    `/ramen-shops/${shopId}`,
+    {
+      query: memberId ? { memberId } : { memberId: 0 } // 명세상 필수이므로 없으면 0 전송
+    }
   );
   return normalizeShop(payload.data, 0);
 };
