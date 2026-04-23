@@ -23,8 +23,8 @@ export const getUploadTicket = async (params: {
   extension: string;
   contentType?: string;
 }): Promise<PresignedUrlResponse["data"]> => {
-  // 경로에 /api/v1 추가 및 응답 구조 파싱
-  const res = await apiClient<PresignedUrlResponse>("/api/v1/files/upload-ticket", {
+  // 스웨거 명세대로 경로 수정 (api/v1 제거)
+  const res = await apiClient<PresignedUrlResponse>("/files/upload-ticket", {
     query: params,
   });
 
