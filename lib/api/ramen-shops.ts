@@ -263,6 +263,7 @@ export const getVoteStatus = async (shopId: number): Promise<any> => {
   const payload = await apiClient<{ data: any }>(
     buildApiUrl(`/ramen-shops/${shopId}/votes`)
   );
+  // 응답 데이터에 voted 필드가 포함되어 내려옴
   return payload.data;
 };
 
