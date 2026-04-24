@@ -291,7 +291,14 @@ export default function ShopDetailPage() {
               </div>
             </div>
 
-            <div className="text-center"><button onClick={() => setIsReportModalOpen(true)} className="text-xs text-stone-400 hover:text-stone-600 underline transition-colors underline-offset-4">혹시 정보가 다른가요? 제보하기</button></div>
+            <div className="text-center">
+              <button
+                onClick={() => setIsReportModalOpen(true)}
+                className="text-xs text-stone-400 hover:text-stone-600 underline transition-colors underline-offset-4"
+              >
+                정보 수정 및 새로운 이벤트 제보하기
+              </button>
+            </div>
           </div>
         </div>
       </div>
