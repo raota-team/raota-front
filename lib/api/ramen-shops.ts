@@ -302,5 +302,13 @@ export const addProofPicture = async (shopId: number, data: {
   );
 };
 
+/** 인증샷 삭제 */
+export const deleteProofPicture = async (shopId: number, photoId: number): Promise<any> => {
+  return await apiClient(
+    buildApiUrl(`/ramen-shops/${shopId}/photos/${photoId}`),
+    { method: "DELETE" }
+  );
+};
+
 export const getTotalVotes = (shop: Shop) =>
   shop.menus.reduce((acc: number, curr) => acc + curr.votes, 0);

@@ -25,7 +25,7 @@ import UploadPhotoModal from "../../../components/UploadPhotoModal";
 import MenuDetailModal from "../../../components/MenuDetailModal";
 import Loading from "@/app/loading";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
-import { getTotalVotes, toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture } from "@/lib/api/ramen-shops";
+import { getTotalVotes, toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture, deleteProofPicture } from "@/lib/api/ramen-shops";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
 
@@ -106,6 +106,18 @@ export default function ShopDetailPage() {
     }
   };
 
+  const handleDeletePhoto = async (photoId: number) => {
+    try {
+      await deleteProofPicture(shopId, photoId);
+      showToast("사진이 삭제되었습니다.", "success");
+      await refreshShopData();
+      queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
+    } catch (error: any) {
+      console.error("Delete failed:", error);
+      showToast(error.message || "사진 삭제 중 오류가 발생했습니다.", "error");
+    }
+  };
+
   const handleBookmarkToggle = async () => {
     if (!isLoggedIn) {
       showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => {
@@ -121,6 +133,7 @@ export default function ShopDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
       queryClient.invalidateQueries({ queryKey: ["ramen-shops"] });
       queryClient.invalidateQueries({ queryKey: ["user-bookmarks"] });
+      queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
       
       setShopDetail(prev => prev ? {
         ...prev,
@@ -242,9 +255,7 @@ export default function ShopDetailPage() {
                           {photo.date}
                         </span>
                       </div>
-
                   </div>
-
                 </div>
               ))}
               <div onClick={() => { if (!isLoggedIn) { showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login")); return; } setIsUploadModalOpen(true); }} className="aspect-square bg-stone-50 border-2 border-dashed border-stone-300 flex flex-col items-center justify-center text-stone-400 hover:text-red-500 hover:border-red-400 hover:bg-red-50/50 transition-all cursor-pointer group rounded-sm min-h-[160px]">
@@ -306,15 +317,17 @@ export default function ShopDetailPage() {
       <MenuDetailModal menu={selectedMenu} onClose={() => setSelectedMenu(null)} />
       <PhotoModal 
         photo={selectedPhoto ? {
+          id: selectedPhoto.id,
           imageUrl: selectedPhoto.imageUrl,
           menuName: selectedPhoto.menuName,
           user: selectedPhoto.user,
-          userId: selectedPhoto.uploaderId, // 유저 번호 추가
+          userId: selectedPhoto.uploaderId,
           date: selectedPhoto.date,
           comment: selectedPhoto.comment
         } : null} 
         onClose={() => setSelectedPhoto(null)} 
-        disableNavigation={false}
+        onDelete={handleDeletePhoto}
+        disableNavigation={false} 
       />
       <ReportModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} shopName={shop.name} />
       <UploadPhotoModal
@@ -324,13 +337,11 @@ export default function ShopDetailPage() {
         menuList={shop.menu_list}
         onUpload={async (uploadData) => {
           try {
-            // 3단계: 백엔드에 최종 등록 (URL, menuName, description 전송)
             await addProofPicture(shopId, {
               imageUrl: uploadData.imageUrl,
               menuName: uploadData.menuName,
               description: uploadData.comment
             });
-            
             showToast("사진이 성공적으로 등록되었습니다!", "success");
             await refreshShopData();
           } catch (error: any) {
