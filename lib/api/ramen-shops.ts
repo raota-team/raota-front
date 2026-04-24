@@ -34,6 +34,7 @@ interface ApiRamenShop {
   image_url?: string;
   restaurant_image_url?: string;
   votes?: number | string;
+  visits?: number | string; // 신규 필드 추가
   menus?: Array<{ name?: string; votes?: number | string }>;
   menu_list?: ApiMenuItem[];
   normal_menus?: ApiMenuItem[];
@@ -200,7 +201,8 @@ const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
       parking_info: "정보 없음",
     },
     stats: {
-      visit_count: toNumber(shop.stats?.visit_count, 0),
+      // 신규 명세(visits) 우선, 없으면 기존 명세(votes 또는 stats) 지원
+      visit_count: toNumber(shop.visits ?? shop.stats?.visit_count ?? shop.votes, 0),
       bookmark_count: toNumber(shop.stats?.bookmark_count, 0),
     },
     instagram_url: shop.instagram_url || "",
