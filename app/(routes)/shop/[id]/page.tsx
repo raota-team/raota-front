@@ -16,6 +16,7 @@ import {
   Sparkles,
   Utensils,
   Heart,
+  Check,
 } from "lucide-react";
 import { Shop, UserPhoto, EventMenu, MenuItem } from "../../../types";
 import ProgressBar from "../../../components/ProgressBar";
@@ -77,7 +78,8 @@ export default function ShopDetailPage() {
         id: r.menu_id,
         name: r.menu_name,
         votes: r.vote_count,
-        percentage: r.percentage
+        percentage: r.percentage,
+        isVoted: r.voted // 사용자의 투표 여부
       })).sort((a: any, b: any) => b.votes - a.votes);
     }
     return shop?.menus || [];
@@ -97,12 +99,18 @@ export default function ShopDetailPage() {
 
     try {
       await voteMenu(shop.id, menu.id);
-      showToast(`${menu.name}에 투표했습니다!`, "success");
+      
+      if (menu.isVoted) {
+        showToast("투표를 취소했습니다.", "info");
+      } else {
+        showToast(`${menu.name}에 투표했습니다!`, "success");
+      }
+      
       await refreshShopData();
       queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
     } catch (error: any) {
-      const errorMessage = error.payload?.message || error.message || "이미 투표하셨습니다.";
-      showToast(errorMessage, "info");
+      console.error("Voting failed:", error);
+      showToast("투표 처리 중 오류가 발생했습니다.", "error");
     }
   };
 
@@ -280,7 +288,17 @@ export default function ShopDetailPage() {
                         {menu.name === bestMenu?.name && <span className="mr-2 text-yellow-500"><Star className="w-3 h-3" fill="currentColor" /></span>}
                         <span className="text-stone-700 font-bold">{menu.name}</span>
                       </div>
-                      <button onClick={() => handleVote(menu)} className="text-xs bg-stone-100 hover:bg-red-600 text-stone-600 hover:text-white px-3 py-1 transition-colors uppercase font-bold tracking-wider rounded">투표</button>
+                      <button 
+                        onClick={() => handleVote(menu)} 
+                        className={`text-xs px-3 py-1 transition-all uppercase font-bold tracking-wider rounded flex items-center gap-1 ${
+                          menu.isVoted 
+                            ? "bg-red-600 text-white shadow-md shadow-red-200" 
+                            : "bg-stone-100 text-stone-600 hover:bg-red-600 hover:text-white"
+                        }`}
+                      >
+                        {menu.isVoted && <Check className="w-3 h-3" />}
+                        {menu.isVoted ? "내 투표" : "투표"}
+                      </button>
                     </div>
                     <ProgressBar votes={menu.votes} totalVotes={totalVotes} isSelected={menu.name === bestMenu?.name} />
                     <div className="text-right text-xs font-mono text-stone-400">{menu.votes} 표</div>
