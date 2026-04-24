@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import ShopCard from "../../components/ShopCard";
-import { getTotalVotes } from "@/lib/api/ramen-shops";
 import { useRamenShops } from "@/hooks/queries/useRamenShops";
 
 const PAGE_SIZE = 12;
@@ -34,7 +33,7 @@ export default function ShopsListPage() {
 
   const sortParam = useMemo(() => {
     if (sortBy === "name") return ["name,asc"];
-    if (sortBy === "popular") return ["votes,desc"];
+    if (sortBy === "popular") return ["visits,desc"]; // votes 대신 visits로 정렬 파라미터 변경
     return undefined;
   }, [sortBy]);
 
@@ -200,14 +199,14 @@ export default function ShopsListPage() {
 
       {/* Results Count */}
       <div className="mb-6 flex items-center justify-between">
-        <p className="text-stone-600">
+        <div className="text-stone-600">
           전체{" "}
           <span className="font-bold text-red-600">
             {shopPageInfo.totalElements}
           </span>
           개 중 현재 페이지{" "}
           <span className="font-bold text-red-600">{shops.length}</span>개
-        </p>
+        </div>
         <Link
           href="/"
           className="text-sm text-stone-400 hover:text-stone-600 transition-colors"
@@ -231,7 +230,7 @@ export default function ShopsListPage() {
       ) : shops.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {shops.map((shop) => (
-            <ShopCard key={shop.id} shop={shop} getTotalVotes={getTotalVotes} />
+            <ShopCard key={shop.id} shop={shop} />
           ))}
         </div>
       ) : (
@@ -245,7 +244,7 @@ export default function ShopsListPage() {
       )}
 
       {/* Pagination */}
-      <div className="mt-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div className="mt-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-12">
         <p className="text-sm text-stone-500">
           페이지 {currentPage + 1} / {totalPages}
         </p>
