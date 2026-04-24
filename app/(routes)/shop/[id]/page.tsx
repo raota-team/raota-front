@@ -271,7 +271,6 @@ export default function ShopDetailPage() {
             <div className="bg-white p-6 border border-stone-200 rounded-lg shadow-sm">
               <div className="flex items-center justify-between mb-6 border-b border-stone-200 pb-4">
                 <div><h3 className="text-xl font-black text-stone-900 uppercase italic">베스트 메뉴 투표</h3><p className="text-xs text-stone-500 mt-1">이 가게의 베스트 메뉴는?</p></div>
-                <Award className="w-8 h-8 text-yellow-500" />
               </div>
               <div className="space-y-6">
                 {sortedMenus.map((menu) => (
