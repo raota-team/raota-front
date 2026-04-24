@@ -2,13 +2,15 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, User, MapPin, Calendar } from 'lucide-react';
+import { X, User, MapPin, Calendar, Trash2 } from 'lucide-react';
+import { useApp } from '@/app/context/AppContext';
 
 interface Photo {
+  id?: number;            // 삭제를 위한 고유 ID
   imageUrl: string;
   menuName: string;
   user?: string;           // 업로더 닉네임
-  userId?: number;         // 업로더 ID (이동용)
+  userId?: number;         // 업로더 ID
   restaurantName?: string; // 식당 이름
   restaurantId?: number;   // 식당 이동 ID
   date: string;
@@ -18,11 +20,13 @@ interface Photo {
 interface PhotoModalProps {
   photo: Photo | null;
   onClose: () => void;
+  onDelete?: (photoId: number) => Promise<void>; // 삭제 콜백 추가
   disableNavigation?: boolean;
 }
 
-const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableNavigation = false }) => {
+const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, disableNavigation = false }) => {
   const router = useRouter();
+  const { currentUser, showConfirm } = useApp();
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -33,6 +37,9 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableNavigati
   }, [onClose]);
 
   if (!photo) return null;
+
+  // 본인 사진 여부 확인
+  const isMine = currentUser && photo.userId && currentUser.user_id === photo.userId;
 
   const handleInfoClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -48,6 +55,16 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableNavigati
     }
   };
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!photo.id || !onDelete) return;
+
+    showConfirm("이 사진을 정말 삭제하시겠습니까?", async () => {
+      await onDelete(photo.id!);
+      onClose();
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div
@@ -56,12 +73,23 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableNavigati
       ></div>
 
       <div className="relative w-full max-w-2xl bg-black rounded-sm shadow-2xl overflow-hidden flex flex-col items-center justify-center animate-scale-in group aspect-[5/4]">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 bg-black/50 hover:bg-red-600 text-white rounded-full transition-colors"
-        >
-          <X className="w-6 h-6" />
-        </button>
+        <div className="absolute top-4 right-4 z-20 flex gap-2">
+          {isMine && onDelete && (
+            <button
+              onClick={handleDeleteClick}
+              className="p-2 bg-black/50 hover:bg-red-600 text-white rounded-full transition-all group/del"
+              title="사진 삭제"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-2 bg-black/50 hover:bg-red-600 text-white rounded-full transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
 
         <div className="relative w-full h-full flex items-center justify-center bg-black">
           <img
