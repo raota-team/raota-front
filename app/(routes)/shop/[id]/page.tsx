@@ -23,6 +23,7 @@ import PhotoModal from "../../../components/PhotoModal";
 import ReportModal from "../../../components/ReportModal";
 import UploadPhotoModal from "../../../components/UploadPhotoModal";
 import MenuDetailModal from "../../../components/MenuDetailModal";
+import Loading from "@/app/loading";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
 import { getTotalVotes, toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture } from "@/lib/api/ramen-shops";
 import { useQueryClient } from "@tanstack/react-query";
@@ -131,7 +132,7 @@ export default function ShopDetailPage() {
   };
 
   if (isLoading && !shop) {
-    return <div className="py-40 flex justify-center"><ProgressBar votes={0} totalVotes={0} isSelected={false} /></div>;
+    return <Loading />;
   }
 
   if (!shop) {
