@@ -328,7 +328,12 @@ export default function ShopDetailPage() {
         onDelete={handleDeletePhoto}
         disableNavigation={false} 
       />
-      <ReportModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} shopName={shop.name} />
+      <ReportModal 
+        isOpen={isReportModalOpen} 
+        onClose={() => setIsReportModalOpen(false)} 
+        shopName={shop.name} 
+        shopId={shopId} 
+      />
       <UploadPhotoModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}

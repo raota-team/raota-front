@@ -310,5 +310,19 @@ export const deleteProofPicture = async (shopId: number, photoId: number): Promi
   );
 };
 
+/** 가게 정보 제보하기 */
+export const reportShop = async (shopId: number, data: {
+  reportType: string;
+  content: string;
+}): Promise<any> => {
+  return await apiClient(
+    buildApiUrl(`/ramen-shops/${shopId}/reports`),
+    {
+      method: "POST",
+      body: data
+    }
+  );
+};
+
 export const getTotalVotes = (shop: Shop) =>
   shop.menus.reduce((acc: number, curr) => acc + curr.votes, 0);
