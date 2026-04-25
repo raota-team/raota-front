@@ -27,6 +27,53 @@ interface UploadPhotoModalProps {
   onUpload?: (data: UploadedPhotoData) => Promise<void>;
 }
 
+/** 클라이언트 사이드 이미지 압축 함수 (WebP) */
+const compressImage = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new (window as any).Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height = (height * MAX_WIDTH) / width;
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                type: 'image/webp',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error('Canvas to Blob failed'));
+            }
+          },
+          'image/webp',
+          0.8
+        );
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
+
 const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, shopName, menuList, onUpload }) => {
   const [selectedMenu, setSelectedMenu] = useState('');
   const [comment, setComment] = useState('');
@@ -68,23 +115,25 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
     setIsSubmitting(true);
 
     try {
+      // 0단계: 이미지 압축 (WebP)
+      const compressedFile = await compressImage(selectedFile);
+
       // 1단계: 티켓 발급
-      const extension = selectedFile.name.split('.').pop() || 'jpg';
       const ticket = await getUploadTicket({
         type: 'PROOF',
-        extension,
-        contentType: selectedFile.type
+        extension: 'webp',
+        contentType: 'image/webp'
       });
 
       // 2단계: 저장소 직접 업로드
-      const finalImgUrl = await uploadFileToStorage(ticket, selectedFile);
+      const finalImgUrl = await uploadFileToStorage(ticket, compressedFile);
 
       // 3단계 준비: 상위 컴포넌트로 데이터 전달
       if (onUpload) {
         await onUpload({
           menuName: selectedMenu,
           imageUrl: finalImgUrl,
-          imageName: selectedFile.name, // 원본 파일 이름 추가
+          imageName: compressedFile.name,
           comment,
         });
       }

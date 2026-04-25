@@ -125,7 +125,7 @@ export default function ShopsListPage() {
             <div className="bg-white border border-stone-200 rounded-xl p-8 animate-scale-in space-y-8">
               <div>
                 <label className="flex items-center gap-2 text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-4">
-                  <MapPin className="w-3 h-3" /> Region
+                  <MapPin className="w-3 h-3" /> 지역
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {regions.map((region) => (
@@ -146,7 +146,7 @@ export default function ShopsListPage() {
 
               <div>
                 <label className="flex items-center gap-2 text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-4">
-                  <Utensils className="w-3 h-3" /> Ramen Type
+                  <Utensils className="w-3 h-3" /> 라멘 종류
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {types.map((type) => (
@@ -175,11 +175,11 @@ export default function ShopsListPage() {
                         sortBy === s ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-400 hover:bg-stone-200"
                       }`}
                     >
-                      {s === 'default' ? 'Default' : s === 'name' ? 'Name' : 'Popular'}
+                      {s === 'default' ? '기본순' : s === 'name' ? '이름순' : '인기순'}
                     </button>
                   ))}
                 </div>
-                <button onClick={() => { setActiveRegion('All'); setActiveType('All'); setSortBy('default'); }} className="text-[10px] font-black text-stone-400 hover:text-red-600 transition-colors uppercase tracking-widest">Reset Filter</button>
+                <button onClick={() => { setActiveRegion('All'); setActiveType('All'); setSortBy('default'); }} className="text-[10px] font-black text-stone-400 hover:text-red-600 transition-colors uppercase tracking-widest">필터 초기화</button>
               </div>
             </div>
           )}
@@ -187,10 +187,10 @@ export default function ShopsListPage() {
           {/* Results Summary */}
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs font-black text-stone-400 uppercase tracking-[0.1em]">
-              Archive Results: <span className="text-stone-900">{shopPageInfo.totalElements}</span>
+              검색 결과: <span className="text-stone-900">{shopPageInfo.totalElements}</span>
             </p>
             <div className="h-[1px] flex-1 mx-6 bg-stone-200 hidden md:block"></div>
-            <Link href="/" className="text-[10px] font-black text-stone-400 hover:text-stone-900 transition-colors uppercase tracking-[0.2em]">← Back to Home</Link>
+            <Link href="/" className="text-[10px] font-black text-stone-400 hover:text-stone-900 transition-colors uppercase tracking-[0.2em]">← 홈으로 돌아가기</Link>
           </div>
 
           {/* Shop Grid */}
@@ -198,7 +198,7 @@ export default function ShopsListPage() {
             <div className="py-20 flex justify-center"><Loading /></div>
           ) : isError ? (
             <div className="text-center py-24 bg-white rounded-2xl border border-stone-200">
-              <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">Connection Error</h3>
+              <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">연결 오류</h3>
               <p className="text-stone-400 text-sm">가게 목록을 불러오지 못했습니다.</p>
             </div>
           ) : shops.length > 0 ? (
@@ -210,7 +210,7 @@ export default function ShopsListPage() {
           ) : (
             <div className="text-center py-32 bg-white rounded-2xl border border-dashed border-stone-200">
               <div className="text-5xl mb-6 opacity-10">🍜</div>
-              <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">No Results</h3>
+              <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">결과 없음</h3>
               <p className="text-stone-400 text-sm font-medium">검색어와 필터를 다시 확인해보세요</p>
             </div>
           )}
@@ -218,7 +218,7 @@ export default function ShopsListPage() {
           {/* Pagination - Clean Style */}
           {totalPages > 1 && (
             <div className="mt-16 flex flex-col md:flex-row md:items-center md:justify-between gap-8 pb-20 border-t border-stone-200 pt-10">
-              <div className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">Page {currentPage + 1} of {totalPages}</div>
+              <div className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">페이지 {currentPage + 1} / {totalPages}</div>
               <div className="flex items-center gap-2">
                 <button
                   disabled={!shopPageInfo.hasPrevious}

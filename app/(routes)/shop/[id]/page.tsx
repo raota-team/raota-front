@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Camera,
   Star,
@@ -29,6 +30,53 @@ import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
 import { getTotalVotes, toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture, deleteProofPicture } from "@/lib/api/ramen-shops";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
+
+/** 클라이언트 사이드 이미지 압축 함수 (WebP) */
+const compressImage = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new (window as any).Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height = (height * MAX_WIDTH) / width;
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                type: 'image/webp',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error('Canvas to Blob failed'));
+            }
+          },
+          'image/webp',
+          0.8
+        );
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
 
 export default function ShopDetailPage() {
   const params = useParams();
@@ -169,7 +217,11 @@ export default function ShopDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 items-start">
         <div className="lg:col-span-8">
           <div className="relative h-80 lg:h-96 w-full mb-6 overflow-hidden rounded-lg group">
-            <img src={shop.imageUrl} alt={shop.name} className="w-full h-full object-cover transition-all duration-700" />
+            <img 
+              src={shop.imageUrl} 
+              alt={shop.name} 
+              className="w-full h-full object-cover transition-all duration-700" 
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-8">
               <h1 className="text-3xl lg:text-5xl font-black text-white mb-2 leading-tight truncate">{shop.name}</h1>
@@ -199,7 +251,12 @@ export default function ShopDetailPage() {
                 {shop.event_menus.map((event) => (
                   <div key={event.id} className="bg-white border border-stone-200 rounded-lg overflow-hidden flex flex-col md:flex-row group hover:border-pink-300 transition-colors shadow-sm">
                     <div className="md:w-1/3 h-48 md:h-auto overflow-hidden relative">
-                      <img src={event.image_url} alt={event.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                      <img 
+                        src={event.image_url} 
+                        alt={event.name} 
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" 
+                      />
                       <div className="absolute top-2 left-2"><span className="bg-pink-600 text-white text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider">{event.badge_text}</span></div>
                     </div>
                     <div className="p-6 md:w-2/3 flex flex-col justify-center">
@@ -223,7 +280,12 @@ export default function ShopDetailPage() {
                   <div key={menu.id} onClick={() => setSelectedMenu(menu)} className={`flex items-center justify-between p-4 cursor-pointer transition-all hover:bg-stone-50 border-l-4 border-l-transparent hover:border-l-red-500 ${idx !== shop.menu_list.length - 1 ? "border-b border-stone-200" : ""}`}>
                     <div className="flex items-center">
                       <div className="w-12 h-12 rounded-sm overflow-hidden mr-4 bg-stone-100 flex-shrink-0">
-                        <img src={menu.image_url} alt={menu.name} className="w-full h-full object-cover transition-transform duration-300 hover:scale-110" />
+                        <img 
+                          src={menu.image_url} 
+                          alt={menu.name} 
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110" 
+                        />
                       </div>
                       <div>
                         <div className="flex items-center"><span className="font-bold mr-2 text-stone-900">{menu.name}</span>{menu.is_signature && <span className="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-tighter">SIG</span>}</div>
@@ -246,7 +308,12 @@ export default function ShopDetailPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {shopPhotos.map((photo) => (
                 <div key={photo.id} onClick={() => setSelectedPhoto(photo)} className="group relative aspect-square bg-stone-100 overflow-hidden cursor-pointer rounded-sm border border-stone-200 hover:border-red-400 transition-colors shadow-sm">
-                  <img src={photo.imageUrl} alt={photo.menuName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                  <img 
+                    src={photo.imageUrl} 
+                    alt={photo.menuName} 
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" 
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
                     <p className="text-white text-xs font-bold truncate">
                       {photo.menuName}

@@ -4,14 +4,24 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { MessageCircle, Heart, ChevronDown, PenSquare, Store, Search, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { getCommunityPosts, getRamenShopOptions } from '@/lib/api/community';
-import { PageMeta } from '@/lib/api/user';
 import Loading from '@/app/loading';
 
 // HTML 태그 제거 유틸리티
 const stripHtml = (html: string) => {
   if (!html) return '';
   return html.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ');
+};
+
+const getCategoryLabel = (category: string) => {
+  switch (category) {
+    case 'REVIEW': return '맛집후기';
+    case 'TIP': return '라멘꿀팁';
+    case 'QUESTION': return 'Q&A';
+    case 'FREE': return '자유게시판';
+    default: return category;
+  }
 };
 
 const categories = [
@@ -24,11 +34,8 @@ const categories = [
 
 export default function CommunityPage() {
   const router = useRouter();
-  const [posts, setPosts] = useState<any[]>([]);
-  const [pageInfo, setPageInfo] = useState<PageMeta | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
 
   // 식당 필터 상태
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
@@ -37,6 +44,22 @@ export default function CommunityPage() {
   const [shopSearchQuery, setShopSearchQuery] = useState('');
   const [shopOptions, setShopOptions] = useState<any[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // React Query 적용
+  const { data: postsData, isLoading, isFetching } = useQuery({
+    queryKey: ['community-posts', selectedCategory, selectedShopId, currentPage],
+    queryFn: () => getCommunityPosts({
+      page: currentPage,
+      size: 10,
+      category: selectedCategory === 'all' ? undefined : selectedCategory,
+      ramenShopId: selectedShopId
+    }),
+    placeholderData: (previousData) => previousData, // 페이지 전환 시 이전 데이터 유지
+    staleTime: 60 * 1000,
+  });
+
+  const posts = postsData?.data?.items || [];
+  const pageInfo = postsData?.data?.page || null;
 
   // 식당 목록 검색
   useEffect(() => {
@@ -51,10 +74,8 @@ export default function CommunityPage() {
 
     if (isShopDropdownOpen) {
       if (shopSearchQuery === '') {
-        // 검색어가 없으면 즉시 실행
         fetchShopOptions();
       } else {
-        // 검색어가 있으면 디바운스 적용
         const timer = setTimeout(fetchShopOptions, 300);
         return () => clearTimeout(timer);
       }
@@ -72,31 +93,6 @@ export default function CommunityPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchPosts = async () => {
-    setIsLoading(true);
-    try {
-      const res = await getCommunityPosts({
-        page: currentPage,
-        size: 10,
-        category: selectedCategory === 'all' ? undefined : selectedCategory,
-        ramenShopId: selectedShopId
-      });
-      if (res && res.data) {
-        setPosts(res.data.items || []);
-        setPageInfo(res.data.page);
-      }
-    } catch (err) {
-      console.error('Failed to fetch community posts:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // 필터 변경 시 페이지 초기화 및 데이터 로드
-  useEffect(() => {
-    fetchPosts();
-  }, [selectedCategory, selectedShopId, currentPage]);
-
   // 카테고리 변경 시 상태 초기화
   const handleCategoryChange = (catId: string) => {
     setSelectedCategory(catId);
@@ -105,6 +101,7 @@ export default function CommunityPage() {
     setCurrentPage(0);
   };
 
+  // 사용자 요청에 따라 스켈레톤 대신 기존 로딩 페이지 사용
   if (isLoading && posts.length === 0) {
     return <Loading />;
   }
@@ -219,11 +216,9 @@ export default function CommunityPage() {
             )}
 
             {/* Posts List */}
-            {isLoading && posts.length > 0 ? (
-              <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 text-red-600 animate-spin" /></div>
-            ) : posts.length > 0 ? (
-              <div className="space-y-4">
-                {posts.map((post) => {
+            {posts.length > 0 ? (
+              <div className={`space-y-4 transition-opacity duration-300 ${isFetching ? 'opacity-60' : 'opacity-100'}`}>
+                {posts.map((post: any) => {
                   const pId = post.postId;
                   return (
                     <Link
@@ -232,14 +227,19 @@ export default function CommunityPage() {
                       className="group bg-white rounded-2xl p-6 shadow-sm border border-stone-200 hover:border-red-300 hover:shadow-md transition-all flex flex-col md:flex-row gap-6"
                     >
                       {post.imageUrl && (
-                        <div className="w-full md:w-48 h-32 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0">
-                          <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="w-full md:w-48 h-32 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0 relative">
+                          <img 
+                            src={post.imageUrl} 
+                            alt={post.title} 
+                            loading="lazy"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                          />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-3">
                           <span className="text-[10px] font-black text-red-600 uppercase tracking-tighter bg-red-50 px-2 py-1 rounded">
-                            {post.category}
+                            {getCategoryLabel(post.category)}
                           </span>
                           {post.storeName && (
                             <span className="text-[10px] font-bold text-stone-400 flex items-center gap-1 uppercase tracking-tighter">
@@ -267,7 +267,7 @@ export default function CommunityPage() {
             ) : (
               <div className="bg-white rounded-2xl py-32 text-center border border-dashed border-stone-300">
                 <div className="text-4xl mb-4 opacity-20">🍜</div>
-                <p className="text-stone-400 font-bold tracking-widest uppercase">No posts found</p>
+                <p className="text-stone-400 font-bold tracking-widest uppercase">게시글이 없습니다</p>
                 <p className="text-stone-300 text-xs mt-2">첫 번째 글의 주인공이 되어보세요!</p>
               </div>
             )}
@@ -280,7 +280,7 @@ export default function CommunityPage() {
                   onClick={() => { setCurrentPage(p => p - 1); window.scrollTo(0, 0); }}
                   className="flex items-center gap-2 text-xs font-black text-stone-400 hover:text-red-600 disabled:opacity-20 disabled:cursor-not-allowed transition-all uppercase tracking-widest"
                 >
-                  <ChevronLeft className="w-4 h-4" /> Prev
+                  <ChevronLeft className="w-4 h-4" /> 이전
                 </button>
                 <div className="flex gap-2">
                   {[...Array(pageInfo.totalPages)].map((_, i) => (
@@ -302,7 +302,7 @@ export default function CommunityPage() {
                   onClick={() => { setCurrentPage(p => p + 1); window.scrollTo(0, 0); }}
                   className="flex items-center gap-2 text-xs font-black text-stone-400 hover:text-red-600 disabled:opacity-20 disabled:cursor-not-allowed transition-all uppercase tracking-widest"
                 >
-                  Next <ChevronRight className="w-4 h-4" />
+                  다음 <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             )}

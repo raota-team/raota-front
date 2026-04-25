@@ -89,7 +89,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
                       href="/login"
                       className={`px-4 py-2 rounded-full text-sm font-bold transition-all uppercase flex items-center shadow-sm ${loginBtnClass}`}
                     >
-                      <LogIn className="w-4 h-4 mr-2" /> Login
+                      <LogIn className="w-4 h-4 mr-2" /> 로그인
                     </Link>
                   )}
                 </div>
@@ -168,7 +168,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
                 onClick={closeMobileMenu}
                 className="flex items-center justify-center w-full py-3 bg-stone-900 text-white hover:bg-red-600 rounded-sm text-sm font-bold transition-all uppercase"
               >
-                <LogIn className="w-4 h-4 mr-2" /> Login
+                <LogIn className="w-4 h-4 mr-2" /> 로그인
               </Link>
             )}
           </div>
