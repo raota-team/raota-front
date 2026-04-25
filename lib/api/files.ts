@@ -1,6 +1,6 @@
 import { apiClient } from "./client";
 
-export type UploadType = "PROFILE" | "SHOP" | "COMMUNITY" | "PROOF";
+export type UploadType = "PROFILE" | "SHOP" | "COMMUNITY" | "PROOF" | "BACKGROUND";
 
 /**
  * 모든 가능성 있는 응답 구조를 수용하는 인터페이스
