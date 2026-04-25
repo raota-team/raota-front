@@ -6,6 +6,7 @@ import { ArrowLeft, Image as ImageIcon, X, Store, ChevronDown, Search, Save, Loa
 import { useRamenShops } from '@/hooks/queries/useRamenShops';
 import RichTextEditor from '../../../components/RichTextEditor';
 import { useApp } from '@/app/context/AppContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
 import { createCommunityPost } from '@/lib/api/community';
 import { compressImage } from '@/lib/utils/image-optimization';
@@ -19,6 +20,7 @@ const categories = [
 
 export default function CommunityWritePage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { showToast } = useApp();
   const { data } = useRamenShops({ page: 0, size: 100, sort: ["name,asc"] });
   const shops = data?.shops ?? [];
@@ -110,6 +112,10 @@ export default function CommunityWritePage() {
       });
 
       showToast('글이 성공적으로 작성되었습니다!', 'success');
+      
+      // 목록 쿼리 무효화 (커뮤니티 메인 목록 업데이트 강제)
+      queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+      
       router.push('/community');
     } catch (error: any) {
       console.error('Failed to create post:', error);
@@ -133,7 +139,7 @@ export default function CommunityWritePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto pb-12">
+    <div className="max-w-2xl mx-auto pb-12 px-4 sm:px-0">
       <div className="mb-6 flex items-center justify-between">
         <button onClick={() => router.back()} className="flex items-center text-stone-500 hover:text-red-500 transition-colors text-sm font-bold uppercase tracking-wider">
           <ArrowLeft className="w-4 h-4 mr-2" /> 취소
@@ -222,7 +228,7 @@ export default function CommunityWritePage() {
         </div>
 
         <div className="p-6 bg-stone-50">
-          <button type="submit" disabled={!title.trim() || !content.trim() || isSubmitting} className={`w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center space-x-2 transition-all transform active:scale-[0.98] ${isSubmitting || !title.trim() || !content.trim() ? 'bg-stone-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 shadow-red-200'}`}>
+          <button type="submit" disabled={!title.trim() || !content.trim() || isSubmitting} className={`w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center space-x-2 transition-all transform active:scale-[0.98] ${isSubmitting || !title.trim() || !content.trim() ? 'bg-stone-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}>
             {isSubmitting ? <><Loader2 className="w-5 h-5 animate-spin" /><span>작성 중...</span></> : <span>글 작성 완료</span>}
           </button>
         </div>

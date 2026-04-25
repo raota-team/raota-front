@@ -91,6 +91,8 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
     mutationFn: () => deleteCommunityPost(postId),
     onSuccess: () => {
       showToast('게시글이 삭제되었습니다.', 'success');
+      // 목록 쿼리 무효화 (상세 페이지에서 나갈 때 목록이 갱신되도록)
+      queryClient.invalidateQueries({ queryKey: ['community-posts'] });
       router.push('/community');
     }
   });
@@ -367,7 +369,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
               <button
                 type="submit"
                 disabled={!newComment.trim() || commentMutation.isPending || !isLoggedIn}
-                className="px-6 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50 flex items-center justify-center shadow-md shadow-red-100"
+                className="px-6 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50 flex items-center justify-center shadow-md"
               >
                 {commentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </button>

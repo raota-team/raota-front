@@ -11,7 +11,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   return (
     <Link
       href={`/shop/${shop.id}`}
-      className="group bg-white border border-stone-200 hover:border-red-400 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col shadow-sm hover:shadow-lg hover:shadow-red-100 relative before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-red-500 before:to-red-600 before:opacity-0 hover:before:opacity-100 before:transition-opacity"
+      className="group bg-white border border-stone-200 hover:border-red-400 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col shadow-sm hover:shadow-lg relative before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-red-500 before:to-red-600 before:opacity-0 hover:before:opacity-100 before:transition-opacity"
     >
       <div className="aspect-w-16 aspect-h-9 h-48 overflow-hidden relative">
         <img 

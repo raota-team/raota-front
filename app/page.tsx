@@ -41,7 +41,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
             <Link
               href="/shops"
-              className="group relative overflow-hidden bg-white text-stone-950 px-10 py-5 font-black text-lg rounded-full transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
+              className="group relative overflow-hidden bg-white text-stone-950 px-10 py-5 font-black text-lg rounded-full transition-all hover:scale-105 active:scale-95 shadow-2xl"
             >
               <span className="relative z-10 flex items-center gap-2">
                 맛집 탐색하기
@@ -50,11 +50,11 @@ export default function HomePage() {
             </Link>
             <Link
               href="/community"
-              className="group px-10 py-5 font-black text-lg rounded-full transition-all border border-white/20 text-white hover:bg-white/10 backdrop-blur-sm"
+              className="group px-10 py-5 font-black text-lg rounded-full transition-all bg-stone-100/10 hover:bg-stone-100/20 border border-white/10 text-white backdrop-blur-md shadow-xl"
             >
-              <span className="flex items-center gap-2 text-stone-300 group-hover:text-white">
+              <span className="flex items-center gap-2 text-stone-200 group-hover:text-white">
                 커뮤니티
-                <Users className="w-5 h-5 opacity-50 group-hover:opacity-100" />
+                <Users className="w-5 h-5 opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all" />
               </span>
             </Link>
           </div>

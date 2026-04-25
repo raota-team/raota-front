@@ -104,7 +104,7 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, shopName, sh
             disabled={isSubmitting || !reportType || !message.trim()}
             className={`w-full py-4 rounded-lg font-bold text-white shadow-lg flex items-center justify-center space-x-2 transition-all transform active:scale-[0.98] ${isSubmitting || !reportType || !message.trim()
                 ? 'bg-stone-300 cursor-not-allowed shadow-none'
-                : 'bg-red-600 hover:bg-red-700 hover:shadow-red-200 hover:shadow-xl'
+                : 'bg-red-600 hover:bg-red-700 hover:shadow-xl'
               }`}
           >
             {isSubmitting ? (
