@@ -77,6 +77,8 @@ export interface MyPostSummary {
   contentPreview: string;
   imageUrl: string;
   authorName: string;
+  authorId: number;
+  authorImageUrl: string | null;
   createdAt: string;
   likeCount: number;
   commentCount: number;
@@ -100,9 +102,12 @@ export interface MyCommentSummary {
   postTitle?: string;
   parentCommentId: number | null;
   authorNickname: string;
+  authorId: number;
+  authorImageUrl: string | null;
   taggedParentAuthorNickname: string | null;
   createdAt: string;
   content: string;
+  isDeleted?: boolean;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -110,6 +115,39 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 /** 내 프로필 조회 */
 export const getMyProfile = async (): Promise<UserProfileResponse> => {
   return await apiClient<UserProfileResponse>(`${API_BASE_URL}/users/me/profile`);
+};
+
+/** 타 사용자 프로필 조회 */
+export const getUserProfile = async (userId: number | string): Promise<UserProfileResponse> => {
+  return await apiClient<UserProfileResponse>(`${API_BASE_URL}/users/${userId}/profile`);
+};
+
+/** 타 사용자 방문 목록 */
+export const getUserVisits = async (userId: number | string, page = 0, size = 20) => {
+  return await apiClient<PaginatedResponse<VisitSummary>>(`${API_BASE_URL}/users/${userId}/visits`, {
+    query: { page, size }
+  });
+};
+
+/** 타 사용자 글 목록 */
+export const getUserPosts = async (userId: number | string, page = 0, size = 10) => {
+  return await apiClient<PaginatedResponse<MyPostSummary>>(`${API_BASE_URL}/users/${userId}/posts`, {
+    query: { page, size, sort: ["createdAt,desc"] }
+  });
+};
+
+/** 타 사용자 댓글 목록 */
+export const getUserComments = async (userId: number | string, page = 0, size = 20) => {
+  return await apiClient<PaginatedResponse<MyCommentSummary>>(`${API_BASE_URL}/users/${userId}/comments`, {
+    query: { page, size, sort: ["createdAt,desc"] }
+  });
+};
+
+/** 타 사용자 사진 목록 */
+export const getUserPhotos = async (userId: number | string, page = 0, size = 20) => {
+  return await apiClient<PaginatedResponse<MyPhotoSummary>>(`${API_BASE_URL}/users/${userId}/photos`, {
+    query: { page, size }
+  });
 };
 
 /** 프로필 수정 */

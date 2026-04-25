@@ -54,7 +54,7 @@ export default function CommunityPage() {
       category: selectedCategory === 'all' ? undefined : selectedCategory,
       ramenShopId: selectedShopId
     }),
-    placeholderData: (previousData) => previousData, // 페이지 전환 시 이전 데이터 유지
+    placeholderData: (previousData) => previousData,
     staleTime: 60 * 1000,
   });
 
@@ -82,7 +82,7 @@ export default function CommunityPage() {
     }
   }, [shopSearchQuery, isShopDropdownOpen]);
 
-  // 클릭 외부 감지 (드롭다운 닫기)
+  // 클릭 외부 감지
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -93,7 +93,6 @@ export default function CommunityPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 카테고리 변경 시 상태 초기화
   const handleCategoryChange = (catId: string) => {
     setSelectedCategory(catId);
     setSelectedShopId(null);
@@ -101,7 +100,6 @@ export default function CommunityPage() {
     setCurrentPage(0);
   };
 
-  // 사용자 요청에 따라 스켈레톤 대신 기존 로딩 페이지 사용
   if (isLoading && posts.length === 0) {
     return <Loading />;
   }
@@ -151,7 +149,6 @@ export default function CommunityPage() {
 
           {/* Main Content */}
           <main className="flex-1">
-            {/* Review Category Specific Shop Filter */}
             {selectedCategory === 'REVIEW' && (
               <div className="mb-6" ref={dropdownRef}>
                 <div className="relative">
@@ -205,9 +202,6 @@ export default function CommunityPage() {
                             <div className="text-[10px] text-stone-400 font-mono mt-0.5">{shop.region}</div>
                           </button>
                         ))}
-                        {shopOptions.length === 0 && (
-                          <div className="px-5 py-10 text-center text-stone-400 text-xs font-bold">검색 결과가 없습니다.</div>
-                        )}
                       </div>
                     </div>
                   )}
@@ -215,16 +209,16 @@ export default function CommunityPage() {
               </div>
             )}
 
-            {/* Posts List */}
+            {/* Posts List - Fixed nested anchor tag issue */}
             {posts.length > 0 ? (
               <div className={`space-y-4 transition-opacity duration-300 ${isFetching ? 'opacity-60' : 'opacity-100'}`}>
                 {posts.map((post: any) => {
                   const pId = post.postId;
                   return (
-                    <Link
+                    <div
                       key={pId}
-                      href={`/community/${pId}`}
-                      className="group bg-white rounded-2xl p-6 shadow-sm border border-stone-200 hover:border-red-300 hover:shadow-md transition-all flex flex-col md:flex-row gap-6"
+                      onClick={() => router.push(`/community/${pId}`)}
+                      className="group bg-white rounded-2xl p-6 shadow-sm border border-stone-200 hover:border-red-300 hover:shadow-md transition-all flex flex-col md:flex-row gap-6 cursor-pointer"
                     >
                       {post.imageUrl && (
                         <div className="w-full md:w-48 h-32 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0 relative">
@@ -251,7 +245,17 @@ export default function CommunityPage() {
                         <p className="text-stone-500 text-sm line-clamp-2 leading-relaxed mb-4">{stripHtml(post.contentPreview)}</p>
                         <div className="flex items-center justify-between text-[10px] text-stone-400 font-black uppercase tracking-widest border-t border-stone-50 pt-4">
                           <div className="flex items-center gap-4">
-                            <span>{post.authorName}</span>
+                            {/* Inner link for author stays, but parent is now a div */}
+                            <div className="flex items-center gap-2" onClick={(e) => { e.stopPropagation(); router.push(`/user/${post.authorId}`); }}>
+                              <div className="w-5 h-5 rounded-full overflow-hidden bg-stone-100 border border-stone-200 shadow-sm flex-shrink-0">
+                                {post.authorImageUrl ? (
+                                  <img src={post.authorImageUrl} alt={post.authorName} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[8px] bg-stone-200 text-stone-400">🍜</div>
+                                )}
+                              </div>
+                              <span className="hover:text-stone-900 transition-colors">{post.authorName}</span>
+                            </div>
                             <span className="font-mono">{new Date(post.createdAt).toLocaleDateString()}</span>
                           </div>
                           <div className="flex items-center gap-4">
@@ -260,7 +264,7 @@ export default function CommunityPage() {
                           </div>
                         </div>
                       </div>
-                    </Link>
+                    </div>
                   );
                 })}
               </div>

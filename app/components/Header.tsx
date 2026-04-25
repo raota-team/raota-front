@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogIn, Menu, X, Home, MessageSquare, User, UtensilsCrossed } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 interface HeaderProps {
   isLoggedIn: boolean;
@@ -13,6 +14,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
   const pathname = usePathname();
   const currentPath = pathname;
+  const { currentUser } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -27,9 +29,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
       setIsMobile(window.innerWidth < 768);
     };
     
-    // Initial check
     handleResize();
-    
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleResize);
     return () => {
@@ -54,6 +54,9 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
     ? 'bg-white text-stone-900 hover:bg-stone-100 shadow-xl' 
     : 'bg-stone-900 text-white hover:bg-red-600';
 
+  // 마이페이지 경로 결정 (로그인 시 본인 ID 주소, 미로그인 시 로그인 페이지)
+  const myPagePath = isLoggedIn && currentUser ? `/user/${currentUser.user_id || currentUser.id}` : '/login';
+
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 flex justify-center w-full pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isFloating ? 'md:px-6 md:lg:px-8 md:mt-4' : 'px-0 mt-0'}`}>
@@ -75,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
                   <Link href="/" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/' ? activeTextColor : navTextColor}`}>홈</Link>
                   <Link href="/shops" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
                   <Link href="/community" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
-                  <Link href="/mypage" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/mypage' ? activeTextColor : navTextColor}`}>마이페이지</Link>
+                  <Link href={myPagePath} className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
 
                   {isLoggedIn ? (
                     <button
@@ -141,9 +144,9 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
               커뮤니티
             </Link>
             <Link
-              href="/mypage"
+              href={myPagePath}
               onClick={closeMobileMenu}
-              className={`flex items-center px-6 py-4 text-base font-bold transition-colors ${isActive('/mypage') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
+              className={`flex items-center px-6 py-4 text-base font-bold transition-colors ${isActive(myPagePath) ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
             >
               <User className="w-5 h-5 mr-3" />
               마이페이지

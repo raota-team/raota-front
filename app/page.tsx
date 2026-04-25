@@ -19,8 +19,7 @@ export default function HomePage() {
           <img
             src="/hero-home.jpg"
             alt="Ramen Shop"
-            className="w-full h-full object-cover scale-[1.02] opacity-60 transition-transform duration-[10s] ease-linear"
-            style={{ animation: 'zoom-slow 20s infinite alternate' }}
+            className="w-full h-full object-cover opacity-60"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
           <div className="absolute inset-0 bg-stone-950/20"></div>
@@ -59,18 +58,9 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-
-        {/* Minimal Scroll Indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 animate-bounce opacity-40">
-          <div className="w-px h-12 bg-gradient-to-b from-white to-transparent"></div>
-        </div>
       </section>
 
       <style jsx global>{`
-        @keyframes zoom-slow {
-          from { transform: scale(1.02); }
-          to { transform: scale(1.1); }
-        }
         @keyframes fade-in-down {
           from { opacity: 0; transform: translateY(-20px); }
           to { opacity: 1; transform: translateY(0); }

@@ -120,20 +120,30 @@ export default function ShopDetailPage() {
   const shop = shopDetail;
   
   const totalVotes = voteData?.total_votes || 0;
-  const sortedMenus = useMemo(() => {
-    if (voteData?.vote_results && voteData.vote_results.length > 0) {
-      return voteData.vote_results.map((r: any) => ({
-        id: r.menu_id,
-        name: r.menu_name,
-        votes: r.vote_count,
-        percentage: r.percentage,
-        isVoted: r.voted // 사용자의 투표 여부
-      })).sort((a: any, b: any) => b.votes - a.votes);
-    }
-    return shop?.menus || [];
+  // 위치를 바꾸지 않고 원본 메뉴 순서에 투표 데이터만 매칭
+  const votingMenus = useMemo(() => {
+    // 백엔드 응답 필드명이 normal_menus 또는 menus일 수 있음
+    const shopAny = shop as any;
+    const baseMenus = shopAny?.normal_menus || shopAny?.menus || [];
+    
+    return baseMenus.map((menu: any) => {
+      // 투표 결과에서 해당 메뉴 ID 매칭
+      const voteInfo = voteData?.vote_results?.find((r: any) => r.menu_id === menu.id);
+      return {
+        ...menu,
+        votes: voteInfo?.vote_count || 0,
+        percentage: voteInfo?.percentage || 0,
+        isVoted: voteInfo?.voted || false
+      };
+    });
   }, [voteData, shop]);
   
-  const bestMenu = sortedMenus[0];
+  // 가장 높은 득표수를 가진 메뉴 찾기 (동점 포함)
+  const maxVotes = useMemo(() => Math.max(...votingMenus.map(m => m.votes), 0), [votingMenus]);
+  const bestMenuId = useMemo(() => {
+    if (maxVotes === 0) return null;
+    return votingMenus.find(m => m.votes === maxVotes)?.id;
+  }, [votingMenus, maxVotes]);
 
   const handleVote = async (menu: any) => {
     if (!isLoggedIn) {
@@ -223,12 +233,18 @@ export default function ShopDetailPage() {
               className="w-full h-full object-cover transition-all duration-700" 
             />
             <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent"></div>
-            <div className="absolute bottom-0 left-0 p-8">
-              <h1 className="text-3xl lg:text-5xl font-black text-white mb-2 leading-tight truncate">{shop.name}</h1>
-              <div className="flex items-center text-stone-200 space-x-4 text-sm font-mono">
-                <span className="flex items-center"><MapPin className="w-4 h-4 mr-1" /> {shop.location}</span>
-                <span className="flex items-center"><Menu className="w-4 h-4 mr-1" /> {shop.type}</span>
-                <span className="flex items-center text-yellow-400 font-bold"><Camera className="w-4 h-4 mr-1" /> 인증 {shopPhotos.length}회</span>
+            <div className="absolute bottom-0 left-0 p-5 md:p-8 w-full">
+              <h1 className="text-2xl md:text-3xl lg:text-5xl font-black text-white mb-4 leading-tight break-keep">{shop.name}</h1>
+              <div className="flex flex-wrap items-center gap-2 md:gap-3 text-[10px] md:text-sm font-mono">
+                <span className="flex items-center bg-black/40 backdrop-blur-md py-1.5 px-3 rounded-full border border-white/10 shadow-sm text-stone-200">
+                  <MapPin className="w-3 h-3 md:w-4 md:h-4 mr-1 text-red-500" /> {shop.location}
+                </span>
+                <span className="flex items-center bg-black/40 backdrop-blur-md py-1.5 px-3 rounded-full border border-white/10 shadow-sm text-stone-200">
+                  <Menu className="w-3 h-3 md:w-4 md:h-4 mr-1 text-stone-400" /> {shop.type}
+                </span>
+                <span className="flex items-center bg-black/40 backdrop-blur-md py-1.5 px-3 rounded-full border border-white/10 shadow-sm text-yellow-400 font-bold">
+                  <Camera className="w-3 h-3 md:w-4 md:h-4 mr-1" /> 인증 {shopPhotos.length}회
+                </span>
               </div>
             </div>
           </div>
@@ -348,27 +364,34 @@ export default function ShopDetailPage() {
                 <div><h3 className="text-xl font-black text-stone-900 uppercase italic">베스트 메뉴 투표</h3><p className="text-xs text-stone-500 mt-1">이 가게의 베스트 메뉴는?</p></div>
               </div>
               <div className="space-y-6">
-                {sortedMenus.map((menu) => (
+                {votingMenus.map((menu) => (
                   <div key={menu.id || menu.name} className="relative">
                     <div className="flex justify-between items-center mb-2">
                       <div className="flex items-center">
-                        {menu.name === bestMenu?.name && <span className="mr-2 text-yellow-500"><Star className="w-3 h-3" fill="currentColor" /></span>}
-                        <span className="text-stone-700 font-bold">{menu.name}</span>
+                        {menu.id === bestMenuId && <span className="mr-2 text-yellow-500 animate-pulse"><Star className="w-4 h-4" fill="currentColor" /></span>}
+                        <span className={`transition-colors font-bold ${menu.id === bestMenuId ? "text-stone-950 scale-105 inline-block" : "text-stone-700"}`}>
+                          {menu.name}
+                        </span>
                       </div>
                       <button 
                         onClick={() => handleVote(menu)} 
-                        className={`text-xs px-3 py-1 transition-all uppercase font-bold tracking-wider rounded flex items-center gap-1 ${
+                        className={`text-[10px] px-3 py-1.5 transition-all uppercase font-black tracking-widest rounded-full flex items-center gap-1 ${
                           menu.isVoted 
-                            ? "bg-red-600 text-white shadow-md" 
-                            : "bg-stone-100 text-stone-600 hover:bg-red-600 hover:text-white"
+                            ? "bg-stone-900 text-white shadow-lg" 
+                            : "bg-stone-100 text-stone-500 hover:bg-stone-200"
                         }`}
                       >
                         {menu.isVoted && <Check className="w-3 h-3" />}
                         {menu.isVoted ? "내 투표" : "투표"}
                       </button>
                     </div>
-                    <ProgressBar votes={menu.votes} totalVotes={totalVotes} isSelected={menu.name === bestMenu?.name} />
-                    <div className="text-right text-xs font-mono text-stone-400">{menu.votes} 표</div>
+                    <ProgressBar votes={menu.votes} totalVotes={totalVotes} isSelected={menu.id === bestMenuId} />
+                    <div className="flex justify-between items-center mt-1">
+                      <span className={`text-[10px] font-black ${menu.id === bestMenuId ? "text-red-500" : "text-stone-300"}`}>
+                        {menu.id === bestMenuId ? "가장 많은 투표" : ""}
+                      </span>
+                      <div className="text-right text-[10px] font-mono font-bold text-stone-400">{menu.votes} 표</div>
+                    </div>
                   </div>
                 ))}
               </div>

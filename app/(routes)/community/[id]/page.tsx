@@ -185,7 +185,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
                 {comment.authorImageUrl ? (
                   <img src={comment.authorImageUrl} alt={comment.authorNickname} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xl bg-stone-200 text-stone-400">😊</div>
+                  <div className="w-full h-full flex items-center justify-center text-xl bg-stone-200 text-stone-400">🍜</div>
                 )}
               </div>
             </Link>
