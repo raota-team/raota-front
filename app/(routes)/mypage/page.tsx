@@ -230,7 +230,7 @@ export default function MyPageView() {
         <p className="text-stone-500 font-bold mb-6">{message}</p>
         <Link 
           href={targetPath} 
-          className="inline-flex items-center gap-2 bg-stone-900 hover:bg-red-600 text-white px-8 py-3 rounded-full font-bold text-sm transition-all shadow-lg hover:shadow-red-600/20"
+          className="inline-flex items-center gap-2 bg-stone-900 hover:bg-red-600 text-white px-8 py-3 rounded-full font-bold text-sm transition-all shadow-lg"
         >
           {btnText}
           <ArrowRight className="w-4 h-4" />

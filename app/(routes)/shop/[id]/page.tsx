@@ -359,7 +359,7 @@ export default function ShopDetailPage() {
                         onClick={() => handleVote(menu)} 
                         className={`text-xs px-3 py-1 transition-all uppercase font-bold tracking-wider rounded flex items-center gap-1 ${
                           menu.isVoted 
-                            ? "bg-red-600 text-white shadow-md shadow-red-200" 
+                            ? "bg-red-600 text-white shadow-md" 
                             : "bg-stone-100 text-stone-600 hover:bg-red-600 hover:text-white"
                         }`}
                       >

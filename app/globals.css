@@ -19,11 +19,11 @@ body {
 /* Glassmorphism Utility Class */
 @layer components {
   .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg shadow-stone-200/20;
-  }
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg;
+    }
 
-  .glass-hover {
-    @apply hover:bg-white/80 hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300;
+    .glass-card-hover {
+    @apply hover:bg-white/80 hover:shadow-xl transition-all duration-300;
   }
 }
 

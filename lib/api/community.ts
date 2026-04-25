@@ -3,6 +3,7 @@ import { apiClient } from "./client";
 export interface CommunityPostCard {
   postId: number;
   category: string;
+  ramenShopId: number | null;
   storeName: string | null;
   title: string;
   contentPreview: string;

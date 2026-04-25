@@ -125,7 +125,7 @@ export default function CommunityPage() {
           {/* Sidebar */}
           <aside className="lg:w-64 flex-shrink-0">
             <div className="sticky top-24 space-y-6">
-              <Link href="/community/write" className="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-red-600/20 active:scale-95 group">
+              <Link href="/community/write" className="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-bold transition-all shadow-sm active:scale-95 group">
                 <PenSquare className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                 글쓰기
               </Link>
@@ -289,7 +289,7 @@ export default function CommunityPage() {
                       onClick={() => { setCurrentPage(i); window.scrollTo(0, 0); }}
                       className={`w-8 h-8 rounded-lg text-xs font-black transition-all ${
                         currentPage === i 
-                          ? 'bg-red-600 text-white shadow-lg shadow-red-200' 
+                          ? 'bg-red-600 text-white shadow-lg' 
                           : 'bg-white text-stone-400 border border-stone-200 hover:bg-stone-50'
                       }`}
                     >
