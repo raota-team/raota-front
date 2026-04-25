@@ -6,10 +6,12 @@ import { ChevronDown, ChevronLeft, ChevronRight, X, Search, Filter, MapPin, Uten
 import ShopCard from "../../components/ShopCard";
 import { useRamenShops } from "@/hooks/queries/useRamenShops";
 import Loading from "@/app/loading";
+import { useApp } from "@/app/context/AppContext";
 
 const PAGE_SIZE = 12;
 
 export default function ShopsListPage() {
+  const { showToast } = useApp();
   const [currentPage, setCurrentPage] = useState(0);
   const [activeRegion, setActiveRegion] = useState("All");
   const [activeType, setActiveType] = useState("All");
@@ -70,6 +72,14 @@ export default function ShopsListPage() {
     if (page < 0 || page >= totalPages) return;
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSortClick = (s: string) => {
+    if (s === 'popular') {
+      showToast('인기순 정렬은 현재 준비 중입니다.', 'info');
+      return;
+    }
+    setSortBy(s);
   };
 
   if (isLoading && shops.length === 0) return <Loading />;
@@ -170,7 +180,7 @@ export default function ShopsListPage() {
                   {['default', 'name', 'popular'].map((s) => (
                     <button 
                       key={s}
-                      onClick={() => setSortBy(s)} 
+                      onClick={() => handleSortClick(s)} 
                       className={`px-4 py-2 text-[10px] font-black rounded uppercase tracking-widest transition-all ${
                         sortBy === s ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-400 hover:bg-stone-200"
                       }`}
