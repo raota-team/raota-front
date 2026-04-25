@@ -409,10 +409,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       <div className="flex border-b border-stone-200 mb-8 overflow-x-auto scrollbar-hide">
         {[
           { id: 'photos', label: '사진', icon: Camera, count: profile.stats.total_photo_count },
-          { id: 'visits', label: '방문기록', icon: MapPin, count: profile.stats.visited_restaurant_count, private: true },
-          { id: 'bookmarks', label: '북마크', icon: Heart, count: profile.stats.total_bookmark_count, private: true },
+          { id: 'visits', label: '방문기록', icon: MapPin, count: profile.stats.visited_restaurant_count },
           { id: 'posts', label: '게시글', icon: FileText, count: profile.stats.post_count },
-          { id: 'comments', label: '댓글', icon: MessageSquare, count: profile.stats.comment_count }
+          { id: 'comments', label: '댓글', icon: MessageSquare, count: profile.stats.comment_count },
+          { id: 'bookmarks', label: '북마크', icon: Heart, count: profile.stats.total_bookmark_count, private: true }
         ].filter(tab => isOwnProfile || !tab.private).map(tab => (
           <button
             key={tab.id}
