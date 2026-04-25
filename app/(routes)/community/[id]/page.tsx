@@ -346,30 +346,30 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
         </div>
 
         {/* Comment Form */}
-        <form onSubmit={handleSubmitComment} className="p-6 border-t border-stone-100 bg-stone-50">
+        <form onSubmit={handleSubmitComment} className="p-4 md:p-6 border-t border-stone-100 bg-stone-50">
           {replyTo && (
             <div className="mb-3 flex items-center justify-between bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 animate-in slide-in-from-top-2">
               <span className="text-xs font-bold text-red-600 flex items-center gap-2">
                 <CornerDownRight className="w-3 h-3" /> @{replyTo.name} 님에게 답글 남기는 중
               </span>
-              <button onClick={() => setReplyTo(null)} className="text-red-400 hover:text-red-600"><X className="w-3.5 h-3.5" /></button>
+              <button type="button" onClick={() => setReplyTo(null)} className="text-red-400 hover:text-red-600"><X className="w-3.5 h-3.5" /></button>
             </div>
           )}
-          <div className="flex gap-4">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm border border-stone-200 flex-shrink-0">🍜</div>
-            <div className="flex-1 flex gap-3">
+          <div className="flex gap-2 md:gap-4 items-center">
+            <div className="hidden sm:flex w-10 h-10 bg-white rounded-xl items-center justify-center text-xl shadow-sm border border-stone-200 flex-shrink-0">🍜</div>
+            <div className="flex-1 flex gap-2">
               <input
                 type="text"
                 placeholder={isLoggedIn ? (replyTo ? "답글을 입력하세요..." : "댓글을 입력하세요...") : "로그인 후 이용 가능합니다."}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 disabled={!isLoggedIn || commentMutation.isPending}
-                className="flex-1 px-5 py-3 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-100 transition-all font-medium"
+                className="flex-1 min-w-0 px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-100 transition-all font-medium"
               />
               <button
                 type="submit"
                 disabled={!newComment.trim() || commentMutation.isPending || !isLoggedIn}
-                className="px-6 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50 flex items-center justify-center shadow-md"
+                className="px-4 md:px-6 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50 flex items-center justify-center shadow-md flex-shrink-0"
               >
                 {commentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </button>
