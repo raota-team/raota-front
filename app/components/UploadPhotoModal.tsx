@@ -16,7 +16,7 @@ interface UploadedPhotoData {
   menuName: string;
   imageUrl: string;
   imageName: string;
-  comment: string;
+  description: string; // API 스펙에 맞춰 comment에서 description으로 변경
 }
 
 interface UploadPhotoModalProps {
@@ -76,7 +76,7 @@ const compressImage = (file: File): Promise<File> => {
 
 const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, shopName, menuList, onUpload }) => {
   const [selectedMenu, setSelectedMenu] = useState('');
-  const [comment, setComment] = useState('');
+  const [description, setDescription] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,7 +84,7 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
   useEffect(() => {
     if (isOpen) {
       setSelectedMenu('');
-      setComment('');
+      setDescription('');
       setSelectedFile(null);
       setPreviewUrl(null);
       setIsSubmitting(false);
@@ -134,7 +134,7 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
           menuName: selectedMenu,
           imageUrl: finalImgUrl,
           imageName: compressedFile.name,
-          comment,
+          description,
         });
       }
       onClose();
@@ -217,14 +217,14 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
             <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">한줄평 (선택)</label>
             <input
               type="text"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="맛은 어떠셨나요?"
               className="w-full bg-stone-50 border border-stone-200 text-stone-700 py-3 px-4 rounded-lg outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all font-medium text-sm placeholder:text-stone-400"
               maxLength={100}
             />
             <div className="text-right mt-1">
-              <span className="text-xs text-stone-400 font-mono">{comment.length}/100</span>
+              <span className="text-xs text-stone-400 font-mono">{description.length}/100</span>
             </div>
           </div>
 

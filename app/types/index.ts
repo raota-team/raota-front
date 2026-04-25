@@ -48,6 +48,7 @@ export interface ShopStats {
 export interface Shop {
   id: number;
   name: string;
+  branch_name?: string;
   location: string;
   type: string;
   editorRating: number;
