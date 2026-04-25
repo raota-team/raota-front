@@ -132,9 +132,12 @@ export const apiClient = async <T>(
 
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
-        const newToken = refreshData.data?.accessToken || refreshData.accessToken;
         
-        if (newToken) {
+        // 사용자가 제공한 구조 { status: "SUCCESS", data: { accessToken: "..." } } 반영
+        const newToken = refreshData.data?.accessToken;
+        const isSuccess = refreshData.status === "SUCCESS";
+        
+        if (isSuccess && newToken) {
           updateAccessToken(newToken);
           isRefreshing = false;
           onRefreshed(newToken);
@@ -150,7 +153,8 @@ export const apiClient = async <T>(
         }
       }
       
-      // 갱신 실패 시 로그아웃 처리 및 로그인 페이지 이동
+      // 갱신 실패 시 (응답이 ok가 아니거나 status가 SUCCESS가 아님)
+      isRefreshing = false;
       clearAccessToken();
       window.location.href = "/login";
       throw new ApiClientError("Session expired", 401, null);
