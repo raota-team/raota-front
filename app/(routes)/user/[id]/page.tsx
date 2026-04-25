@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, User as UserIcon, Check, Edit3 } from 'lucide-react';
+import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, User as UserIcon, Check, Edit3, AlertCircle } from 'lucide-react';
 import PhotoModal from '../../../components/PhotoModal';
 import { useApp } from '../../../context/AppContext';
 import { 
@@ -51,6 +51,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [activeTab, setActiveTab] = useState('photos');
   const [profile, setProfile] = useState<MyProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isError, setIsError] = useState(false);
   const [editForm, setEditForm] = useState({
     nickname: '',
     bio: '',
@@ -93,22 +94,29 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
   // 프로필 정보 로드
   const fetchProfile = useCallback(async () => {
+    setIsInitialLoading(true);
+    setIsError(false);
     try {
       const res = isOwnProfile ? await getMyProfile() : await getUserProfile(userIdFromPath);
       setProfile(res.data);
       setEditForm({
         nickname: res.data.nickname,
-        bio: res.data.userDescription || '',
+        bio: (res.data.userDescription && res.data.userDescription !== res.data.nickname) 
+          ? res.data.userDescription 
+          : '자기소개가 아직 없습니다.',
         profileImage: res.data.profile_image_url || '',
         backgroundImage: res.data.background_image_url || ''
       });
       if (isOwnProfile && setCurrentUser) {
         setCurrentUser(res.data);
       }
+      
+      // 자연스러운 전환을 위해 미세한 지연 추가
+      setTimeout(() => setIsInitialLoading(false), 300);
     } catch (err) {
       console.error('Failed to fetch profile:', err);
-      showToast('프로필을 불러오지 못했습니다.', 'error');
-    } finally {
+      setIsError(true);
+      showToast('정보를 불러올 수 없는 사용자입니다.', 'error');
       setIsInitialLoading(false);
     }
   }, [isOwnProfile, userIdFromPath, setCurrentUser, showToast]);
@@ -119,6 +127,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
   // 탭 변경 시 데이터 로드
   const fetchTabData = useCallback(async (page: number) => {
+    if (isError) return;
     setIsLoading(true);
     try {
       let res;
@@ -159,7 +168,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab, isOwnProfile, userIdFromPath]);
+  }, [activeTab, isOwnProfile, userIdFromPath, isError]);
 
   useEffect(() => {
     fetchTabData(0);
@@ -239,14 +248,13 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     }
   };
 
-  // 프로필/배경 이미지 클릭 시 모달 열기
   const handleZoomImage = (url: string, title: string) => {
     if (isEditing) return;
     if (!url) return;
     setSelectedPhoto({
       image_url: url,
       menuName: title,
-      isUserPhoto: true, // 유저 프로필/배경임을 나타내는 플래그 추가
+      isUserPhoto: true,
       restaurant_name: '사용자 프로필',
       uploaded_at: '',
       description: ''
@@ -256,7 +264,19 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isInitialLoading) return <Loading />;
-  if (!profile) return null;
+  
+  if (isError || !profile) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-32 text-center flex flex-col items-center">
+        <div className="bg-stone-100 p-6 rounded-full mb-6">
+          <AlertCircle size={48} className="text-stone-300" />
+        </div>
+        <h2 className="text-2xl font-black text-stone-900 mb-2">정보를 볼 수 없는 사용자입니다.</h2>
+        <p className="text-stone-500 mb-8 font-medium">비공개 프로필이거나 삭제된 계정일 수 있습니다.</p>
+        <button onClick={() => router.back()} className="bg-stone-900 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-red-600 transition-colors">이전으로 돌아가기</button>
+      </div>
+    );
+  }
 
   const displayBio = (profile.userDescription && profile.userDescription !== profile.nickname)
     ? profile.userDescription
@@ -285,7 +305,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-4 py-8 pb-32">
       {/* Profile Header */}
       <div className="bg-white border border-stone-200 mb-8 shadow-sm rounded-xl overflow-hidden relative group">
         <div className="h-48 md:h-64 bg-stone-800 relative overflow-hidden">
@@ -468,7 +488,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                   <Link href={`/community/${pId}`} key={uniqueKey} {...(itemProps as any)} className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2"><span className="px-2 py-1 bg-red-100 text-red-600 text-[10px] font-black rounded uppercase">{getCategoryLabel(item.category)}</span> {item.storeName && <span className="text-[10px] text-stone-400 font-bold uppercase tracking-tighter">@ {item.storeName}</span>}</div>
+                        <div className="flex items-center gap-2 mb-2"><span className="px-2 py-1 bg-red-100 text-red-600 text-xs font-bold rounded">{getCategoryLabel(item.category)}</span> {item.storeName && <span className="text-xs text-stone-400 font-bold uppercase tracking-tighter">@ {item.storeName}</span>}</div>
                         <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">{item.title}</h4>
                         <p className="text-sm text-stone-500 mt-2 line-clamp-1 leading-relaxed">{stripHtml(item.contentPreview)}</p>
                         <div className="flex items-center gap-4 mt-3 text-[10px] font-black uppercase text-stone-400 tracking-widest">
@@ -491,11 +511,11 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 const pId = item.post_id || item.postId;
                 return (
                   <Link href={`/community/${pId}`} key={uniqueKey} {...(itemProps as any)} className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group shadow-sm">
-                    <p className="text-stone-800 font-bold mb-3 line-clamp-2 leading-relaxed">"{item.content}"</p>
-                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-stone-400">
+                    <p className="text-stone-800 font-medium mb-2 line-clamp-2">"{item.content}"</p>
+                    <div className="flex items-center justify-between text-sm text-stone-500">
                       <div className="flex items-center gap-2">
                         {item.postTitle && <span className="truncate max-w-[200px] md:max-w-[400px] text-stone-400 transition-colors group-hover:text-red-600">원본글 보기 <ArrowRight className="w-2.5 h-2.5 ml-1 inline" /></span>}
-                        <span className="font-mono">{item.createdAt ? new Date(item.createdAt).toLocaleDateString('ko-KR') : '-'}</span>
+                        <span>{item.createdAt ? new Date(item.createdAt).toLocaleDateString('ko-KR') : '-'}</span>
                       </div>
                       {item.taggedParentAuthorNickname && <span className="text-red-500 font-bold">@ {item.taggedParentAuthorNickname}</span>}
                     </div>
@@ -523,7 +543,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             restaurantId: selectedPhoto.restaurant_id, 
             date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-', 
             comment: selectedPhoto.description || '',
-            isUserPhoto: selectedPhoto.isUserPhoto // 이 플래그가 누락되어 있었습니다.
+            isUserPhoto: selectedPhoto.isUserPhoto
           }} 
           onClose={() => setSelectedPhoto(null)} 
           disableNavigation={false} 
