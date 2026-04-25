@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, X, Search, Filter, MapPin, Utensils } from "lucide-react";
 import ShopCard from "../../components/ShopCard";
 import { useRamenShops } from "@/hooks/queries/useRamenShops";
+import Loading from "@/app/loading";
 
 const PAGE_SIZE = 12;
 
@@ -21,10 +22,7 @@ export default function ShopsListPage() {
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearchQuery(searchQuery.trim());
     }, 300);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
+    return () => window.clearTimeout(timeoutId);
   }, [searchQuery]);
 
   useEffect(() => {
@@ -33,7 +31,7 @@ export default function ShopsListPage() {
 
   const sortParam = useMemo(() => {
     if (sortBy === "name") return ["name,asc"];
-    if (sortBy === "popular") return ["visits,desc"]; // votes 대신 visits로 정렬 파라미터 변경
+    if (sortBy === "popular") return ["visits,desc"];
     return undefined;
   }, [sortBy]);
 
@@ -42,7 +40,6 @@ export default function ShopsListPage() {
       debouncedSearchQuery,
       activeType === "All" ? undefined : activeType,
     ].filter(Boolean);
-
     return keywords.length > 0 ? keywords.join(" ") : undefined;
   }, [activeType, debouncedSearchQuery]);
 
@@ -67,219 +64,196 @@ export default function ShopsListPage() {
   const types = ["All", "돈코츠", "쇼유", "미소", "시오", "츠케멘", "탄탄멘"];
 
   const totalPages = Math.max(shopPageInfo.totalPages || 1, 1);
-  const visiblePageNumbers = Array.from(
-    { length: totalPages },
-    (_, index) => index,
-  );
+  const visiblePageNumbers = Array.from({ length: totalPages }, (_, index) => index);
+  
   const goToShopsPage = (page: number) => {
     if (page < 0 || page >= totalPages) return;
     setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (isLoading && shops.length === 0) return <Loading />;
+
   return (
-    <div className="min-h-[60vh]">
-      {/* Page Header */}
-      <div className="mb-8 relative rounded-2xl overflow-hidden shadow-lg h-48 md:h-80">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
-          style={{ backgroundImage: "url('/header-shoplist.jpg')" }}
-        ></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/30"></div>
-        <div className="relative z-10 px-6 h-full flex flex-col justify-center items-center text-center text-white">
-          <div className="inline-block px-3 py-1 mb-3 text-xs font-bold tracking-wider uppercase bg-white/10 rounded-full backdrop-blur-sm border border-white/20">
-            Ramen Shop List
-          </div>
-          <h1 className="text-3xl md:text-5xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-stone-300 drop-shadow-sm">
-            라멘 가게 리스트
+    <div className="bg-stone-50 min-h-screen">
+      {/* Header Section */}
+      <section className="relative h-64 md:h-80 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0">
+          <img src="/header-shoplist.jpg" alt="Ramen Shops" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-[1px]"></div>
+        </div>
+        <div className="relative z-10 text-center text-white px-6">
+          <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-white to-stone-400">
+            RAOTA RAMEN ARCHIVE
           </h1>
-          <p className="text-stone-300 max-w-lg mx-auto font-medium">
-            전국의 인기 라멘 맛집을 탐색하고 나만의 인생 라멘을 찾아보세요
+          <p className="text-stone-300 max-w-lg mx-auto font-medium leading-relaxed">
+            전국의 인기 라멘 맛집을 탐색하고<br className="md:hidden" /> 나만의 인생 라멘을 찾아보세요
           </p>
         </div>
-      </div>
+      </section>
 
-      {/* Search Bar */}
-      <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-3 md:p-4 mb-3">
-        <input
-          type="text"
-          placeholder="가게 이름 또는 주소로 검색..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg border border-stone-200 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none transition-all text-sm"
-        />
-      </div>
-
-      {/* Collapsible Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-stone-200 mb-6">
-        <div
-          onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-          className="p-3 md:p-4 flex items-center justify-between cursor-pointer hover:bg-stone-50 transition-colors"
-        >
-          <h3 className="text-sm font-bold text-stone-700">보기 옵션</h3>
-          <ChevronDown
-            className={`w-4 h-4 text-stone-500 transition-transform ${isFilterExpanded ? "rotate-180" : ""}`}
-          />
-        </div>
-
-        {isFilterExpanded && (
-          <div className="px-3 pb-3 md:px-4 md:pb-4 space-y-3 border-t border-stone-100">
-            {/* Region Filter */}
-            <div className="pt-3">
-              <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">
-                지역
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {regions.map((region) => (
-                  <button
-                    key={region}
-                    onClick={() => setActiveRegion(region)}
-                    className={`px-3.5 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
-                      activeRegion === region
-                        ? "bg-red-600 text-white shadow-md"
-                        : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-                    }`}
-                  >
-                    {region === "All" ? "전체" : region}
-                  </button>
-                ))}
-              </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="flex flex-col gap-6">
+          
+          {/* Search & Filter Bar - Clean Style */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div className="lg:col-span-9 relative">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
+              <input
+                type="text"
+                placeholder="가게 이름이나 주소를 입력하세요..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-14 pr-6 py-5 bg-white border border-stone-200 rounded-xl outline-none focus:ring-1 focus:ring-stone-300 focus:border-stone-400 transition-all text-sm font-bold text-stone-700"
+              />
             </div>
-
-            {/* Ramen Type Filter */}
-            <div>
-              <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">
-                라멘 종류
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {types.map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setActiveType(type)}
-                    className={`px-3.5 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
-                      activeType === type
-                        ? "bg-red-600 text-white shadow-md"
-                        : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-                    }`}
-                  >
-                    {type === "All" ? "전체" : type}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Sort Options */}
-            <div>
-              <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">
-                정렬
-              </label>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSortBy("default")}
-                  className={`px-3.5 py-2 rounded-full text-sm font-bold transition-all ${sortBy === "default" ? "bg-red-600 text-white shadow-md" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`}
-                >
-                  기본순
-                </button>
-                <button
-                  onClick={() => setSortBy("name")}
-                  className={`px-3.5 py-2 rounded-full text-sm font-bold transition-all ${sortBy === "name" ? "bg-red-600 text-white shadow-md" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`}
-                >
-                  이름순
-                </button>
-                <button
-                  onClick={() => setSortBy("popular")}
-                  className={`px-3.5 py-2 rounded-full text-sm font-bold transition-all ${sortBy === "popular" ? "bg-red-600 text-white shadow-md" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`}
-                >
-                  인기순
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Results Count */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="text-stone-600">
-          전체{" "}
-          <span className="font-bold text-red-600">
-            {shopPageInfo.totalElements}
-          </span>
-          개 중 현재 페이지{" "}
-          <span className="font-bold text-red-600">{shops.length}</span>개
-        </div>
-        <Link
-          href="/"
-          className="text-sm text-stone-400 hover:text-stone-600 transition-colors"
-        >
-          ← 홈으로 돌아가기
-        </Link>
-      </div>
-
-      {/* Shop Grid */}
-      {isLoading ? (
-        <div className="text-center py-16 text-stone-500">
-          가게 목록을 불러오는 중입니다...
-        </div>
-      ) : isError ? (
-        <div className="text-center py-16">
-          <h3 className="text-xl font-bold text-stone-700 mb-2">
-            가게 목록을 불러오지 못했습니다
-          </h3>
-          <p className="text-stone-500">잠시 후 다시 시도해주세요</p>
-        </div>
-      ) : shops.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {shops.map((shop) => (
-            <ShopCard key={shop.id} shop={shop} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16">
-          <div className="text-6xl mb-4">🍜</div>
-          <h3 className="text-xl font-bold text-stone-700 mb-2">
-            검색 결과가 없습니다
-          </h3>
-          <p className="text-stone-500">다른 검색어나 지역을 선택해보세요</p>
-        </div>
-      )}
-
-      {/* Pagination */}
-      <div className="mt-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-12">
-        <p className="text-sm text-stone-500">
-          페이지 {currentPage + 1} / {totalPages}
-        </p>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => goToShopsPage(currentPage - 1)}
-            disabled={!shopPageInfo.hasPrevious}
-            className="px-3 py-2 rounded-lg border border-stone-200 text-stone-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-stone-50 transition-colors text-sm font-bold inline-flex items-center"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            이전
-          </button>
-
-          {visiblePageNumbers.map((pageNumber) => (
-            <button
-              key={pageNumber}
-              onClick={() => goToShopsPage(pageNumber)}
-              className={`px-3 py-2 rounded-lg border text-sm font-bold transition-colors ${
-                pageNumber === currentPage
-                  ? "bg-red-600 border-red-600 text-white"
-                  : "border-stone-200 text-stone-600 hover:bg-stone-50"
+            <button 
+              onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+              className={`lg:col-span-3 flex items-center justify-center gap-3 py-5 px-6 rounded-xl font-black text-sm transition-all border ${
+                isFilterExpanded 
+                  ? 'bg-stone-900 border-stone-900 text-white' 
+                  : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
               }`}
             >
-              {pageNumber + 1}
+              <Filter className="w-4 h-4" />
+              필터 {isFilterExpanded ? '닫기' : '열기'}
             </button>
-          ))}
+          </div>
 
-          <button
-            onClick={() => goToShopsPage(currentPage + 1)}
-            disabled={!shopPageInfo.hasNext}
-            className="px-3 py-2 rounded-lg border border-stone-200 text-stone-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-stone-50 transition-colors text-sm font-bold inline-flex items-center"
-          >
-            다음
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </button>
+          {/* Filter Content - Minimalist */}
+          {isFilterExpanded && (
+            <div className="bg-white border border-stone-200 rounded-xl p-8 animate-scale-in space-y-8">
+              <div>
+                <label className="flex items-center gap-2 text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-4">
+                  <MapPin className="w-3 h-3" /> Region
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {regions.map((region) => (
+                    <button
+                      key={region}
+                      onClick={() => setActiveRegion(region)}
+                      className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all border ${
+                        activeRegion === region 
+                          ? "bg-red-600 border-red-600 text-white" 
+                          : "bg-white border-stone-200 text-stone-500 hover:border-stone-400"
+                      }`}
+                    >
+                      {region === "All" ? "전국 전체" : region}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2 text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-4">
+                  <Utensils className="w-3 h-3" /> Ramen Type
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {types.map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setActiveType(type)}
+                      className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all border ${
+                        activeType === type 
+                          ? "bg-red-600 border-red-600 text-white" 
+                          : "bg-white border-stone-200 text-stone-500 hover:border-stone-400"
+                      }`}
+                    >
+                      {type === "All" ? "모든 종류" : type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-stone-100 flex items-center justify-between">
+                <div className="flex gap-1">
+                  {['default', 'name', 'popular'].map((s) => (
+                    <button 
+                      key={s}
+                      onClick={() => setSortBy(s)} 
+                      className={`px-4 py-2 text-[10px] font-black rounded uppercase tracking-widest transition-all ${
+                        sortBy === s ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-400 hover:bg-stone-200"
+                      }`}
+                    >
+                      {s === 'default' ? 'Default' : s === 'name' ? 'Name' : 'Popular'}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => { setActiveRegion('All'); setActiveType('All'); setSortBy('default'); }} className="text-[10px] font-black text-stone-400 hover:text-red-600 transition-colors uppercase tracking-widest">Reset Filter</button>
+              </div>
+            </div>
+          )}
+
+          {/* Results Summary */}
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-xs font-black text-stone-400 uppercase tracking-[0.1em]">
+              Archive Results: <span className="text-stone-900">{shopPageInfo.totalElements}</span>
+            </p>
+            <div className="h-[1px] flex-1 mx-6 bg-stone-200 hidden md:block"></div>
+            <Link href="/" className="text-[10px] font-black text-stone-400 hover:text-stone-900 transition-colors uppercase tracking-[0.2em]">← Back to Home</Link>
+          </div>
+
+          {/* Shop Grid */}
+          {isLoading ? (
+            <div className="py-20 flex justify-center"><Loading /></div>
+          ) : isError ? (
+            <div className="text-center py-24 bg-white rounded-2xl border border-stone-200">
+              <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">Connection Error</h3>
+              <p className="text-stone-400 text-sm">가게 목록을 불러오지 못했습니다.</p>
+            </div>
+          ) : shops.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
+              {shops.map((shop) => (
+                <ShopCard key={shop.id} shop={shop} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-32 bg-white rounded-2xl border border-dashed border-stone-200">
+              <div className="text-5xl mb-6 opacity-10">🍜</div>
+              <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">No Results</h3>
+              <p className="text-stone-400 text-sm font-medium">검색어와 필터를 다시 확인해보세요</p>
+            </div>
+          )}
+
+          {/* Pagination - Clean Style */}
+          {totalPages > 1 && (
+            <div className="mt-16 flex flex-col md:flex-row md:items-center md:justify-between gap-8 pb-20 border-t border-stone-200 pt-10">
+              <div className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">Page {currentPage + 1} of {totalPages}</div>
+              <div className="flex items-center gap-2">
+                <button
+                  disabled={!shopPageInfo.hasPrevious}
+                  onClick={() => goToShopsPage(currentPage - 1)}
+                  className="p-3 rounded-lg border border-stone-200 text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed hover:border-stone-400 hover:text-stone-900 transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                <div className="flex gap-1">
+                  {visiblePageNumbers.map((pageNumber) => (
+                    <button
+                      key={pageNumber}
+                      onClick={() => goToShopsPage(pageNumber)}
+                      className={`w-10 h-10 rounded-lg text-xs font-black transition-all ${
+                        pageNumber === currentPage 
+                          ? "bg-stone-900 text-white" 
+                          : "bg-white text-stone-400 border border-stone-200 hover:border-stone-400 hover:text-stone-900"
+                      }`}
+                    >
+                      {pageNumber + 1}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  disabled={!shopPageInfo.hasNext}
+                  onClick={() => goToShopsPage(currentPage + 1)}
+                  className="p-3 rounded-lg border border-stone-200 text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed hover:border-stone-400 hover:text-stone-900 transition-all"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

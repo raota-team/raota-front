@@ -17,11 +17,12 @@ import {
   MyProfileData,
   PageMeta
 } from '@/lib/api/user';
+import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
 
 export default function MyPageView() {
   const params = useParams();
   const userId = params?.id as string | undefined;
-  const { isLoggedIn } = useApp();
+  const { isLoggedIn, showToast } = useApp();
   
   const [activeTab, setActiveTab] = useState('photos');
   const [profile, setProfile] = useState<MyProfileData | null>(null);
@@ -32,6 +33,12 @@ export default function MyPageView() {
     profileImage: '',
     backgroundImage: ''
   });
+  
+  // 실제 파일 객체 저장용
+  const [selectedFiles, setSelectedFiles] = useState<{
+    profile: File | null;
+    background: File | null;
+  }>({ profile: null, background: null });
 
   // 데이터 목록 및 페이징 상태
   const [items, setItems] = useState<any[]>([]);
@@ -64,8 +71,10 @@ export default function MyPageView() {
         setProfile(res.data);
         setEditForm({
           nickname: res.data.nickname,
-          bio: res.data.userDescription || '',
-          profileImage: res.data.profile_image_url || '',
+          bio: (res.data.userDescription && res.data.userDescription !== res.data.nickname) 
+            ? res.data.userDescription 
+            : '자기소개가 아직 없습니다.',
+          profileImage: res.data.profile_image_url || '/logo.png',
           backgroundImage: res.data.background_image_url || ''
         });
       } catch (err) {
@@ -97,6 +106,7 @@ export default function MyPageView() {
       }
       
       if (res && res.data) {
+        // ID가 없는 유령 데이터 필터링
         const validItems = (res.data.items || []).filter((item: any) => {
           if (activeTab === 'photos') return !!item.photo_id;
           if (activeTab === 'visits' || activeTab === 'bookmarks') return !!(item.restaurant_id || item.id);
@@ -122,35 +132,70 @@ export default function MyPageView() {
   };
 
   const handleSave = async () => {
+    setIsLoading(true);
     try {
+      let finalProfileUrl = profile?.profile_image_url;
+      let finalBackgroundUrl = profile?.background_image_url;
+
+      // 1. 프로필 이미지 업로드 (3단계)
+      if (selectedFiles.profile) {
+        const ticket = await getUploadTicket({
+          type: 'PROFILE',
+          extension: selectedFiles.profile.name.split('.').pop() || 'jpg'
+        });
+        finalProfileUrl = await uploadFileToStorage(ticket, selectedFiles.profile);
+      }
+
+      // 2. 배경 이미지 업로드 (3단계)
+      if (selectedFiles.background) {
+        const ticket = await getUploadTicket({
+          type: 'BACKGROUND',
+          extension: selectedFiles.background.name.split('.').pop() || 'jpg'
+        });
+        finalBackgroundUrl = await uploadFileToStorage(ticket, selectedFiles.background);
+      }
+
+      // 3. 최종 프로필 정보 업데이트
       await updateUserProfile({
         nickname: editForm.nickname,
-        bio: editForm.bio, // userDescription 대신 bio 필드로 전송
-        profile_image_url: editForm.profileImage.startsWith('data:') ? editForm.profileImage : undefined,
-        background_image_url: editForm.backgroundImage.startsWith('data:') ? editForm.backgroundImage : undefined
+        bio: editForm.bio,
+        profile_image_url: finalProfileUrl,
+        background_image_url: finalBackgroundUrl
       });
       
       setIsEditing(false);
       // 서버 데이터 재로딩
       const res = await getMyProfile();
       setProfile(res.data);
-      setEditForm(prev => ({
-        ...prev,
+      setEditForm({
         nickname: res.data.nickname,
-        bio: res.data.userDescription || ''
-      }));
+        bio: res.data.userDescription || '',
+        profileImage: res.data.profile_image_url || '/logo.png',
+        backgroundImage: res.data.background_image_url || ''
+      });
+      setSelectedFiles({ profile: null, background: null });
+      showToast('프로필이 성공적으로 저장되었습니다!', 'success');
     } catch (err: any) {
-      alert(err.message || '프로필 수정에 실패했습니다.');
+      console.error('Failed to save profile:', err);
+      showToast(err.message || '프로필 수정에 실패했습니다.', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'profileImage' | 'backgroundImage') => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('이미지 크기는 2MB 이하여야 합니다.');
+      if (file.size > 5 * 1024 * 1024) {
+        alert('이미지 크기는 5MB 이하여야 합니다.');
         return;
       }
+      
+      // 파일 객체 저장
+      const key = type === 'profileImage' ? 'profile' : 'background';
+      setSelectedFiles(prev => ({ ...prev, [key]: file }));
+
+      // 미리보기용 URL 생성
       const reader = new FileReader();
       reader.onload = (e) => {
         setEditForm(prev => ({
@@ -204,7 +249,7 @@ export default function MyPageView() {
       {/* Profile Header */}
       <div className="bg-white border border-stone-200 mb-8 shadow-sm rounded-xl overflow-hidden relative group">
         <div className="h-48 md:h-64 bg-stone-800 relative overflow-hidden">
-          {editForm.backgroundImage || profile.background_image_url ? (
+          {(editForm.backgroundImage || profile.background_image_url) ? (
             <img
               src={editForm.backgroundImage || profile.background_image_url}
               alt="Cover"
@@ -294,15 +339,20 @@ export default function MyPageView() {
               isEditing ? (
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setIsEditing(false)}
+                    onClick={() => {
+                      setIsEditing(false);
+                      setSelectedFiles({ profile: null, background: null });
+                    }}
                     className="bg-white hover:bg-stone-50 text-stone-500 px-4 py-2 text-sm font-bold rounded-lg border border-stone-200 transition-colors"
                   >
                     취소
                   </button>
                   <button
                     onClick={handleSave}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-sm font-bold rounded-lg shadow-md transition-colors"
+                    disabled={isLoading}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-sm font-bold rounded-lg shadow-md transition-colors flex items-center gap-2"
                   >
+                    {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                     저장 완료
                   </button>
                 </div>
@@ -361,31 +411,15 @@ export default function MyPageView() {
 
               if (activeTab === 'photos') {
                 return (
-                  <div
-                    key={uniqueKey}
-                    {...itemProps}
-                    className="group relative aspect-square bg-stone-100 overflow-hidden rounded-lg shadow-sm border border-stone-200"
-                  >
-                    <img 
-                      src={item.image_url} 
-                      alt={item.menuName} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03] cursor-pointer" 
-                      onClick={() => setSelectedPhoto(item)}
-                    />
+                  <div key={uniqueKey} {...itemProps} className="group relative aspect-square bg-stone-100 overflow-hidden rounded-lg shadow-sm border border-stone-200">
+                    <img src={item.image_url} alt={item.menuName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03] cursor-pointer" onClick={() => setSelectedPhoto(item)} />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pointer-events-none">
                       <p className="text-white text-xs font-bold truncate">{item.menuName}</p>
-                      <Link 
-                        href={`/shop/${item.restaurant_id}`}
-                        className="text-stone-300 text-[10px] hover:text-white hover:underline transition-all pointer-events-auto flex items-center gap-1 mt-0.5"
-                      >
-                        <MapPin className="w-2.5 h-2.5" />
-                        {item.restaurant_name}
-                      </Link>
+                      <Link href={`/shop/${item.restaurant_id}`} className="text-stone-300 text-[10px] hover:text-white hover:underline transition-all pointer-events-auto flex items-center gap-1 mt-0.5"><MapPin className="w-2.5 h-2.5" />{item.restaurant_name}</Link>
                     </div>
                   </div>
                 );
               }
-
 
               if (activeTab === 'visits') {
                 const shopId = item.restaurant_id || item.id;
@@ -474,20 +508,20 @@ export default function MyPageView() {
       </div>
 
       {selectedPhoto && (
-        <PhotoModal
-          photo={{
-            imageUrl: selectedPhoto.image_url,
-            menuName: selectedPhoto.menuName || selectedPhoto.restaurant_name,
-            restaurantName: selectedPhoto.restaurant_name,
-            restaurantId: selectedPhoto.restaurant_id,
-            date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-',
-            comment: selectedPhoto.description || ''
-          }}
-          onClose={() => setSelectedPhoto(null)}
-          disableNavigation={false}
+        <PhotoModal 
+          photo={{ 
+            id: selectedPhoto.id,
+            imageUrl: selectedPhoto.image_url, 
+            menuName: selectedPhoto.menuName || selectedPhoto.restaurant_name, 
+            restaurantName: selectedPhoto.restaurant_name, 
+            restaurantId: selectedPhoto.restaurant_id, 
+            date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-', 
+            comment: selectedPhoto.description || '' 
+          }} 
+          onClose={() => setSelectedPhoto(null)} 
+          disableNavigation={false} 
         />
       )}
-
     </div>
   );
 }
