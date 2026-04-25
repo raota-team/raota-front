@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import { X, Utensils } from "lucide-react";
 import { MenuItem } from "../types";
 
@@ -68,7 +69,7 @@ export default function MenuDetailModal({ menu, onClose }: MenuDetailModalProps)
           {menu.is_signature && (
             <div className="absolute top-4 left-4">
               <span className="bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-sm uppercase tracking-wider shadow-md">
-                SIGNATURE
+                시그니처
               </span>
             </div>
           )}

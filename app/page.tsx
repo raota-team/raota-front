@@ -1,5 +1,7 @@
+'use client';
+
 import Link from 'next/link';
-import { ChevronRight, Star, Users } from 'lucide-react';
+import { ChevronRight, Users } from 'lucide-react';
 import { Do_Hyeon } from 'next/font/google';
 
 const doHyeon = Do_Hyeon({
@@ -9,58 +11,77 @@ const doHyeon = Do_Hyeon({
 
 export default function HomePage() {
   return (
-    <div className="bg-stone-50">
+    <div className="bg-stone-950 overflow-hidden">
       {/* Full Screen Hero Section */}
-      <section className="h-[100dvh] relative flex items-center justify-center overflow-hidden">
-        {/* Background Image with Parallax Effect */}
+      <section className="h-[100dvh] relative flex items-center justify-center">
+        {/* Background Image with Cinematic Overlay */}
         <div className="absolute inset-0">
           <img
             src="/hero-home.jpg"
             alt="Ramen Shop"
-            className="w-full h-full object-cover scale-105"
+            className="w-full h-full object-cover scale-[1.02] opacity-60 transition-transform duration-[10s] ease-linear"
+            style={{ animation: 'zoom-slow 20s infinite alternate' }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-stone-900/80"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-stone-950/20"></div>
         </div>
 
-        {/* Floating Decorative Elements */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-40 right-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-
-        {/* Hero Content */}
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto -translate-y-12 md:-translate-y-16">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full mb-6 border border-white/30 shadow-sm">
-            <span className="text-xl">🍜</span>
-            <span className={`text-white text-sm md:text-base ${doHyeon.className} tracking-wide`}>라멘 매니아들의 성지</span>
-          </div>
-
-          <h1 className={`text-5xl md:text-7xl text-white mb-8 leading-tight drop-shadow-lg ${doHyeon.className} tracking-wide`}>
-            한 그릇에 담긴 진심,<br />
-            우리들의 라멘 지도 <span className="text-red-600 font-sans font-black tracking-tighter drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]">RAOTA</span>
+        {/* Hero Content - Refined Layout */}
+        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
+          <h1 className={`text-6xl md:text-8xl text-white mb-8 leading-[1.1] tracking-tighter ${doHyeon.className}`}>
+            한 그릇에 담긴 <br className="md:hidden" /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-stone-400">깊은 진심,</span><br />
+            라멘 지도 <span className="text-red-500 font-sans font-black italic tracking-tighter drop-shadow-[0_0_20px_rgba(239,68,68,0.4)]">RAOTA</span>
           </h1>
 
-          <p className={`text-lg md:text-2xl text-white/95 mb-14 max-w-2xl mx-auto leading-relaxed drop-shadow ${doHyeon.className} tracking-wide`}>
-            숨겨진 로컬 맛집부터 웨이팅 필수 핫플까지.<br className="hidden md:block" />
-            진짜 라멘 매니아들의 생생하고 솔직한 리뷰를 만나보세요.
+          <p className={`text-lg md:text-xl text-stone-400 mb-14 max-w-2xl mx-auto leading-relaxed font-medium animate-fade-in-up`}>
+            숨겨진 로컬 맛집부터 웨이팅 필수핫플까지.<br className="hidden md:block" />
+            진짜 매니아들이 기록하는 생생한 라멘의 연대기.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
             <Link
               href="/shops"
-              className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-600 text-white px-8 py-4 font-bold text-lg rounded-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/40 transition-all hover:scale-[1.02]"
+              className="group relative overflow-hidden bg-white text-stone-950 px-10 py-5 font-black text-lg rounded-full transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
             >
-              맛집 탐색하기
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <span className="relative z-10 flex items-center gap-2">
+                맛집 탐색하기
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </span>
             </Link>
             <Link
               href="/community"
-              className="group inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 text-stone-900 px-8 py-4 font-bold text-lg rounded-xl border border-stone-200 shadow-sm transition-all hover:scale-[1.02]"
+              className="group px-10 py-5 font-black text-lg rounded-full transition-all border border-white/20 text-white hover:bg-white/10 backdrop-blur-sm"
             >
-              커뮤니티
-              <Users className="w-5 h-5 text-stone-400 group-hover:text-stone-600" />
+              <span className="flex items-center gap-2 text-stone-300 group-hover:text-white">
+                커뮤니티
+                <Users className="w-5 h-5 opacity-50 group-hover:opacity-100" />
+              </span>
             </Link>
           </div>
         </div>
+
+        {/* Minimal Scroll Indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 animate-bounce opacity-40">
+          <div className="w-px h-12 bg-gradient-to-b from-white to-transparent"></div>
+        </div>
       </section>
+
+      <style jsx global>{`
+        @keyframes zoom-slow {
+          from { transform: scale(1.02); }
+          to { transform: scale(1.1); }
+        }
+        @keyframes fade-in-down {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-down { animation: fade-in-down 1s ease-out; }
+        .animate-fade-in-up { animation: fade-in-up 1s ease-out 0.2s both; }
+      `}</style>
     </div>
   );
 }

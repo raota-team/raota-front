@@ -1,13 +1,15 @@
 import { apiClient } from "./client";
 
 export interface CommunityPostCard {
-  postId: number; // 최신 명세: postId로 확정
+  postId: number;
   category: string;
   storeName: string | null;
   title: string;
   contentPreview: string;
   imageUrl: string;
   authorName: string;
+  authorId: number;
+  authorImageUrl: string | null;
   createdAt: string;
   likeCount: number;
   commentCount: number;
@@ -17,13 +19,18 @@ export interface CommunityPostDetail extends CommunityPostCard {
   imageUrls: string[];
   contentFormat: "MARKDOWN" | "PLAIN" | "TIPTAP_JSON";
   content: string;
+  isLiked: boolean;
+  author_id?: number; // 하위 호환성 위해 유지
 }
 
 export interface CommunityComment {
   commentId: number;
   authorNickname: string;
+  authorId: number;
+  authorImageUrl: string | null;
   createdAt: string;
   content: string;
+  isDeleted: boolean;
   replies: CommunityComment[];
   parentCommentId?: number | null;
   taggedParentAuthorNickname?: string | null;
@@ -48,7 +55,7 @@ export const getCommunityPosts = async (params: {
   return await apiClient<any>("/community/posts", { query: params });
 };
 
-/** 커뮤니티 글 작성 (최신 명세: application/json) */
+/** 커뮤니티 글 작성 */
 export const createCommunityPost = async (data: CommunityPostCreateRequest) => {
   return await apiClient<any>("/community/posts", {
     method: "POST",
@@ -61,6 +68,28 @@ export const getCommunityPostDetail = async (postId: number) => {
   return await apiClient<any>(`/community/posts/${postId}`);
 };
 
+/** 커뮤니티 글 수정 */
+export const updateCommunityPost = async (postId: number, data: CommunityPostCreateRequest) => {
+  return await apiClient<any>(`/community/posts/${postId}`, {
+    method: "PATCH",
+    body: data,
+  });
+};
+
+/** 커뮤니티 글 삭제 */
+export const deleteCommunityPost = async (postId: number) => {
+  return await apiClient<any>(`/community/posts/${postId}`, {
+    method: "DELETE",
+  });
+};
+
+/** 게시글 좋아요 토글 */
+export const togglePostLike = async (postId: number) => {
+  return await apiClient<any>(`/community/posts/${postId}/likes`, {
+    method: "POST",
+  });
+};
+
 /** 댓글 목록 조회 */
 export const getComments = async (postId: number, page = 0, size = 20) => {
   return await apiClient<any>(`/community/posts/${postId}/comments`, {
@@ -68,7 +97,7 @@ export const getComments = async (postId: number, page = 0, size = 20) => {
   });
 };
 
-/** 댓글 작성 */
+/** 댓글 및 답글 작성 */
 export const createComment = async (postId: number, data: { content: string; parentCommentId?: number | null }) => {
   return await apiClient<any>(`/community/posts/${postId}/comments`, {
     method: "POST",

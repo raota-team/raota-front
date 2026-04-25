@@ -1,17 +1,36 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import Header from './Header';
 import Footer from './Footer';
 import { CheckCircle2, AlertCircle, Info, HelpCircle } from 'lucide-react';
+import { getMyProfile } from '@/lib/api/user';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoggedIn, handleLogout, toast, confirm, setConfirm } = useApp();
+  const { isLoggedIn, handleLogout, toast, confirm, setConfirm, currentUser, setCurrentUser } = useApp();
   const isHomePage = pathname === '/';
+
+  // 실제 프로필 정보 동기화
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await getMyProfile();
+        if (res.data) {
+          setCurrentUser(res.data);
+        }
+      } catch (err) {
+        console.error('Failed to sync profile:', err);
+      }
+    };
+
+    if (isLoggedIn && (!currentUser || currentUser.nickname.startsWith('회원 #'))) {
+      fetchProfile();
+    }
+  }, [isLoggedIn, currentUser, setCurrentUser]);
 
   const onLogout = useCallback(() => {
     handleLogout();

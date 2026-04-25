@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { X, User, MapPin, Calendar, Trash2 } from 'lucide-react';
 import { useApp } from '@/app/context/AppContext';
 
@@ -27,6 +28,7 @@ interface PhotoModalProps {
 const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, disableNavigation = false }) => {
   const router = useRouter();
   const { currentUser, showConfirm } = useApp();
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {

@@ -8,6 +8,7 @@ import RichTextEditor from '../../../components/RichTextEditor';
 import { useApp } from '@/app/context/AppContext';
 import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
 import { createCommunityPost } from '@/lib/api/community';
+import { compressImage } from '@/lib/utils/image-optimization';
 
 const categories = [
   { id: 'REVIEW', name: '맛집후기', icon: '🍜' },
@@ -47,6 +48,19 @@ export default function CommunityWritePage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  /** 에디터 내부 이미지 업로드 핸들러 */
+  const handleEditorImageUpload = async (file: File): Promise<string> => {
+    // 1. 압축
+    const compressedFile = await compressImage(file);
+    // 2. 티켓 발급
+    const ticket = await getUploadTicket({
+      type: 'COMMUNITY',
+      extension: 'webp'
+    });
+    // 3. 업로드 및 URL 반환
+    return await uploadFileToStorage(ticket, compressedFile);
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -75,13 +89,14 @@ export default function CommunityWritePage() {
     try {
       let thumbnailUrl = '';
 
-      // 1. 이미지가 있다면 3단계 업로드 수행
+      // 1. 대표 이미지가 있다면 압축 후 업로드 수행
       if (selectedFile) {
+        const compressedFile = await compressImage(selectedFile);
         const ticket = await getUploadTicket({
           type: 'COMMUNITY',
-          extension: selectedFile.name.split('.').pop() || 'jpg'
+          extension: 'webp'
         });
-        thumbnailUrl = await uploadFileToStorage(ticket, selectedFile);
+        thumbnailUrl = await uploadFileToStorage(ticket, compressedFile);
       }
 
       // 2. 최종 게시글 작성 API 호출
@@ -91,7 +106,7 @@ export default function CommunityWritePage() {
         title: title.trim(),
         content,
         thumbnailUrl,
-        contentFormat: 'TIPTAP_JSON' // RichTextEditor 사용 시 TIPTAP_JSON으로 간주
+        contentFormat: 'TIPTAP_JSON'
       });
 
       showToast('글이 성공적으로 작성되었습니다!', 'success');
@@ -182,7 +197,12 @@ export default function CommunityWritePage() {
 
         <div className="p-6 border-b border-stone-100">
           <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">내용</label>
-          <RichTextEditor content={content} onChange={setContent} placeholder="라멘에 대한 이야기를 들려주세요..." />
+          <RichTextEditor 
+            content={content} 
+            onChange={setContent} 
+            placeholder="라멘에 대한 이야기를 들려주세요..." 
+            onImageUpload={handleEditorImageUpload}
+          />
         </div>
 
         <div className="p-6 border-b border-stone-100">

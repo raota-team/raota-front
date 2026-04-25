@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
         <div className="text-stone-400 text-[10px] sm:text-sm font-mono text-right">
           © 2026 RAOTA. <span className="hidden sm:inline">All rights reserved. </span>
           <br className="sm:hidden" />
-          Designed for Noodle Lovers.
+          라멘 매니아를 위한 공간.
         </div>
       </div>
     </footer>
