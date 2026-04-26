@@ -8,9 +8,45 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 
 // 검색 엔진 최적화를 위한 기본 설정
-const SITE_NAME = "RAOTA (라오타)";
-const SITE_DESCRIPTION = "라멘 매니아들을 위한 국내 최대 라멘 맛집 아카이브. 생생한 후기와 나만의 라멘 지도를 만들어보세요.";
-const SITE_URL = "https://raota.net"; // 실제 배포 주소로 변경 필요
+const SITE_NAME = "라오타 RAOTA";
+const SITE_TITLE = "라오타 - 라멘에 진심인 사람들";
+const SITE_DESCRIPTION =
+  "라오타(RAOTA)는 라멘에 진심인 사람들이 모여 국내 라멘 맛집, 일본라멘 스타일, 솔직한 후기와 라멘 지도를 기록하는 커뮤니티입니다.";
+const SITE_URL = "https://raota.net";
+const SITE_KEYWORDS = [
+  "raota",
+  "RAOTA",
+  "라오타",
+  "라멘",
+  "일본라멘",
+  "라멘 맛집",
+  "라멘맛집",
+  "라멘 지도",
+  "라멘지도",
+  "라멘 커뮤니티",
+  "라멘 후기",
+  "돈코츠라멘",
+  "쇼유라멘",
+  "츠케멘",
+  "마제소바",
+];
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "라오타",
+  alternateName: ["RAOTA", "raota", "라오타 - 라멘에 진심인 사람들"],
+  url: SITE_URL,
+  description: SITE_DESCRIPTION,
+  inLanguage: "ko-KR",
+  publisher: {
+    "@type": "Organization",
+    name: "RAOTA",
+    alternateName: "라오타",
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.png`,
+  },
+};
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -22,15 +58,17 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: "라오타",
   title: {
-    default: `${SITE_NAME} - 라멘의 모든 것`,
-    template: `%s | ${SITE_NAME}`,
+    default: SITE_TITLE,
+    template: `%s | 라오타 RAOTA`,
   },
-  description: "전국 라멘 맛집 지도부터 매니아들의 솔직한 후기까지. '오늘 어디 라멘 먹으러 가지?' 고민될 땐 RAOTA에서 진짜 맛집을 찾아보세요.",
-  keywords: ["라멘", "라멘맛집", "어디 라멘", "라멘 커뮤니티", "일본라멘", "돈코츠라멘", "츠케멘", "마제소바", "라멘지도", "라멘후기", "RAOTA", "라오타"],
+  description: SITE_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
   authors: [{ name: "RAOTA Team" }],
   creator: "RAOTA",
   publisher: "RAOTA",
+  category: "food",
   formatDetection: {
     email: false,
     address: false,
@@ -42,21 +80,21 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: SITE_NAME,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     images: [
       {
         url: "/hero-ramen.webp", // 공유 시 보여줄 기본 이미지
         width: 1200,
         height: 630,
-        alt: "RAOTA - 라멘의 모든 것",
+        alt: "라오타 RAOTA - 라멘에 진심인 사람들",
       },
     ],
   },
   // Twitter (X) 노출용
   twitter: {
     card: "summary_large_image",
-    title: SITE_NAME,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     images: ["/hero-ramen.webp"],
   },
@@ -76,13 +114,6 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
-  verification: {
-    // 실제 등록 시 네이버/구글 콘솔에서 받은 코드를 여기에 넣으면 더 빨리 수집됩니다.
-    google: "google-site-verification-code", 
-    other: {
-      "naver-site-verification": "naver-site-verification-code",
-    },
-  },
 };
 
 export default function RootLayout({
@@ -93,8 +124,10 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        {/* 추가적인 SEO 팁: 캐노니컬 URL 강제 */}
-        <link rel="canonical" href={SITE_URL} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
       </head>
       <body>
         <QueryProvider>
