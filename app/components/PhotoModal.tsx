@@ -52,8 +52,6 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, disab
       router.push(`/shop/${photo.restaurantId}`);
     } else if (photo.userId) {
       router.push(`/user/${photo.userId}`);
-    } else if (photo.user) {
-      router.push(`/user/${photo.user}`);
     }
   };
 

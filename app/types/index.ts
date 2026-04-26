@@ -24,6 +24,7 @@ export interface EventMenu {
 export interface UserPhoto {
   id: number;
   uploaderId?: number; // 유저 번호 추가
+  userId?: number;
   user: string;
   imageUrl: string;
   menuName: string;
@@ -49,6 +50,8 @@ export interface Shop {
   id: number;
   name: string;
   branch_name?: string;
+  naver_map_id?: string;
+  address?: string;
   location: string;
   type: string;
   editorRating: number;
