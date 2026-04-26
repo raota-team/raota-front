@@ -9,7 +9,7 @@ import "swiper/css/navigation";
 
 // 검색 엔진 최적화를 위한 기본 설정
 const SITE_NAME = "라오타 RAOTA";
-const SITE_TITLE = "RAOTA - 라멘에 진심인 사람들의 라멘 커뮤니티";
+const SITE_TITLE = "RAOTA - 라멘에 진심인 사람들";
 const SITE_DESCRIPTION =
   "라오타(RAOTA)는 라멘에 진심인 사람들이 모여 국내 라멘 맛집, 일본라멘 스타일, 솔직한 후기와 라멘 지도를 기록하는 라멘 커뮤니티입니다.";
 const SITE_URL = "https://raota.net";
@@ -35,7 +35,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "RAOTA",
-  alternateName: ["라오타", "raota", "RAOTA - 라멘에 진심인 사람들의 라멘 커뮤니티"],
+  alternateName: ["라오타", "raota", SITE_TITLE],
   url: SITE_URL,
   description: SITE_DESCRIPTION,
   inLanguage: "ko-KR",
