@@ -42,6 +42,12 @@ const getCategoryLabel = (category: string) => {
   }
 };
 
+const getEditableBio = (profile: MyProfileData) => {
+  return profile.userDescription && profile.userDescription !== profile.nickname
+    ? profile.userDescription
+    : '';
+};
+
 export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
@@ -104,9 +110,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       setProfile(res.data);
       setEditForm({
         nickname: res.data.nickname,
-        bio: (res.data.userDescription && res.data.userDescription !== res.data.nickname) 
-          ? res.data.userDescription 
-          : '자기소개가 아직 없습니다.',
+        bio: getEditableBio(res.data),
         profileImage: res.data.profile_image_url || '',
         backgroundImage: res.data.background_image_url || ''
       });
@@ -183,6 +187,33 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     setActiveTab(tab);
     setItems([]);
     setPageMeta(null);
+  };
+
+  const handleEditStart = () => {
+    if (!profile) return;
+    setEditForm({
+      nickname: profile.nickname,
+      bio: getEditableBio(profile),
+      profileImage: profile.profile_image_url || '',
+      backgroundImage: profile.background_image_url || '',
+    });
+    setSelectedFiles({ profile: null, background: null });
+    setMarkedForDelete({ profile: false, background: false });
+    setIsEditing(true);
+  };
+
+  const handleEditCancel = () => {
+    if (!profile) return;
+    setEditForm({
+      nickname: profile.nickname,
+      bio: getEditableBio(profile),
+      profileImage: profile.profile_image_url || '',
+      backgroundImage: profile.background_image_url || '',
+    });
+    setSelectedFiles({ profile: null, background: null });
+    setMarkedForDelete({ profile: false, background: false });
+    setIsSubmitting(false);
+    setIsEditing(false);
   };
 
   const handleSave = async () => {
@@ -347,10 +378,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
               <div className="bg-white/80 backdrop-blur-md border border-stone-200 rounded-xl p-4 shadow-lg relative z-40">
                 <div className="space-y-4">
                   <input type="text" value={editForm.nickname} onChange={(e) => setEditForm({ ...editForm, nickname: e.target.value })} className="w-full px-4 py-2 bg-white border border-stone-200 rounded-lg font-bold text-xl outline-none" />
-                  <textarea value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} className="w-full px-4 py-2 bg-white border border-stone-200 rounded-lg text-sm outline-none" rows={2} />
+                  <textarea value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} placeholder="자기소개를 입력하세요" className="w-full px-4 py-2 bg-white border border-stone-200 rounded-lg text-sm outline-none" rows={2} />
                   <div className="flex gap-2 justify-center md:justify-start">
                     <button onClick={handleSave} disabled={isSubmitting} className="px-6 py-2 bg-stone-900 text-white font-bold rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50">저장</button>
-                    <button onClick={() => { setIsEditing(false); setSelectedFiles({ profile: null, background: null }); setMarkedForDelete({ profile: false, background: false }); fetchProfile(); }} className="px-6 py-2 bg-stone-200 text-stone-600 font-bold rounded-lg hover:bg-stone-300">취소</button>
+                    <button onClick={handleEditCancel} disabled={isSubmitting} className="px-6 py-2 bg-stone-100 text-stone-600 font-bold rounded-lg border border-stone-200 hover:bg-stone-200 hover:text-stone-900 transition-colors disabled:opacity-50">취소</button>
                   </div>
                 </div>
               </div>
@@ -364,7 +395,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
           <div className="mt-4 md:mt-0 relative z-10">
             {isOwnProfile && !isEditing && (
-              <button onClick={() => setIsEditing(true)} className="bg-stone-700 hover:bg-stone-800 text-white px-6 py-2.5 text-xs font-black uppercase tracking-[0.2em] rounded-sm border-2 border-stone-600 hover:border-stone-800 transition-all shadow-sm">프로필 수정</button>
+              <button onClick={handleEditStart} className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-red-700 shadow-sm transition-all hover:border-red-600 hover:bg-red-600 hover:text-white active:scale-[0.98]">
+                <Edit3 className="h-3.5 w-3.5" />
+                프로필 수정
+              </button>
             )}
           </div>
         </div>
