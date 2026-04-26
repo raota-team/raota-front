@@ -1,5 +1,4 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ChevronRight, Users } from 'lucide-react';
 import { Do_Hyeon } from 'next/font/google';
@@ -8,6 +7,15 @@ const doHyeon = Do_Hyeon({
   weight: '400',
   subsets: ['latin'],
 });
+
+export const metadata: Metadata = {
+  title: '라오타 - 라멘에 진심인 사람들',
+  description:
+    '라오타(RAOTA)에서 전국 라멘 맛집, 일본라멘 스타일, 매니아들의 솔직한 라멘 후기를 찾아보세요.',
+  alternates: {
+    canonical: '/',
+  },
+};
 
 export default function HomePage() {
   return (
@@ -60,18 +68,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <style jsx global>{`
-        @keyframes fade-in-down {
-          from { opacity: 0; transform: translateY(-20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-down { animation: fade-in-down 1s ease-out; }
-        .animate-fade-in-up { animation: fade-in-up 1s ease-out 0.2s both; }
-      `}</style>
     </div>
   );
 }

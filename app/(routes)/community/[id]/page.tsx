@@ -17,10 +17,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     return {
       title: post.title,
-      description: post.contentPreview || `${post.authorName}님의 라멘 후기를 확인해보세요.`,
+      description:
+        post.contentPreview ||
+        `${post.authorName}님의 라멘 후기와 일본라멘 이야기를 라오타(RAOTA)에서 확인해보세요.`,
+      keywords: ['라오타', 'RAOTA', 'raota', '라멘', '일본라멘', '라멘 후기', post.title],
+      alternates: {
+        canonical: `/community/${postId}`,
+      },
       openGraph: {
-        title: `${post.title} | RAOTA 라멘 커뮤니티`,
+        title: `${post.title} | 라오타 RAOTA 라멘 커뮤니티`,
         description: post.contentPreview,
+        url: `/community/${postId}`,
         images: post.imageUrl ? [post.imageUrl] : ['/hero-ramen.webp'],
         type: 'article',
       },
