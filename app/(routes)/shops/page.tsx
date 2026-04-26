@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ChevronDown, ChevronLeft, ChevronRight, X, Search, Filter, MapPin, Utensils } from "lucide-react";
 import ShopCard from "../../components/ShopCard";
 import { useRamenShops } from "@/hooks/queries/useRamenShops";
-import Loading from "@/app/loading";
 import { useApp } from "@/app/context/AppContext";
 
 const PAGE_SIZE = 12;
@@ -15,7 +14,7 @@ export default function ShopsListPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [activeRegion, setActiveRegion] = useState("All");
   const [activeType, setActiveType] = useState("All");
-  const [sortBy, setSortBy] = useState("default");
+  const [sortBy, setSortBy] = useState("name");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
@@ -32,9 +31,8 @@ export default function ShopsListPage() {
   }, [activeRegion, activeType, sortBy, debouncedSearchQuery]);
 
   const sortParam = useMemo(() => {
-    if (sortBy === "name") return ["name,asc"];
     if (sortBy === "popular") return ["visits,desc"];
-    return undefined;
+    return ["name,asc"];
   }, [sortBy]);
 
   const keywordParam = useMemo(() => {
@@ -45,7 +43,7 @@ export default function ShopsListPage() {
     return keywords.length > 0 ? keywords.join(" ") : undefined;
   }, [activeType, debouncedSearchQuery]);
 
-  const { data, isLoading, isError } = useRamenShops({
+  const { data, isLoading, isFetching, isError } = useRamenShops({
     page: currentPage,
     size: PAGE_SIZE,
     region: activeRegion === "All" ? undefined : activeRegion,
@@ -76,13 +74,13 @@ export default function ShopsListPage() {
 
   const handleSortClick = (s: string) => {
     if (s === 'popular') {
-      showToast('인기순 정렬은 현재 준비 중입니다.', 'info');
+      showToast('인기순 정렬은 구현 예정입니다.', 'info');
       return;
     }
     setSortBy(s);
   };
 
-  if (isLoading && shops.length === 0) return <Loading />;
+  const showListLoading = isLoading || isFetching;
 
   return (
     <div className="bg-stone-50 min-h-screen">
@@ -177,7 +175,7 @@ export default function ShopsListPage() {
 
               <div className="pt-6 border-t border-stone-100 flex items-center justify-between">
                 <div className="flex gap-1">
-                  {['default', 'name', 'popular'].map((s) => (
+                  {['name', 'popular'].map((s) => (
                     <button 
                       key={s}
                       onClick={() => handleSortClick(s)} 
@@ -185,11 +183,11 @@ export default function ShopsListPage() {
                         sortBy === s ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-400 hover:bg-stone-200"
                       }`}
                     >
-                      {s === 'default' ? '기본순' : s === 'name' ? '이름순' : '인기순'}
+                      {s === 'name' ? '이름순' : '인기순'}
                     </button>
                   ))}
                 </div>
-                <button onClick={() => { setActiveRegion('All'); setActiveType('All'); setSortBy('default'); }} className="text-[10px] font-black text-stone-400 hover:text-red-600 transition-colors uppercase tracking-widest">필터 초기화</button>
+                <button onClick={() => { setActiveRegion('All'); setActiveType('All'); setSortBy('name'); }} className="text-[10px] font-black text-stone-400 hover:text-red-600 transition-colors uppercase tracking-widest">필터 초기화</button>
               </div>
             </div>
           )}
@@ -203,67 +201,89 @@ export default function ShopsListPage() {
             <Link href="/" className="text-[10px] font-black text-stone-400 hover:text-stone-900 transition-colors uppercase tracking-[0.2em]">← 홈으로 돌아가기</Link>
           </div>
 
-          {/* Shop Grid */}
-          {isLoading ? (
-            <div className="py-20 flex justify-center"><Loading /></div>
-          ) : isError ? (
-            <div className="text-center py-24 bg-white rounded-2xl border border-stone-200">
-              <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">연결 오류</h3>
-              <p className="text-stone-400 text-sm">가게 목록을 불러오지 못했습니다.</p>
-            </div>
-          ) : shops.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
-              {shops.map((shop) => (
-                <ShopCard key={shop.id} shop={shop} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-32 bg-white rounded-2xl border border-dashed border-stone-200">
-              <div className="text-5xl mb-6 opacity-10">🍜</div>
-              <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">결과 없음</h3>
-              <p className="text-stone-400 text-sm font-medium">검색어와 필터를 다시 확인해보세요</p>
-            </div>
-          )}
-
-          {/* Pagination - Clean Style */}
-          {totalPages > 1 && (
-            <div className="mt-16 flex flex-col md:flex-row md:items-center md:justify-between gap-8 pb-20 border-t border-stone-200 pt-10">
-              <div className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">페이지 {currentPage + 1} / {totalPages}</div>
-              <div className="flex items-center gap-2">
-                <button
-                  disabled={!shopPageInfo.hasPrevious}
-                  onClick={() => goToShopsPage(currentPage - 1)}
-                  className="p-3 rounded-lg border border-stone-200 text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed hover:border-stone-400 hover:text-stone-900 transition-all"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-
-                <div className="flex gap-1">
-                  {visiblePageNumbers.map((pageNumber) => (
-                    <button
-                      key={pageNumber}
-                      onClick={() => goToShopsPage(pageNumber)}
-                      className={`w-10 h-10 rounded-lg text-xs font-black transition-all ${
-                        pageNumber === currentPage 
-                          ? "bg-stone-900 text-white" 
-                          : "bg-white text-stone-400 border border-stone-200 hover:border-stone-400 hover:text-stone-900"
-                      }`}
-                    >
-                      {pageNumber + 1}
-                    </button>
+          <section className="relative min-h-[360px]">
+            {isError ? (
+              <div className="text-center py-24 bg-white rounded-2xl border border-stone-200">
+                <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">연결 오류</h3>
+                <p className="text-stone-400 text-sm">가게 목록을 불러오지 못했습니다.</p>
+              </div>
+            ) : shops.length > 0 ? (
+              <div className={`transition-opacity duration-200 ${showListLoading ? "opacity-35" : "opacity-100"}`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
+                  {shops.map((shop) => (
+                    <ShopCard key={shop.id} shop={shop} />
                   ))}
                 </div>
-
-                <button
-                  disabled={!shopPageInfo.hasNext}
-                  onClick={() => goToShopsPage(currentPage + 1)}
-                  className="p-3 rounded-lg border border-stone-200 text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed hover:border-stone-400 hover:text-stone-900 transition-all"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
               </div>
-            </div>
-          )}
+            ) : !showListLoading ? (
+              <div className="text-center py-32 bg-white rounded-2xl border border-dashed border-stone-200">
+                <div className="text-5xl mb-6 opacity-10">🍜</div>
+                <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">결과 없음</h3>
+                <p className="text-stone-400 text-sm font-medium">검색어와 필터를 다시 확인해보세요</p>
+              </div>
+            ) : null}
+
+            {showListLoading && <ShopListLoading />}
+
+            {/* Pagination - Clean Style */}
+            {totalPages > 1 && (
+              <div className={`mt-16 flex flex-col md:flex-row md:items-center md:justify-between gap-8 pb-20 border-t border-stone-200 pt-10 transition-opacity duration-200 ${showListLoading ? "opacity-35 pointer-events-none" : "opacity-100"}`}>
+                <div className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">페이지 {currentPage + 1} / {totalPages}</div>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={!shopPageInfo.hasPrevious}
+                    onClick={() => goToShopsPage(currentPage - 1)}
+                    className="p-3 rounded-lg border border-stone-200 text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed hover:border-stone-400 hover:text-stone-900 transition-all"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  <div className="flex gap-1">
+                    {visiblePageNumbers.map((pageNumber) => (
+                      <button
+                        key={pageNumber}
+                        onClick={() => goToShopsPage(pageNumber)}
+                        className={`w-10 h-10 rounded-lg text-xs font-black transition-all ${
+                          pageNumber === currentPage 
+                            ? "bg-stone-900 text-white" 
+                            : "bg-white text-stone-400 border border-stone-200 hover:border-stone-400 hover:text-stone-900"
+                        }`}
+                      >
+                        {pageNumber + 1}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    disabled={!shopPageInfo.hasNext}
+                    onClick={() => goToShopsPage(currentPage + 1)}
+                    className="p-3 rounded-lg border border-stone-200 text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed hover:border-stone-400 hover:text-stone-900 transition-all"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ShopListLoading() {
+  return (
+    <div className="absolute inset-0 z-20 flex items-start justify-center pt-24">
+      <div className="flex flex-col items-center gap-5 rounded-xl border border-stone-200 bg-white/90 px-10 py-8 shadow-xl shadow-stone-200/60 backdrop-blur-md">
+        <div className="relative">
+          <div className="absolute inset-0 rounded-full bg-red-500/20 blur-md animate-ping"></div>
+          <img src="/logo.png" alt="RAOTA Loading" className="relative h-14 w-14 animate-bounce-slow object-contain" />
+        </div>
+        <div className="flex flex-col items-center gap-3">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-stone-500">Loading shops</p>
+          <div className="h-1 w-40 overflow-hidden rounded-full bg-stone-200">
+            <div className="h-full rounded-full bg-red-600 animate-loading-bar"></div>
+          </div>
         </div>
       </div>
     </div>

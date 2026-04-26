@@ -137,3 +137,38 @@ body {
 .animate-fade-in-up {
   animation: fade-in-up 1s ease-out 0.2s both;
 }
+
+@keyframes loading-bar {
+  0% {
+    transform: scaleX(0);
+  }
+
+  50% {
+    transform: scaleX(0.7);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes bounce-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-loading-bar {
+  animation: loading-bar 2s infinite ease-in-out;
+  transform-origin: left;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s infinite ease-in-out;
+}

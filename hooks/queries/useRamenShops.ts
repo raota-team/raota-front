@@ -18,4 +18,5 @@ export const useRamenShops = (params: RamenShopsParams) =>
       (params.sort ?? []).join("|"),
     ],
     queryFn: () => getRamenShops(params),
+    placeholderData: (previousData) => previousData,
   });
