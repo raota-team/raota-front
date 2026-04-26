@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
 import {
   Camera,
   Star,
@@ -19,7 +17,7 @@ import {
   Heart,
   Check,
 } from "lucide-react";
-import { Shop, UserPhoto, EventMenu, MenuItem } from "../../../types";
+import { Shop, UserPhoto, MenuItem } from "../../../types";
 import ProgressBar from "../../../components/ProgressBar";
 import PhotoModal from "../../../components/PhotoModal";
 import ReportModal from "../../../components/ReportModal";
@@ -27,60 +25,29 @@ import UploadPhotoModal from "../../../components/UploadPhotoModal";
 import MenuDetailModal from "../../../components/MenuDetailModal";
 import Loading from "@/app/loading";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
-import { getTotalVotes, toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture, deleteProofPicture } from "@/lib/api/ramen-shops";
+import { toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture, deleteProofPicture } from "@/lib/api/ramen-shops";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
-
-/** 클라이언트 사이드 이미지 압축 함수 (WebP) */
-const compressImage = (file: File): Promise<File> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new (window as any).Image();
-      img.src = event.target?.result as string;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1200;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > MAX_WIDTH) {
-          height = (height * MAX_WIDTH) / width;
-          width = MAX_WIDTH;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
-
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
-                type: 'image/webp',
-                lastModified: Date.now(),
-              });
-              resolve(compressedFile);
-            } else {
-              reject(new Error('Canvas to Blob failed'));
-            }
-          },
-          'image/webp',
-          0.8
-        );
-      };
-      img.onerror = (err) => reject(err);
-    };
-    reader.onerror = (err) => reject(err);
-  });
-};
 
 interface ShopDetailClientProps {
   params: Promise<{ id: string }>;
 }
+
+const formatInfoValue = (value?: string | number | null) => {
+  if (value === null || value === undefined || value === "") return "정보 없음";
+  return String(value);
+};
+
+const formatOperatingHours = (hours: Shop["business_hours"]) => {
+  if (!hours.open_time || !hours.close_time) return "정보 없음";
+  if (hours.open_time === "정보 없음" || hours.close_time === "정보 없음") return "정보 없음";
+  return `${hours.open_time} - ${hours.close_time}`;
+};
+
+const formatBreakTime = (hours: Shop["business_hours"]) => {
+  if (!hours.break_start || !hours.break_end) return "없음";
+  return `${hours.break_start} - ${hours.break_end}`;
+};
 
 export default function ShopDetailClient({ params }: ShopDetailClientProps) {
   const router = useRouter();
@@ -345,9 +312,7 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
                   </div>
                 </div>
               ))}
-            </div>
 
-            <div className="mt-8 text-center">
               <button 
                 onClick={() => {
                   if (!isLoggedIn) {
@@ -356,10 +321,17 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
                   }
                   setIsUploadModalOpen(true);
                 }}
-                className="bg-stone-900 text-white px-8 py-4 rounded-lg font-black text-sm uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg active:scale-95 flex items-center justify-center mx-auto"
+                className="group aspect-square rounded-sm border-2 border-dashed border-stone-300 bg-stone-50 hover:border-red-400 hover:bg-red-50 transition-all shadow-sm active:scale-[0.98] flex flex-col items-center justify-center gap-3 p-4 text-center"
               >
-                <Camera className="w-5 h-5 mr-2" />
-                라멘 인증샷 올리기
+                <span className="flex h-12 w-12 items-center justify-center rounded-sm bg-white border border-stone-200 text-stone-500 shadow-sm group-hover:text-red-600 group-hover:border-red-200 transition-colors">
+                  <Camera className="w-6 h-6" />
+                </span>
+                <span className="text-sm font-black text-stone-800 leading-tight break-keep group-hover:text-red-600 transition-colors">
+                  라멘 인증샷 올리기
+                </span>
+                <span className="text-[11px] font-bold text-stone-400 leading-tight break-keep">
+                  내가 먹은 메뉴를 기록해요
+                </span>
               </button>
             </div>
           </div>
@@ -409,9 +381,11 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
               <div className="relative z-10">
                 <h4 className="text-lg font-black mb-4 uppercase tracking-tighter italic">Information</h4>
                 <div className="space-y-4 text-sm font-mono text-stone-300">
-                  <p className="flex justify-between border-b border-white/10 pb-2"><span className="text-stone-500">영업시간</span><span>{shop.business_hours?.open_time} - {shop.business_hours?.close_time}</span></p>
-                  <p className="flex justify-between border-b border-white/10 pb-2"><span className="text-stone-500">휴무일</span><span>{shop.business_hours?.closed_days}</span></p>
-                  <p className="flex justify-between border-b border-white/10 pb-2"><span className="text-stone-500">주차</span><span>{shop.business_hours?.parking_info}</span></p>
+                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">주소</span><span className="text-right break-keep">{formatInfoValue(shop.address)}</span></p>
+                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">영업시간</span><span className="text-right">{formatOperatingHours(shop.business_hours)}</span></p>
+                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">브레이크</span><span className="text-right">{formatBreakTime(shop.business_hours)}</span></p>
+                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">휴무일</span><span className="text-right break-keep">{formatInfoValue(shop.business_hours?.closed_days)}</span></p>
+                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">주차</span><span className="text-right break-keep">{formatInfoValue(shop.business_hours?.parking_info)}</span></p>
                 </div>
                 <div className="mt-8 flex gap-3">
                   {shop.instagram_url && <a href={shop.instagram_url} target="_blank" rel="noopener noreferrer" className="flex-1 bg-white/10 hover:bg-pink-600 transition-colors p-3 rounded flex items-center justify-center gap-2 font-bold text-xs"><Instagram className="w-4 h-4" /> Instagram</a>}
@@ -466,7 +440,7 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
 
       {selectedPhoto && (
         <PhotoModal 
-          photo={selectedPhoto} 
+          photo={{ ...selectedPhoto, userId: selectedPhoto.uploaderId ?? selectedPhoto.userId }} 
           onClose={() => setSelectedPhoto(null)} 
           onDelete={handleDeletePhoto}
         />

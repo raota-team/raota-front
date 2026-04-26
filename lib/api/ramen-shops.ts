@@ -17,6 +17,8 @@ interface ApiRamenShop {
   name?: string;
   restaurant_name?: string;
   tagLine?: string | null;
+  branch_name?: string;
+  naver_map_id?: string;
   region?: string;
   tags?: string[] | string | null;
   location?: string;
@@ -137,6 +139,15 @@ const normalizeMenuItem = (menu: ApiMenuItem, index: number): MenuItem => ({
   image_url: menu.image_url || FALLBACK_IMAGE_URL,
 });
 
+const normalizeBusinessHours = (hours?: Shop["business_hours"]): Shop["business_hours"] => ({
+  closed_days: hours?.closed_days || "정보 없음",
+  open_time: hours?.open_time || "정보 없음",
+  close_time: hours?.close_time || "정보 없음",
+  break_start: hours?.break_start || null,
+  break_end: hours?.break_end || null,
+  parking_info: hours?.parking_info || "정보 없음",
+});
+
 const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
   const rawMenuList = Array.isArray(shop.normal_menus)
     ? shop.normal_menus
@@ -171,6 +182,9 @@ const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
   return {
     id: toNumber(shop.id ?? shop.restaurant_id, index + 1),
     name: shop.name || shop.restaurant_name || "이름 미정",
+    branch_name: shop.branch_name,
+    naver_map_id: shop.naver_map_id,
+    address: shop.address || shop.location || shop.address_simple || "주소 정보 없음",
     location:
       shop.location ||
       shop.address ||
@@ -192,14 +206,7 @@ const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
     menu_list: menuList,
     event_menus: Array.isArray(shop.event_menus) ? shop.event_menus : [],
     userPhotos: Array.isArray(shop.userPhotos) ? shop.userPhotos : [],
-    business_hours: shop.business_hours || {
-      closed_days: "정보 없음",
-      open_time: "00:00",
-      close_time: "00:00",
-      break_start: null,
-      break_end: null,
-      parking_info: "정보 없음",
-    },
+    business_hours: normalizeBusinessHours(shop.business_hours),
     stats: {
       // 신규 명세(visits) 우선, 없으면 기존 명세(votes 또는 stats) 지원
       visit_count: toNumber(shop.visits ?? shop.stats?.visit_count ?? shop.votes, 0),
@@ -277,7 +284,8 @@ export const getShopPhotos = async (shopId: number, page = 0, size = 6): Promise
   if (res && res.data && res.data.items) {
     return res.data.items.map((item: any) => ({
       id: item.photo_id,
-      uploaderId: item.uploaderId,          // 유저 ID 추가
+      uploaderId: item.uploaderId ?? item.uploader_id ?? item.userId ?? item.user_id ?? item.memberId ?? item.member_id,
+      userId: item.uploaderId ?? item.uploader_id ?? item.userId ?? item.user_id ?? item.memberId ?? item.member_id,
       user: item.uploader_nickname || "익명",
       imageUrl: item.image_url,
       menuName: item.menuName || item.menu_name || "라멘", // 메뉴 네임 사용

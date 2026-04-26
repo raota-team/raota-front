@@ -364,7 +364,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
           <div className="mt-4 md:mt-0 relative z-10">
             {isOwnProfile && !isEditing && (
-              <button onClick={() => setIsEditing(true)} className="bg-white hover:bg-stone-900 hover:text-white text-stone-900 px-6 py-2.5 text-xs font-black uppercase tracking-[0.2em] rounded-sm border-2 border-stone-900 transition-all shadow-sm">프로필 수정</button>
+              <button onClick={() => setIsEditing(true)} className="bg-stone-700 hover:bg-stone-800 text-white px-6 py-2.5 text-xs font-black uppercase tracking-[0.2em] rounded-sm border-2 border-stone-600 hover:border-stone-800 transition-all shadow-sm">프로필 수정</button>
             )}
           </div>
         </div>
