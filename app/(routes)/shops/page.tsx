@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronLeft, ChevronRight, X, Search, Filter, MapPin, Utensils } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, X, Search } from "lucide-react";
 import ShopCard from "../../components/ShopCard";
 import { useRamenShops } from "@/hooks/queries/useRamenShops";
 import { useApp } from "@/app/context/AppContext";
@@ -17,7 +17,6 @@ export default function ShopsListPage() {
   const [sortBy, setSortBy] = useState("name");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [isFilterExpanded, setIsFilterExpanded] = useState(false);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -83,114 +82,120 @@ export default function ShopsListPage() {
   const showListLoading = isLoading || isFetching;
 
   return (
-    <div className="bg-stone-50 min-h-screen">
+    <div className="min-h-screen">
       {/* Header Section */}
-      <section className="relative h-64 md:h-80 flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[15rem] md:min-h-[18rem] overflow-hidden">
         <div className="absolute inset-0">
           <img src="/header-shoplist.jpg" alt="Ramen Shops" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-[1px]"></div>
+          <div className="absolute inset-0 bg-stone-900/65 backdrop-blur-[1px]"></div>
         </div>
-        <div className="relative z-10 text-center text-white px-6">
-          <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-white to-stone-400">
-            RAOTA RAMEN ARCHIVE
-          </h1>
-          <p className="text-stone-300 max-w-lg mx-auto font-medium leading-relaxed">
-            전국의 인기 라멘 맛집을 탐색하고<br className="md:hidden" /> 나만의 인생 라멘을 찾아보세요
-          </p>
+        <div className="relative z-10 mx-auto flex min-h-[15rem] max-w-7xl flex-col justify-center px-4 py-8 sm:px-6 lg:min-h-[18rem] lg:px-8">
+          <div className="flex flex-col gap-5">
+            <div className="text-center text-white">
+              <h1 className="mb-3 text-3xl font-black tracking-tight uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-white to-stone-400 md:text-5xl">
+                RAOTA RAMEN ARCHIVE
+              </h1>
+              <p className="text-stone-300 max-w-lg mx-auto font-medium leading-relaxed">
+                전국의 인기 라멘 맛집을 탐색하고<br className="md:hidden" /> 나만의 인생 라멘을 찾아보세요
+              </p>
+            </div>
+
+            <div className="mx-auto w-full max-w-5xl">
+              <div className="relative">
+                <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-red-400" />
+                <input
+                  type="text"
+                  placeholder="가게 이름이나 주소를 입력하세요..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-2xl border border-white/20 bg-white py-5 pl-14 pr-6 text-sm font-bold text-stone-700 shadow-[0_20px_50px_-28px_rgba(0,0,0,0.75)] outline-none transition-all placeholder:text-stone-400 focus:border-red-300 focus:ring-2 focus:ring-red-200"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col gap-6">
-          
-          {/* Search & Filter Bar - Clean Style */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            <div className="lg:col-span-9 relative">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
-              <input
-                type="text"
-                placeholder="가게 이름이나 주소를 입력하세요..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-14 pr-6 py-5 bg-white border border-stone-200 rounded-xl outline-none focus:ring-1 focus:ring-stone-300 focus:border-stone-400 transition-all text-sm font-bold text-stone-700"
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-end gap-3">
+              <FilterSelect
+                label="지역"
+                value={activeRegion}
+                options={regions.map((region) => ({
+                  value: region,
+                  label: region === "All" ? "전국 전체" : region,
+                }))}
+                onChange={setActiveRegion}
+              />
+              <FilterSelect
+                label="종류"
+                value={activeType}
+                options={types.map((type) => ({
+                  value: type,
+                  label: type === "All" ? "모든 종류" : type,
+                }))}
+                onChange={setActiveType}
+              />
+              <FilterSelect
+                label="정렬"
+                value={sortBy}
+                options={[
+                  { value: "name", label: "이름순" },
+                  { value: "popular", label: "인기순" },
+                ]}
+                onChange={handleSortClick}
               />
             </div>
-            <button 
-              onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-              className={`lg:col-span-3 flex items-center justify-center gap-3 py-5 px-6 rounded-xl font-black text-sm transition-all border ${
-                isFilterExpanded 
-                  ? 'bg-stone-900 border-stone-900 text-white' 
-                  : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
-              }`}
-            >
-              <Filter className="w-4 h-4" />
-              필터 {isFilterExpanded ? '닫기' : '열기'}
-            </button>
-          </div>
 
-          {/* Filter Content - Minimalist */}
-          {isFilterExpanded && (
-            <div className="bg-white border border-stone-200 rounded-xl p-8 animate-scale-in space-y-8">
-              <div>
-                <label className="flex items-center gap-2 text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-4">
-                  <MapPin className="w-3 h-3" /> 지역
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {regions.map((region) => (
-                    <button
-                      key={region}
-                      onClick={() => setActiveRegion(region)}
-                      className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all border ${
-                        activeRegion === region 
-                          ? "bg-red-600 border-red-600 text-white" 
-                          : "bg-white border-stone-200 text-stone-500 hover:border-stone-400"
-                      }`}
-                    >
-                      {region === "All" ? "전국 전체" : region}
-                    </button>
-                  ))}
-                </div>
+            <div className="flex min-h-[2.75rem] items-center gap-2 border-t border-stone-100 pt-4">
+              <div className="flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap">
+                {activeRegion !== "All" && (
+                  <button
+                    onClick={() => setActiveRegion("All")}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700 transition-colors hover:bg-red-200"
+                  >
+                    {activeRegion}
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+                {activeType !== "All" && (
+                  <button
+                    onClick={() => setActiveType("All")}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700 transition-colors hover:bg-red-200"
+                  >
+                    {activeType}
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+                {sortBy !== "name" && (
+                  <button
+                    onClick={() => setSortBy("name")}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700 transition-colors hover:bg-red-200"
+                  >
+                    인기순
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+                {activeRegion === "All" && activeType === "All" && sortBy === "name" && (
+                  <p className="shrink-0 text-sm text-stone-400">아직 선택된 필터 조건이 없습니다.</p>
+                )}
               </div>
-
-              <div>
-                <label className="flex items-center gap-2 text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-4">
-                  <Utensils className="w-3 h-3" /> 라멘 종류
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {types.map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => setActiveType(type)}
-                      className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all border ${
-                        activeType === type 
-                          ? "bg-red-600 border-red-600 text-white" 
-                          : "bg-white border-stone-200 text-stone-500 hover:border-stone-400"
-                      }`}
-                    >
-                      {type === "All" ? "모든 종류" : type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-stone-100 flex items-center justify-between">
-                <div className="flex gap-1">
-                  {['name', 'popular'].map((s) => (
-                    <button 
-                      key={s}
-                      onClick={() => handleSortClick(s)} 
-                      className={`px-4 py-2 text-[10px] font-black rounded uppercase tracking-widest transition-all ${
-                        sortBy === s ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-400 hover:bg-stone-200"
-                      }`}
-                    >
-                      {s === 'name' ? '이름순' : '인기순'}
-                    </button>
-                  ))}
-                </div>
-                <button onClick={() => { setActiveRegion('All'); setActiveType('All'); setSortBy('name'); }} className="text-[10px] font-black text-stone-400 hover:text-red-600 transition-colors uppercase tracking-widest">필터 초기화</button>
-              </div>
+              {(activeRegion !== "All" || activeType !== "All" || sortBy !== "name") && (
+                <button
+                  onClick={() => {
+                    setActiveRegion("All");
+                    setActiveType("All");
+                    setSortBy("name");
+                  }}
+                  className="shrink-0 text-xs font-black uppercase tracking-[0.16em] text-stone-400 transition-colors hover:text-red-600"
+                >
+                  전체 초기화
+                </button>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Results Summary */}
           <div className="flex items-center justify-between mt-2">
@@ -268,6 +273,40 @@ export default function ShopsListPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block w-full md:w-[180px]">
+      <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
+        {label}
+      </span>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full appearance-none rounded-xl border border-stone-200 bg-white px-4 py-3 pr-11 text-sm font-bold text-stone-700 outline-none transition-all hover:border-red-300 focus:border-red-300 focus:ring-2 focus:ring-red-100"
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+      </div>
+    </label>
   );
 }
 
