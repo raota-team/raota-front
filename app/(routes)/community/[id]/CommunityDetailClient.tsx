@@ -376,6 +376,16 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </form>
       </div>
+
+      <div className="mt-8 flex justify-center">
+        <button 
+          onClick={() => router.push('/community')} 
+          className="flex items-center gap-2 px-8 py-3 bg-white border border-stone-200 text-stone-600 rounded-full hover:bg-stone-50 hover:border-stone-300 transition-all font-bold shadow-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          목록으로 돌아가기
+        </button>
+      </div>
     </div>
   );
 }
