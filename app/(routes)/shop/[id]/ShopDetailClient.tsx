@@ -341,7 +341,7 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
           <div className="sticky top-24 space-y-8">
             <div className="bg-white p-6 border border-stone-200 rounded-lg shadow-sm">
               <h3 className="text-xl font-bold text-stone-900 mb-6 flex items-center"><Award className="w-5 h-5 mr-2 text-red-500" /> 베스트 메뉴 투표</h3>
-              <p className="text-stone-500 text-sm mb-8 leading-relaxed">이 가게에서 가장 맛있었던 메뉴는 무엇인가요? 매니아들의 투표로 베스트 메뉴가 결정됩니다.</p>
+              <p className="text-stone-500 text-sm mb-8 leading-relaxed">이 가게에서 제일 맛있었던 메뉴는?</p>
               
               <div className="space-y-6">
                 {votingMenus.map((menu) => (
