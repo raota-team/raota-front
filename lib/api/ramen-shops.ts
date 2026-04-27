@@ -139,12 +139,21 @@ const normalizeMenuItem = (menu: ApiMenuItem, index: number): MenuItem => ({
   image_url: menu.image_url || FALLBACK_IMAGE_URL,
 });
 
+const formatTime = (time: string | null): string | null => {
+  if (!time || time === "정보 없음") return time;
+  const parts = time.split(":");
+  if (parts.length >= 2) {
+    return `${parts[0]}:${parts[1]}`;
+  }
+  return time;
+};
+
 const normalizeBusinessHours = (hours?: Shop["business_hours"]): Shop["business_hours"] => ({
   closed_days: hours?.closed_days || "정보 없음",
-  open_time: hours?.open_time || "정보 없음",
-  close_time: hours?.close_time || "정보 없음",
-  break_start: hours?.break_start || null,
-  break_end: hours?.break_end || null,
+  open_time: formatTime(hours?.open_time || "정보 없음")!,
+  close_time: formatTime(hours?.close_time || "정보 없음")!,
+  break_start: formatTime(hours?.break_start || null),
+  break_end: formatTime(hours?.break_end || null),
   parking_info: hours?.parking_info || "정보 없음",
 });
 
