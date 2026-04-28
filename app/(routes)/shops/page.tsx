@@ -34,19 +34,12 @@ export default function ShopsListPage() {
     return ["name,asc"];
   }, [sortBy]);
 
-  const keywordParam = useMemo(() => {
-    const keywords = [
-      debouncedSearchQuery,
-      activeType === "All" ? undefined : activeType,
-    ].filter(Boolean);
-    return keywords.length > 0 ? keywords.join(" ") : undefined;
-  }, [activeType, debouncedSearchQuery]);
-
   const { data, isLoading, isFetching, isError } = useRamenShops({
     page: currentPage,
     size: PAGE_SIZE,
     region: activeRegion === "All" ? undefined : activeRegion,
-    keyword: keywordParam,
+    keyword: debouncedSearchQuery || undefined,
+    tag: activeType === "All" ? undefined : activeType,
     sort: sortParam,
   });
   const shops = data?.shops ?? [];
