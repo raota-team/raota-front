@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronLeft, ChevronRight, X, Search } from "lucide-react";
 import ShopCard from "../../components/ShopCard";
@@ -287,26 +287,107 @@ function FilterSelect({
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const listboxId = useId();
+  const selectedOption = options.find((option) => option.value === value) ?? options[0];
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen]);
+
+  const handleSelect = (nextValue: string) => {
+    onChange(nextValue);
+    setIsOpen(false);
+  };
+
   return (
-    <label className="block w-full md:w-[180px]">
+    <div className="block w-full md:w-[180px]">
       <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
         {label}
       </span>
-      <div className="relative">
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none rounded-xl border border-stone-200 bg-white px-4 py-3 pr-11 text-sm font-bold text-stone-700 outline-none transition-all hover:border-red-300 focus:border-red-300 focus:ring-2 focus:ring-red-100"
+      <div
+        ref={containerRef}
+        className="group relative rounded-xl transition-all focus-within:ring-2 focus-within:ring-red-100"
+      >
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          aria-controls={listboxId}
+          onClick={() => setIsOpen((open) => !open)}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              setIsOpen(true);
+            }
+          }}
+          className={`w-full rounded-xl border bg-white px-4 py-3 pr-11 text-left text-sm font-bold text-stone-700 shadow-sm outline-none transition-all ${
+            isOpen
+              ? "border-red-300 bg-white shadow-[0_0_0_1px_rgba(252,165,165,0.65)]"
+              : "border-stone-200 hover:border-red-300 hover:bg-stone-50/60"
+          }`}
         >
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+          {selectedOption?.label}
+        </button>
+        <ChevronDown
+          className={`pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 transition-all ${
+            isOpen ? "rotate-180 text-red-500" : "text-stone-400 group-hover:text-red-400"
+          }`}
+        />
+        {isOpen && (
+          <div
+            id={listboxId}
+            role="listbox"
+            aria-label={label}
+            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-2xl border border-stone-200 bg-white/95 p-2 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+          >
+            <div className="max-h-64 overflow-y-auto">
+              {options.map((option) => {
+                const isSelected = option.value === value;
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    onClick={() => handleSelect(option.value)}
+                    className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-bold transition-all ${
+                      isSelected
+                        ? "bg-red-50 text-red-600 shadow-sm"
+                        : "text-stone-700 hover:bg-stone-50 hover:text-stone-900"
+                    }`}
+                  >
+                    <span>{option.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
-    </label>
+    </div>
   );
 }
 
