@@ -8,11 +8,30 @@ import { useRamenShops } from "@/hooks/queries/useRamenShops";
 import { useApp } from "@/app/context/AppContext";
 
 const PAGE_SIZE = 12;
+const ALL_FILTER = "전체";
+const REGIONS = [
+  ALL_FILTER,
+  "서울",
+  "경기",
+  "부산",
+  "충북",
+  "인천",
+  "대전",
+  "광주",
+  "대구",
+  "세종",
+  "전북",
+  "충남",
+  "제주",
+  "경북",
+  "경남",
+];
+const TYPES = ["All", "돈코츠", "쇼유", "미소", "시오", "츠케멘", "탄탄멘"];
 
 export default function ShopsListPage() {
   const { showToast } = useApp();
   const [currentPage, setCurrentPage] = useState(0);
-  const [activeRegion, setActiveRegion] = useState("All");
+  const [activeRegion, setActiveRegion] = useState(ALL_FILTER);
   const [activeType, setActiveType] = useState("All");
   const [sortBy, setSortBy] = useState("name");
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,7 +56,7 @@ export default function ShopsListPage() {
   const { data, isLoading, isFetching, isError } = useRamenShops({
     page: currentPage,
     size: PAGE_SIZE,
-    region: activeRegion === "All" ? undefined : activeRegion,
+    region: activeRegion === ALL_FILTER ? undefined : activeRegion,
     keyword: debouncedSearchQuery || undefined,
     tag: activeType === "All" ? undefined : activeType,
     sort: sortParam,
@@ -51,9 +70,6 @@ export default function ShopsListPage() {
     hasNext: false,
     hasPrevious: currentPage > 0,
   };
-
-  const regions = ["All", "서울", "경기", "인천", "부산", "대전", "세종"];
-  const types = ["All", "돈코츠", "쇼유", "미소", "시오", "츠케멘", "탄탄멘"];
 
   const totalPages = Math.max(shopPageInfo.totalPages || 1, 1);
   const visiblePageNumbers = Array.from({ length: totalPages }, (_, index) => index);
@@ -116,16 +132,16 @@ export default function ShopsListPage() {
               <FilterSelect
                 label="지역"
                 value={activeRegion}
-                options={regions.map((region) => ({
+                options={REGIONS.map((region) => ({
                   value: region,
-                  label: region === "All" ? "전국 전체" : region,
+                  label: region,
                 }))}
                 onChange={setActiveRegion}
               />
               <FilterSelect
                 label="종류"
                 value={activeType}
-                options={types.map((type) => ({
+                options={TYPES.map((type) => ({
                   value: type,
                   label: type === "All" ? "모든 종류" : type,
                 }))}
@@ -144,9 +160,9 @@ export default function ShopsListPage() {
 
             <div className="flex min-h-[2.75rem] items-center gap-2 border-t border-stone-100 pt-4">
               <div className="flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap">
-                {activeRegion !== "All" && (
+                {activeRegion !== ALL_FILTER && (
                   <button
-                    onClick={() => setActiveRegion("All")}
+                    onClick={() => setActiveRegion(ALL_FILTER)}
                     className="inline-flex shrink-0 items-center gap-2 rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700 transition-colors hover:bg-red-200"
                   >
                     {activeRegion}
@@ -171,14 +187,14 @@ export default function ShopsListPage() {
                     <X className="h-3 w-3" />
                   </button>
                 )}
-                {activeRegion === "All" && activeType === "All" && sortBy === "name" && (
+                {activeRegion === ALL_FILTER && activeType === "All" && sortBy === "name" && (
                   <p className="shrink-0 text-sm text-stone-400">아직 선택된 필터 조건이 없습니다.</p>
                 )}
               </div>
-              {(activeRegion !== "All" || activeType !== "All" || sortBy !== "name") && (
+              {(activeRegion !== ALL_FILTER || activeType !== "All" || sortBy !== "name") && (
                 <button
                   onClick={() => {
-                    setActiveRegion("All");
+                    setActiveRegion(ALL_FILTER);
                     setActiveType("All");
                     setSortBy("name");
                   }}
