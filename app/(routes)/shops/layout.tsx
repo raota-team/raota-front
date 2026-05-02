@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     url: '/shops',
     images: [
       {
-        url: '/header-shoplist.jpg',
+        url: '/header-shoplist-anime.png',
         width: 1200,
         height: 630,
         alt: '라오타 RAOTA 라멘 맛집 지도',
