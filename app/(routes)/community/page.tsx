@@ -43,6 +43,7 @@ export default function CommunityPage() {
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
   const [shopSearchQuery, setShopSearchQuery] = useState('');
   const [shopOptions, setShopOptions] = useState<any[]>([]);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // React Query 적용
@@ -104,6 +105,8 @@ export default function CommunityPage() {
     return <Loading />;
   }
 
+  const selectedCategoryLabel = categories.find((cat) => cat.id === selectedCategory)?.label || '전체';
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -128,21 +131,34 @@ export default function CommunityPage() {
                 글쓰기
               </Link>
               
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200">
-                <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-4">카테고리</h3>
-                <div className="space-y-1">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => handleCategoryChange(cat.id)}
-                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-                        selectedCategory === cat.id ? 'bg-stone-900 text-white shadow-md' : 'text-stone-600 hover:bg-stone-50'
-                      }`}
-                    >
-                      <span>{cat.label}</span>
-                    </button>
-                  ))}
-                </div>
+              <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryOpen((prev) => !prev)}
+                  className="w-full flex items-center justify-between gap-3 p-5 text-left transition-colors hover:bg-stone-50"
+                  aria-expanded={isCategoryOpen}
+                >
+                  <div>
+                    <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest">카테고리</h3>
+                    <p className="mt-1 text-xs font-bold text-stone-700">{selectedCategoryLabel}</p>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-stone-400 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isCategoryOpen && (
+                  <div className="space-y-1 border-t border-stone-100 p-4">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => handleCategoryChange(cat.id)}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                          selectedCategory === cat.id ? 'bg-stone-900 text-white shadow-md' : 'text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        <span>{cat.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </aside>
