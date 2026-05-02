@@ -36,6 +36,7 @@ export default function ShopsListPage() {
   const [sortBy, setSortBy] = useState("name");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [pageWindowStart, setPageWindowStart] = useState(0);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -46,6 +47,7 @@ export default function ShopsListPage() {
 
   useEffect(() => {
     setCurrentPage(0);
+    setPageWindowStart(0);
   }, [activeRegion, activeType, sortBy, debouncedSearchQuery]);
 
   const sortParam = useMemo(() => {
@@ -72,12 +74,31 @@ export default function ShopsListPage() {
   };
 
   const totalPages = Math.max(shopPageInfo.totalPages || 1, 1);
-  const visiblePageNumbers = Array.from({ length: totalPages }, (_, index) => index);
+  const maxVisiblePages = 5;
+  const visiblePageNumbers = useMemo(() => {
+    const pageCount = Math.min(maxVisiblePages, totalPages - pageWindowStart);
+    return Array.from({ length: pageCount }, (_, index) => pageWindowStart + index);
+  }, [pageWindowStart, totalPages]);
+
+  useEffect(() => {
+    setPageWindowStart((prev) => Math.min(prev, Math.max(totalPages - maxVisiblePages, 0)));
+  }, [totalPages]);
   
   const goToShopsPage = (page: number) => {
     if (page < 0 || page >= totalPages) return;
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const showPreviousPageGroup = () => {
+    setPageWindowStart((prev) => Math.max(prev - maxVisiblePages, 0));
+  };
+
+  const showNextPageGroup = () => {
+    setPageWindowStart((prev) => {
+      const next = prev + maxVisiblePages;
+      return next >= totalPages ? prev : next;
+    });
   };
 
   const handleSortClick = (s: string) => {
@@ -241,12 +262,14 @@ export default function ShopsListPage() {
 
             {/* Pagination - Clean Style */}
             {totalPages > 1 && (
-              <div className={`mt-16 flex flex-col md:flex-row md:items-center md:justify-between gap-8 pb-20 border-t border-stone-200 pt-10 transition-opacity duration-200 ${showListLoading ? "opacity-35 pointer-events-none" : "opacity-100"}`}>
-                <div className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">페이지 {currentPage + 1} / {totalPages}</div>
-                <div className="flex items-center gap-2">
+              <div className={`mt-16 flex flex-col items-center gap-6 pb-20 border-t border-stone-200 pt-10 transition-opacity duration-200 md:flex-row md:justify-between ${showListLoading ? "opacity-35 pointer-events-none" : "opacity-100"}`}>
+                <div className="text-center text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] md:text-left">페이지 {currentPage + 1} / {totalPages}</div>
+                <div className="flex max-w-full items-center justify-center gap-2 overflow-x-auto pb-1">
                   <button
-                    disabled={!shopPageInfo.hasPrevious}
-                    onClick={() => goToShopsPage(currentPage - 1)}
+                    type="button"
+                    aria-label="이전 페이지 묶음 보기"
+                    disabled={pageWindowStart === 0}
+                    onClick={showPreviousPageGroup}
                     className="p-3 rounded-lg border border-stone-200 text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed hover:border-stone-400 hover:text-stone-900 transition-all"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -256,6 +279,9 @@ export default function ShopsListPage() {
                     {visiblePageNumbers.map((pageNumber) => (
                       <button
                         key={pageNumber}
+                        type="button"
+                        aria-label={`${pageNumber + 1} 페이지로 이동`}
+                        aria-current={pageNumber === currentPage ? "page" : undefined}
                         onClick={() => goToShopsPage(pageNumber)}
                         className={`w-10 h-10 rounded-lg text-xs font-black transition-all ${
                           pageNumber === currentPage 
@@ -269,8 +295,10 @@ export default function ShopsListPage() {
                   </div>
 
                   <button
-                    disabled={!shopPageInfo.hasNext}
-                    onClick={() => goToShopsPage(currentPage + 1)}
+                    type="button"
+                    aria-label="다음 페이지 묶음 보기"
+                    disabled={pageWindowStart + maxVisiblePages >= totalPages}
+                    onClick={showNextPageGroup}
                     className="p-3 rounded-lg border border-stone-200 text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed hover:border-stone-400 hover:text-stone-900 transition-all"
                   >
                     <ChevronRight className="w-4 h-4" />
