@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     url: '/community',
     images: [
       {
-        url: '/header-community-v2.jpg',
+        url: '/header-community-anime.png',
         width: 1200,
         height: 630,
         alt: '라오타 RAOTA 라멘 커뮤니티',

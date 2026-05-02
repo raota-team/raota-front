@@ -107,12 +107,12 @@ export default function CommunityPage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <section className="relative min-h-[15rem] md:min-h-[18rem] overflow-hidden">
+      <section className="relative min-h-[17rem] md:min-h-[21rem] overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/header-community-v2.jpg" alt="Community" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-[2px]"></div>
+          <img src="/header-community-anime.png" alt="Community" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-stone-900/35"></div>
         </div>
-        <div className="relative z-10 mx-auto flex min-h-[15rem] max-w-7xl flex-col justify-center px-6 py-8 text-center text-white md:min-h-[18rem]">
+        <div className="relative z-10 mx-auto flex min-h-[17rem] max-w-7xl flex-col justify-center px-6 py-8 text-center text-white md:min-h-[21rem]">
           <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-white to-stone-400">RAOTA COMMUNITY</h1>
           <p className="text-stone-300 max-w-lg mx-auto font-medium">라멘 매니아들의 솔직한 이야기와 꿀팁을 공유하세요</p>
         </div>

@@ -93,12 +93,12 @@ export default function ShopsListPage() {
   return (
     <div className="min-h-screen">
       {/* Header Section */}
-      <section className="relative min-h-[15rem] md:min-h-[18rem] overflow-hidden">
+      <section className="relative min-h-[17rem] md:min-h-[21rem] overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/header-shoplist.jpg" alt="Ramen Shops" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-stone-900/65 backdrop-blur-[1px]"></div>
+          <img src="/header-shoplist-anime.png" alt="Ramen Shops" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-stone-900/40"></div>
         </div>
-        <div className="relative z-10 mx-auto flex min-h-[15rem] max-w-7xl flex-col justify-center px-4 py-8 sm:px-6 lg:min-h-[18rem] lg:px-8">
+        <div className="relative z-10 mx-auto flex min-h-[17rem] max-w-7xl flex-col justify-center px-4 py-8 sm:px-6 lg:min-h-[21rem] lg:px-8">
           <div className="flex flex-col gap-5">
             <div className="text-center text-white">
               <h1 className="mb-3 text-3xl font-black tracking-tight uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-white to-stone-400 md:text-5xl">
