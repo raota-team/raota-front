@@ -101,10 +101,10 @@ export default function ShopsListPage() {
         <div className="relative z-10 mx-auto flex min-h-[17rem] max-w-7xl flex-col justify-center px-4 py-8 sm:px-6 lg:min-h-[21rem] lg:px-8">
           <div className="flex flex-col gap-5">
             <div className="text-center text-white">
-              <h1 className="mb-3 text-3xl font-black tracking-tight uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-white to-stone-400 md:text-5xl">
+              <h1 className="mb-3 text-3xl font-black tracking-tight uppercase italic text-white md:text-5xl">
                 RAOTA RAMEN ARCHIVE
               </h1>
-              <p className="text-stone-300 max-w-lg mx-auto font-medium leading-relaxed">
+              <p className="text-white max-w-lg mx-auto font-bold leading-relaxed">
                 전국의 인기 라멘 맛집을 탐색하고<br className="md:hidden" /> 나만의 인생 라멘을 찾아보세요
               </p>
             </div>
