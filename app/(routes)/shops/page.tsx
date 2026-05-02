@@ -114,7 +114,7 @@ export default function ShopsListPage() {
                 <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-red-400" />
                 <input
                   type="text"
-                  placeholder="가게 이름이나 주소를 입력하세요..."
+                  placeholder="가게 이름을 검색해보세요"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full rounded-2xl border border-white/20 bg-white py-5 pl-14 pr-6 text-sm font-bold text-stone-700 shadow-[0_20px_50px_-28px_rgba(0,0,0,0.75)] outline-none transition-all placeholder:text-stone-400 focus:border-red-300 focus:ring-2 focus:ring-red-200"
