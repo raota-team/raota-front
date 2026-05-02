@@ -147,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
             <Link
               href="/recommend"
               onClick={closeMobileMenu}
-              className={`flex items-center px-6 py-4 text-base font-bold transition-colors ${isActive('/recommend') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
+              className={`flex items-center px-6 py-3.5 text-base font-bold transition-colors ${isActive('/recommend') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
             >
               <Sparkles className="w-5 h-5 mr-3" />
               추천받기
