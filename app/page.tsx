@@ -43,7 +43,6 @@ export default function HomePage() {
           </h1>
 
           <p className={`text-lg md:text-xl text-stone-400 mb-14 max-w-2xl mx-auto leading-relaxed font-medium animate-fade-in-up`}>
-            숨겨진 로컬 맛집부터 웨이팅 필수핫플까지.<br className="hidden md:block" />
             진짜 매니아들이 기록하는 생생한 라멘의 연대기.
           </p>
 
