@@ -113,8 +113,8 @@ export default function CommunityPage() {
           <div className="absolute inset-0 bg-stone-900/35"></div>
         </div>
         <div className="relative z-10 mx-auto flex min-h-[17rem] max-w-7xl flex-col justify-center px-6 py-8 text-center text-white md:min-h-[21rem]">
-          <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-white to-stone-400">RAOTA COMMUNITY</h1>
-          <p className="text-stone-300 max-w-lg mx-auto font-medium">라멘 매니아들의 솔직한 이야기와 꿀팁을 공유하세요</p>
+          <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight uppercase italic text-white">RAOTA COMMUNITY</h1>
+          <p className="text-white max-w-lg mx-auto font-bold">라멘 매니아들의 솔직한 이야기와 꿀팁을 공유하세요</p>
         </div>
       </section>
 

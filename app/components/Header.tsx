@@ -47,11 +47,11 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
 
   const isTransparent = isHomePage && !scrolled && !isMobile;
   const isFloating = isHomePage && scrolled;
-  const navTextColor = isTransparent ? 'text-white/95 hover:text-white font-extrabold drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]' : 'text-stone-500 hover:text-red-500 font-extrabold';
-  const activeTextColor = isTransparent ? 'text-white font-black drop-shadow-[0_2px_2px_rgba(0,0,0,1)] scale-105' : 'text-red-600 font-black';
-  const logoTextColor = isTransparent ? 'text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]' : 'text-stone-900';
+  const navTextColor = isTransparent ? 'text-white/95 hover:text-white font-extrabold' : 'text-stone-500 hover:text-red-500 font-extrabold';
+  const activeTextColor = isTransparent ? 'text-white font-black scale-105' : 'text-red-600 font-black';
+  const logoTextColor = isTransparent ? 'text-white' : 'text-stone-900';
   const loginBtnClass = isTransparent 
-    ? 'bg-white text-stone-900 hover:bg-stone-100 shadow-xl' 
+    ? 'bg-white text-stone-900 hover:bg-stone-100' 
     : 'bg-stone-900 text-white hover:bg-red-600';
 
   // 마이페이지 경로 결정 (로그인 시 본인 ID 주소, 미로그인 시 로그인 페이지)
