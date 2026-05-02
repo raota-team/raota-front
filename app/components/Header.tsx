@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogIn, Menu, X, Home, MessageSquare, User, UtensilsCrossed } from 'lucide-react';
+import { LogIn, Menu, X, Home, MessageSquare, User, UtensilsCrossed, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 interface HeaderProps {
@@ -74,9 +74,10 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
 
               {/* Desktop Navigation */}
               <div className="hidden md:block flex-1">
-                <div className="ml-10 flex items-baseline justify-end space-x-8">
+                <div className="ml-10 flex items-baseline justify-end space-x-6">
                   <Link href="/" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/' ? activeTextColor : navTextColor}`}>홈</Link>
                   <Link href="/shops" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
+                  <Link href="/recommend" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/recommend' ? activeTextColor : navTextColor}`}>추천받기</Link>
                   <Link href="/community" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
                   <Link href={myPagePath} className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
 
@@ -142,6 +143,14 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
             >
               <MessageSquare className="w-5 h-5 mr-3" />
               커뮤니티
+            </Link>
+            <Link
+              href="/recommend"
+              onClick={closeMobileMenu}
+              className={`flex items-center px-6 py-4 text-base font-bold transition-colors ${isActive('/recommend') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
+            >
+              <Sparkles className="w-5 h-5 mr-3" />
+              추천받기
             </Link>
             <Link
               href={myPagePath}
