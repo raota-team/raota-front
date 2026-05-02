@@ -183,10 +183,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     }
   };
 
-  const handleTabChange = (tab: any) => {
-    setActiveTab(tab);
+  const handleTabChange = (tab: string) => {
     setItems([]);
     setPageMeta(null);
+    if (tab === activeTab) {
+      fetchTabData(0);
+      return;
+    }
+    setActiveTab(tab);
   };
 
   const handleEditStart = () => {

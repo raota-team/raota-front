@@ -65,11 +65,11 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
             ? 'md:max-w-5xl bg-white/95 backdrop-blur-md shadow-lg border-b md:border border-stone-200/60 md:rounded-full'
             : `max-w-full ${isTransparent ? 'bg-transparent border-transparent' : 'bg-white/95 backdrop-blur-md border-b border-stone-200/50 shadow-sm'}`
         }`}>
-          <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isFloating ? 'py-2 md:py-1' : 'py-2 md:py-0'}`}>
-            <div className="flex items-center justify-between h-12 md:h-16">
+          <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isFloating ? 'py-1 md:py-1' : 'py-1 md:py-0'}`}>
+            <div className="flex items-center justify-between h-11 md:h-16">
               <Link href="/" className="flex items-center cursor-pointer">
-                <img src="/logo.png" alt="RAOTA Logo" className="w-8 h-8 md:w-10 md:h-10 transition-all duration-300" />
-                <span className={`text-lg md:text-xl font-black tracking-tighter ml-1 transition-colors ${logoTextColor}`}>RAOTA<span className="text-red-500">.</span></span>
+                <img src="/logo.png" alt="RAOTA Logo" className="w-7 h-7 md:w-10 md:h-10 transition-all duration-300" />
+                <span className={`text-base md:text-xl font-black tracking-tighter ml-1 transition-colors ${logoTextColor}`}>RAOTA<span className="text-red-500">.</span></span>
               </Link>
 
               {/* Desktop Navigation */}
@@ -101,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
 
               {/* Mobile Hamburger Button */}
               <button
-                className={`md:hidden p-2 transition-colors ${isTransparent ? 'text-white' : 'text-stone-600 hover:text-red-600'}`}
+                className={`md:hidden p-1.5 transition-colors ${isTransparent ? 'text-white' : 'text-stone-600 hover:text-red-600'}`}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
                 {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -117,13 +117,13 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
       )}
 
       {/* Mobile Slide-out Menu */}
-      <div className={`md:hidden fixed inset-y-0 right-0 w-64 pt-14 pb-safe bg-white z-40 shadow-xl transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`md:hidden fixed inset-y-0 right-0 w-64 pt-12 pb-safe bg-white z-40 shadow-xl transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full">
-          <div className="flex-1 py-4">
+          <div className="flex-1 py-3">
             <Link
               href="/"
               onClick={closeMobileMenu}
-              className={`flex items-center px-6 py-4 text-base font-bold transition-colors ${isActive('/') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
+              className={`flex items-center px-6 py-3.5 text-base font-bold transition-colors ${isActive('/') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
             >
               <Home className="w-5 h-5 mr-3" />
               홈
@@ -131,7 +131,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
             <Link
               href="/shops"
               onClick={closeMobileMenu}
-              className={`flex items-center px-6 py-4 text-base font-bold transition-colors ${isActive('/shops') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
+              className={`flex items-center px-6 py-3.5 text-base font-bold transition-colors ${isActive('/shops') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
             >
               <UtensilsCrossed className="w-5 h-5 mr-3" />
               가게
@@ -139,7 +139,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
             <Link
               href="/community"
               onClick={closeMobileMenu}
-              className={`flex items-center px-6 py-4 text-base font-bold transition-colors ${isActive('/community') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
+              className={`flex items-center px-6 py-3.5 text-base font-bold transition-colors ${isActive('/community') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
             >
               <MessageSquare className="w-5 h-5 mr-3" />
               커뮤니티
@@ -155,7 +155,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
             <Link
               href={myPagePath}
               onClick={closeMobileMenu}
-              className={`flex items-center px-6 py-4 text-base font-bold transition-colors ${isActive(myPagePath) ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
+              className={`flex items-center px-6 py-3.5 text-base font-bold transition-colors ${isActive(myPagePath) ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
             >
               <User className="w-5 h-5 mr-3" />
               마이페이지
