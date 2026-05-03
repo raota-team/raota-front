@@ -10,7 +10,7 @@ const doHyeon = Do_Hyeon({
 
 export const metadata: Metadata = {
   title: {
-    absolute: 'RAOTA - 라멘에 진심인 사람들',
+    absolute: '라오타 - 라멘에 진심인 사람들',
   },
   description:
     '라오타(RAOTA) 라멘 커뮤니티에서 전국 라멘 맛집, 일본라멘 스타일, 매니아들의 솔직한 라멘 후기를 찾아보세요.',
@@ -38,12 +38,11 @@ export default function HomePage() {
         {/* Hero Content - Refined Layout */}
         <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
           <h1 className={`text-6xl md:text-8xl text-white mb-8 leading-[1.1] tracking-tighter ${doHyeon.className}`}>
-            한 그릇에 담긴 <br className="md:hidden" /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-stone-400">깊은 진심,</span><br />
-            라멘 지도 <span className="text-red-500 font-sans font-black italic tracking-tighter drop-shadow-[0_0_20px_rgba(239,68,68,0.4)]">RAOTA</span>
+            전국 라멘 맛집 지도 <br className="md:hidden" /> <span className="text-red-500 font-sans font-black italic tracking-tighter drop-shadow-[0_0_20px_rgba(239,68,68,0.4)]">RAOTA</span>
           </h1>
 
           <p className={`text-lg md:text-xl text-stone-400 mb-14 max-w-2xl mx-auto leading-relaxed font-medium animate-fade-in-up`}>
-            진짜 매니아들이 기록하는 생생한 라멘의 연대기.
+            지역별 라멘 맛집과 매니아들의 솔직한 기록을 확인하세요.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
