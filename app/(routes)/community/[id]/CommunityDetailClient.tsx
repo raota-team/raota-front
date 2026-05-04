@@ -176,12 +176,12 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
     );
 
     return (
-      <div className={`${isReply ? 'pl-14 pr-6 py-4 bg-stone-50/30' : 'p-6'} hover:bg-stone-50/50 transition-colors border-t border-stone-50 first:border-t-0`}>
+      <div className={`${isReply ? 'pl-14 pr-6 py-4 bg-stone-50' : 'p-6'} border-t border-stone-100 transition-colors hover:bg-stone-50 first:border-t-0`}>
         <div className="flex gap-4">
           {isReply && <CornerDownRight className="w-4 h-4 text-stone-300 flex-shrink-0 mt-1" />}
           {!isReply && (
             <Link href={`/user/${comment.authorId}`} className="flex-shrink-0">
-              <div className="w-10 h-10 bg-stone-100 rounded-xl overflow-hidden shadow-inner border border-stone-200/50">
+              <div className="h-10 w-10 overflow-hidden rounded-full border border-stone-200 bg-stone-100">
                 {comment.authorImageUrl ? (
                   <img src={comment.authorImageUrl} alt={comment.authorNickname} className="w-full h-full object-cover" />
                 ) : (
@@ -193,25 +193,25 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
-                <Link href={`/user/${comment.authorId}`} className="font-bold text-stone-900 hover:text-red-600 transition-colors truncate">
+                <Link href={`/user/${comment.authorId}`} className="truncate font-bold text-[#25282b] transition-colors hover:text-[#e60000]">
                   <span className={isReply ? 'text-xs' : 'text-sm'}>{comment.authorNickname}</span>
                 </Link>
                 <span className="text-[10px] text-stone-400 font-mono">{new Date(comment.createdAt).toLocaleString()}</span>
               </div>
               {isCommentAuthor && !comment.isDeleted && (
                 <div className="flex gap-2">
-                  <button onClick={() => { setEditingCommentId(comment.commentId); setEditingContent(comment.content); }} className="text-[10px] font-bold text-stone-400 hover:text-stone-900 transition-colors">수정</button>
-                  <button onClick={() => showConfirm('정말 삭제하시겠습니까?', () => deleteCommentMutation.mutate(comment.commentId))} className="text-[10px] font-bold text-stone-400 hover:text-red-600 transition-colors">삭제</button>
+                  <button onClick={() => { setEditingCommentId(comment.commentId); setEditingContent(comment.content); }} className="text-[10px] font-bold text-stone-400 transition-colors hover:text-[#25282b]">수정</button>
+                  <button onClick={() => showConfirm('정말 삭제하시겠습니까?', () => deleteCommentMutation.mutate(comment.commentId))} className="text-[10px] font-bold text-stone-400 transition-colors hover:text-[#e60000]">삭제</button>
                 </div>
               )}
             </div>
             
             {isEditing ? (
               <div className="mt-2 space-y-2">
-                <textarea value={editContent} onChange={(e) => setEditingContent(e.target.value)} className="w-full p-3 border border-stone-200 rounded-lg text-sm focus:ring-1 focus:ring-red-500 outline-none" rows={3} autoFocus />
+                <textarea value={editContent} onChange={(e) => setEditingContent(e.target.value)} className="w-full rounded-sm border border-stone-200 p-3 text-sm outline-none focus:border-[#e60000]" rows={3} autoFocus />
                 <div className="flex justify-end gap-2">
                   <button onClick={() => setEditingCommentId(null)} className="px-3 py-1.5 text-xs font-bold text-stone-400 hover:text-stone-600">취소</button>
-                  <button onClick={() => handleUpdateComment(comment.commentId)} className="px-3 py-1.5 text-xs font-bold bg-stone-900 text-white rounded-lg">수정 완료</button>
+                  <button onClick={() => handleUpdateComment(comment.commentId)} className="rounded-sm bg-[#25282b] px-3 py-1.5 text-xs font-bold text-white">수정 완료</button>
                 </div>
               </div>
             ) : (
@@ -222,16 +222,16 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
                   </p>
                 ) : (
                   <>
-                    <p className="text-stone-700 text-sm leading-relaxed whitespace-pre-wrap">
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#25282b]">
                       {comment.taggedParentAuthorNickname && (
-                        <span className="text-stone-900 font-black mr-2 bg-stone-100 px-1.5 py-0.5 rounded text-[11px] vertical-middle">
+                        <span className="vertical-middle mr-2 rounded-sm bg-stone-100 px-1.5 py-0.5 text-[11px] font-black text-[#25282b]">
                           @{comment.taggedParentAuthorNickname}
                         </span>
                       )}
                       {comment.content}
                     </p>
                     {!isReply && (
-                      <button onClick={() => setReplyTo({ id: comment.commentId, name: comment.authorNickname })} className="mt-2 text-[10px] font-bold text-red-600/70 hover:text-red-600 uppercase tracking-widest">답글 달기</button>
+                      <button onClick={() => setReplyTo({ id: comment.commentId, name: comment.authorNickname })} className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#e60000]/75 hover:text-[#e60000]">답글 달기</button>
                     )}
                   </>
                 )}
@@ -244,22 +244,22 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
   };
 
   return (
-    <div className="max-w-3xl mx-auto pb-20 px-4 sm:px-0">
+    <div className="mx-auto max-w-3xl px-4 pb-20 sm:px-0">
       <div className="flex justify-between items-center mb-6">
-        <button onClick={() => router.push('/community')} className="flex items-center text-stone-500 hover:text-red-500 transition-colors text-sm font-bold uppercase tracking-wider">
+        <button onClick={() => router.push('/community')} className="flex items-center text-sm font-bold uppercase tracking-wider text-[#7e7e7e] transition-colors hover:text-[#e60000]">
           <ArrowLeft className="w-4 h-4 mr-2" /> 목록으로
         </button>
       </div>
 
-      <article className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-sm mb-8">
+      <article className="mb-8 overflow-hidden rounded-sm border border-stone-200 bg-white">
         <div className="p-8">
           <div className="flex justify-between items-start mb-6">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-black px-3 py-1.5 rounded-lg border border-red-100 bg-red-50 text-red-600 uppercase tracking-tighter">
+              <span className="rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-black uppercase tracking-tighter text-[#25282b]">
                 {getCategoryLabel(post.category)}
               </span>
               {post.storeName && (
-                <span className="flex items-center gap-1.5 text-xs text-stone-500 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-100">
+                <span className="flex items-center gap-1.5 rounded-sm border border-stone-100 bg-stone-50 px-3 py-1.5 text-xs text-[#7e7e7e]">
                   <Store className="w-3.5 h-3.5" /> {post.storeName}
                 </span>
               )}
@@ -268,16 +268,16 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
             {isAuthor && (
               <div className="flex gap-1">
                 <Link href={`/community/edit/${postId}`} className="p-2 text-stone-400 hover:text-stone-900 transition-colors"><Edit3 className="w-5 h-5" /></Link>
-                <button onClick={handleDeletePost} className="p-2 text-stone-400 hover:text-red-600 transition-colors"><Trash2 className="w-5 h-5" /></button>
+                <button onClick={handleDeletePost} className="p-2 text-stone-400 transition-colors hover:text-[#e60000]"><Trash2 className="h-5 w-5" /></button>
               </div>
             )}
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-black text-stone-900 mb-6 leading-tight tracking-tight">{post.title}</h1>
+          <h1 className="mb-6 text-3xl font-black leading-tight tracking-tight text-[#25282b] md:text-5xl">{post.title}</h1>
 
           <div className="flex items-center justify-between border-b border-stone-100 pb-6 mb-8">
             <Link href={`/user/${post.authorId}`} className="flex items-center gap-3 group">
-              <div className="w-10 h-10 bg-stone-100 rounded-full overflow-hidden shadow-inner border border-stone-200/50">
+              <div className="h-10 w-10 overflow-hidden rounded-full border border-stone-200 bg-stone-100">
                 {post.authorImageUrl ? (
                   <img src={post.authorImageUrl} alt={post.authorName} className="w-full h-full object-cover" />
                 ) : (
@@ -285,33 +285,33 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
                 )}
               </div>
               <div>
-                <div className="font-bold text-stone-900 group-hover:text-red-600 transition-colors">{post.authorName}</div>
+                <div className="font-bold text-[#25282b] transition-colors group-hover:text-[#e60000]">{post.authorName}</div>
                 <div className="text-xs text-stone-400 font-mono">{new Date(post.createdAt).toLocaleDateString()}</div>
               </div>
             </Link>
           </div>
 
           {post.imageUrl && (
-            <div className="mb-8 rounded-2xl overflow-hidden border border-stone-100 shadow-lg">
+            <div className="mb-8 overflow-hidden rounded-md border border-stone-100">
               <img src={post.imageUrl} alt="" loading="lazy" className="w-full h-auto max-h-[600px] object-cover" />
             </div>
           )}
 
-          <div className="prose prose-stone max-w-none prose-img:rounded-2xl prose-headings:font-black prose-a:text-red-600 text-stone-700 leading-relaxed text-lg" dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div className="prose prose-stone max-w-none text-lg leading-relaxed text-[#25282b] prose-headings:font-black prose-img:rounded-md prose-a:text-[#3860be]" dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
 
-        <div className="px-8 py-6 border-t border-stone-100 flex items-center justify-between bg-stone-50/50">
+        <div className="flex items-center justify-between border-t border-stone-100 bg-stone-50 px-8 py-6">
           <button 
             onClick={handleLike} 
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-full transition-all font-bold shadow-sm border ${
+            className={`flex items-center gap-2 rounded-sm border px-6 py-2.5 font-bold transition-colors ${
               likeMutation.isPending ? 'opacity-50' : '' 
             } ${
               post.isLiked 
-                ? 'bg-red-50 border-red-200 text-red-600' 
-                : 'bg-white border-stone-200 text-stone-600 hover:border-red-300'
+                ? 'border-[#e60000] bg-[#e60000] text-white' 
+                : 'border-stone-200 bg-white text-stone-600 hover:border-[#e60000]'
             }`}
           >
-            <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-red-600 text-red-600' : ''}`} /> 
+            <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-white text-white' : ''}`} /> 
             <span>{post.likeCount}</span>
           </button>
           <div className="flex items-center gap-2 text-stone-400 font-bold">
@@ -321,10 +321,10 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
       </article>
 
       {/* Comments Section */}
-      <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
-        <div className="p-6 border-b border-stone-100 bg-stone-50/50">
-          <h3 className="font-black text-stone-900 flex items-center gap-2 uppercase tracking-tighter">
-            <MessageCircle className="w-5 h-5 text-red-500" /> 댓글 ({comments.length})
+      <div className="overflow-hidden rounded-sm border border-stone-200 bg-white">
+        <div className="border-b border-stone-100 bg-stone-50 p-6">
+          <h3 className="flex items-center gap-2 font-black uppercase tracking-tighter text-[#25282b]">
+            <MessageCircle className="w-5 h-5 text-[#e60000]" /> 댓글 ({comments.length})
           </h3>
         </div>
 
@@ -348,11 +348,11 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
         {/* Comment Form */}
         <form onSubmit={handleSubmitComment} className="p-4 md:p-6 border-t border-stone-100 bg-stone-50">
           {replyTo && (
-            <div className="mb-3 flex items-center justify-between bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 animate-in slide-in-from-top-2">
-              <span className="text-xs font-bold text-red-600 flex items-center gap-2">
+            <div className="mb-3 flex items-center justify-between rounded-sm border border-[#e60000] bg-white px-3 py-2 animate-in slide-in-from-top-2">
+              <span className="flex items-center gap-2 text-xs font-bold text-[#e60000]">
                 <CornerDownRight className="w-3 h-3" /> @{replyTo.name} 님에게 답글 남기는 중
               </span>
-              <button type="button" onClick={() => setReplyTo(null)} className="text-red-400 hover:text-red-600"><X className="w-3.5 h-3.5" /></button>
+              <button type="button" onClick={() => setReplyTo(null)} className="text-[#e60000]/70 hover:text-[#e60000]"><X className="w-3.5 h-3.5" /></button>
             </div>
           )}
           <div className="flex gap-2 md:gap-4 items-center">
@@ -363,12 +363,12 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 disabled={!isLoggedIn || commentMutation.isPending}
-                className="flex-1 min-w-0 px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-100 transition-all font-medium"
+                className="min-w-0 flex-1 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm font-medium transition-colors focus:border-[#e60000] focus:outline-none"
               />
               <button
                 type="submit"
                 disabled={!newComment.trim() || commentMutation.isPending || !isLoggedIn}
-                className="px-4 md:px-6 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50 flex items-center justify-center shadow-md flex-shrink-0"
+                className="flex flex-shrink-0 items-center justify-center rounded-sm bg-[#e60000] px-4 text-white transition-opacity hover:opacity-90 disabled:opacity-50 md:px-6"
               >
                 {commentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </button>
@@ -380,7 +380,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
       <div className="mt-8 flex justify-center">
         <button 
           onClick={() => router.push('/community')} 
-          className="flex items-center gap-2 px-8 py-3 bg-white border border-stone-200 text-stone-600 rounded-full hover:bg-stone-50 hover:border-stone-300 transition-all font-bold shadow-sm"
+          className="flex items-center gap-2 rounded-sm border border-stone-200 bg-white px-8 py-3 font-bold text-stone-600 transition-colors hover:border-[#25282b] hover:bg-stone-50"
         >
           <ArrowLeft className="w-4 h-4" />
           목록으로 돌아가기

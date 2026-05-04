@@ -57,12 +57,12 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, onImageUpload }) => {
     };
 
     return (
-        <div className="flex flex-wrap items-center gap-1 p-2 border-b border-stone-200 bg-stone-50 rounded-t-lg">
+        <div className="flex flex-wrap items-center gap-1 border-b border-stone-200 bg-stone-50 p-2">
             <button
                 type="button"
                 onClick={() => editor.chain().focus().toggleBold().run()}
                 disabled={!editor.can().chain().focus().toggleBold().run()}
-                className={`p-1.5 rounded hover:bg-stone-200 transition-colors ${editor.isActive('bold') ? 'bg-stone-200 text-stone-900' : 'text-stone-600'}`}
+                className={`rounded-sm p-1.5 transition-colors hover:bg-stone-200 ${editor.isActive('bold') ? 'bg-[#25282b] text-white' : 'text-stone-600'}`}
                 title="굵게"
             >
                 <Bold className="w-4 h-4" />
@@ -71,7 +71,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, onImageUpload }) => {
                 type="button"
                 onClick={() => editor.chain().focus().toggleItalic().run()}
                 disabled={!editor.can().chain().focus().toggleItalic().run()}
-                className={`p-1.5 rounded hover:bg-stone-200 transition-colors ${editor.isActive('italic') ? 'bg-stone-200 text-stone-900' : 'text-stone-600'}`}
+                className={`rounded-sm p-1.5 transition-colors hover:bg-stone-200 ${editor.isActive('italic') ? 'bg-[#25282b] text-white' : 'text-stone-600'}`}
                 title="기울임"
             >
                 <Italic className="w-4 h-4" />
@@ -80,7 +80,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, onImageUpload }) => {
                 type="button"
                 onClick={() => editor.chain().focus().toggleStrike().run()}
                 disabled={!editor.can().chain().focus().toggleStrike().run()}
-                className={`p-1.5 rounded hover:bg-stone-200 transition-colors ${editor.isActive('strike') ? 'bg-stone-200 text-stone-900' : 'text-stone-600'}`}
+                className={`rounded-sm p-1.5 transition-colors hover:bg-stone-200 ${editor.isActive('strike') ? 'bg-[#25282b] text-white' : 'text-stone-600'}`}
                 title="취소선"
             >
                 <Strikethrough className="w-4 h-4" />
@@ -91,7 +91,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, onImageUpload }) => {
             <button
                 type="button"
                 onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                className={`p-1.5 rounded hover:bg-stone-200 transition-colors ${editor.isActive('heading', { level: 1 }) ? 'bg-stone-200 text-stone-900' : 'text-stone-600'}`}
+                className={`rounded-sm p-1.5 transition-colors hover:bg-stone-200 ${editor.isActive('heading', { level: 1 }) ? 'bg-[#25282b] text-white' : 'text-stone-600'}`}
                 title="제목 1"
             >
                 <Heading1 className="w-4 h-4" />
@@ -99,7 +99,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, onImageUpload }) => {
             <button
                 type="button"
                 onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                className={`p-1.5 rounded hover:bg-stone-200 transition-colors ${editor.isActive('heading', { level: 2 }) ? 'bg-stone-200 text-stone-900' : 'text-stone-600'}`}
+                className={`rounded-sm p-1.5 transition-colors hover:bg-stone-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-[#25282b] text-white' : 'text-stone-600'}`}
                 title="제목 2"
             >
                 <Heading2 className="w-4 h-4" />
@@ -110,7 +110,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, onImageUpload }) => {
             <button
                 type="button"
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
-                className={`p-1.5 rounded hover:bg-stone-200 transition-colors ${editor.isActive('bulletList') ? 'bg-stone-200 text-stone-900' : 'text-stone-600'}`}
+                className={`rounded-sm p-1.5 transition-colors hover:bg-stone-200 ${editor.isActive('bulletList') ? 'bg-[#25282b] text-white' : 'text-stone-600'}`}
                 title="글머리 기호"
             >
                 <List className="w-4 h-4" />
@@ -118,7 +118,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, onImageUpload }) => {
             <button
                 type="button"
                 onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                className={`p-1.5 rounded hover:bg-stone-200 transition-colors ${editor.isActive('orderedList') ? 'bg-stone-200 text-stone-900' : 'text-stone-600'}`}
+                className={`rounded-sm p-1.5 transition-colors hover:bg-stone-200 ${editor.isActive('orderedList') ? 'bg-[#25282b] text-white' : 'text-stone-600'}`}
                 title="번호 매기기"
             >
                 <ListOrdered className="w-4 h-4" />
@@ -130,7 +130,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, onImageUpload }) => {
                 type="button"
                 onClick={addImage}
                 disabled={isUploading}
-                className="p-1.5 rounded hover:bg-stone-200 transition-colors text-stone-600 hover:text-red-600 disabled:opacity-50"
+                className="rounded-sm p-1.5 text-stone-600 transition-colors hover:bg-stone-200 hover:text-[#e60000] disabled:opacity-50"
                 title="이미지 추가"
             >
                 {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
@@ -142,7 +142,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, onImageUpload }) => {
                 type="button"
                 onClick={() => editor.chain().focus().undo().run()}
                 disabled={!editor.can().chain().focus().undo().run()}
-                className="p-1.5 rounded hover:bg-stone-200 transition-colors text-stone-600 disabled:opacity-30"
+                className="rounded-sm p-1.5 text-stone-600 transition-colors hover:bg-stone-200 disabled:opacity-30"
                 title="되돌리기"
             >
                 <Undo className="w-4 h-4" />
@@ -151,7 +151,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, onImageUpload }) => {
                 type="button"
                 onClick={() => editor.chain().focus().redo().run()}
                 disabled={!editor.can().chain().focus().redo().run()}
-                className="p-1.5 rounded hover:bg-stone-200 transition-colors text-stone-600 disabled:opacity-30"
+                className="rounded-sm p-1.5 text-stone-600 transition-colors hover:bg-stone-200 disabled:opacity-30"
                 title="다시 실행"
             >
                 <Redo className="w-4 h-4" />
@@ -189,7 +189,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChange, plac
     });
 
     return (
-        <div className="border border-stone-200 rounded-lg overflow-hidden bg-white focus-within:ring-2 focus-within:ring-red-500 max-h-[600px] flex flex-col">
+        <div className="flex max-h-[600px] flex-col overflow-hidden rounded-sm border border-stone-200 bg-white focus-within:border-[#e60000]">
             <MenuBar editor={editor} onImageUpload={onImageUpload} />
             <div className="overflow-y-auto flex-1 cursor-text" onClick={() => editor?.chain().focus().run()}>
                 <EditorContent editor={editor} />

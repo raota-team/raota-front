@@ -113,29 +113,28 @@ export default function CommunityPage() {
       <section className="relative min-h-[17rem] md:min-h-[21rem] overflow-hidden">
         <div className="absolute inset-0">
           <img src="/header-community-anime.png" alt="Community" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-stone-900/35"></div>
+          <div className="absolute inset-0 bg-[#25282b]/45"></div>
         </div>
         <div className="relative z-10 mx-auto flex min-h-[17rem] max-w-7xl flex-col justify-center px-6 py-8 text-center text-white md:min-h-[21rem]">
-          <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight uppercase italic text-white">RAOTA COMMUNITY</h1>
-          <p className="text-white max-w-lg mx-auto font-bold">라멘 매니아들의 솔직한 이야기와 꿀팁을 공유하세요</p>
+          <h1 className="vodafone-display mb-4 text-5xl text-white md:text-7xl">RAOTA COMMUNITY</h1>
+          <p className="mx-auto max-w-lg text-lg font-medium text-white/85">라멘 매니아들의 솔직한 이야기와 꿀팁을 공유하세요</p>
         </div>
       </section>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
           <aside className="lg:w-64 flex-shrink-0">
             <div className="sticky top-24 space-y-6">
-              <Link href="/community/write" className="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-bold transition-all shadow-sm active:scale-95 group">
+              <Link href="/community/write" className="group flex w-full items-center justify-center gap-2 rounded-sm bg-[#e60000] py-4 font-bold text-white transition-opacity hover:opacity-90 active:opacity-90">
                 <PenSquare className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                 글쓰기
               </Link>
               
-              <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <div className="overflow-hidden rounded-sm border border-stone-200 bg-white">
                 <button
                   type="button"
                   onClick={() => setIsCategoryOpen((prev) => !prev)}
-                  className="w-full flex items-center justify-between gap-3 p-5 text-left transition-colors hover:bg-stone-50"
+                  className="flex w-full items-center justify-between gap-3 p-5 text-left transition-colors hover:bg-stone-50"
                   aria-expanded={isCategoryOpen}
                 >
                   <div>
@@ -150,8 +149,8 @@ export default function CommunityPage() {
                       <button
                         key={cat.id}
                         onClick={() => handleCategoryChange(cat.id)}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-                          selectedCategory === cat.id ? 'bg-stone-900 text-white shadow-md' : 'text-stone-600 hover:bg-stone-50'
+                        className={`flex w-full items-center justify-between rounded-sm px-4 py-3 text-sm font-bold transition-colors ${
+                          selectedCategory === cat.id ? 'bg-[#e60000] text-white' : 'text-stone-600 hover:bg-stone-50'
                         }`}
                       >
                         <span>{cat.label}</span>
@@ -164,16 +163,16 @@ export default function CommunityPage() {
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1">
+          <main className="min-h-[48rem] flex-1">
             {selectedCategory === 'REVIEW' && (
               <div className="mb-6" ref={dropdownRef}>
                 <div className="relative">
                   <button
                     onClick={() => setIsShopDropdownOpen(!isShopDropdownOpen)}
-                    className="w-full flex items-center justify-between gap-3 px-6 py-4 bg-white border border-stone-200 rounded-2xl shadow-sm hover:border-red-300 transition-all text-sm font-bold text-stone-700"
+                    className="flex w-full items-center justify-between gap-3 rounded-sm border border-stone-200 bg-white px-6 py-4 text-sm font-bold text-stone-700 transition-colors hover:border-[#e60000]"
                   >
                     <div className="flex items-center gap-2">
-                      <Store className={`w-5 h-5 ${selectedShopId ? 'text-red-600' : 'text-stone-400'}`} />
+                      <Store className={`w-5 h-5 ${selectedShopId ? 'text-[#e60000]' : 'text-stone-400'}`} />
                       <span>{selectedShopId ? `${selectedShopName} 후기만 보기` : '라멘집별 후기 찾아보기'}</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -187,7 +186,7 @@ export default function CommunityPage() {
                   </button>
 
                   {isShopDropdownOpen && (
-                    <div className="absolute left-0 right-0 mt-2 bg-white border border-stone-200 rounded-2xl shadow-xl z-30 overflow-hidden flex flex-col max-h-80 animate-scale-in">
+                    <div className="absolute left-0 right-0 z-30 mt-2 flex max-h-80 flex-col overflow-hidden rounded-sm border border-stone-200 bg-white shadow-none animate-scale-in">
                       <div className="p-4 border-b border-stone-100 bg-stone-50">
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
@@ -196,7 +195,7 @@ export default function CommunityPage() {
                             placeholder="가게 이름을 입력하세요..."
                             value={shopSearchQuery}
                             onChange={(e) => setShopSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 text-sm border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-100 bg-white font-medium"
+                            className="w-full rounded-sm border border-stone-200 bg-white py-2 pl-10 pr-4 text-sm font-medium focus:border-[#e60000] focus:outline-none"
                             autoFocus
                           />
                         </div>
@@ -204,7 +203,7 @@ export default function CommunityPage() {
                       <div className="overflow-y-auto">
                         <button
                           onClick={() => { setSelectedShopId(null); setSelectedShopName(''); setIsShopDropdownOpen(false); }}
-                          className={`w-full px-5 py-4 text-left text-sm hover:bg-stone-50 border-b border-stone-50 font-bold ${!selectedShopId ? 'text-red-600' : 'text-stone-600'}`}
+                          className={`w-full border-b border-stone-50 px-5 py-4 text-left text-sm font-bold hover:bg-stone-50 ${!selectedShopId ? 'text-[#e60000]' : 'text-stone-600'}`}
                         >
                           전체 후기 보기
                         </button>
@@ -212,7 +211,7 @@ export default function CommunityPage() {
                           <button
                             key={shop.id}
                             onClick={() => { setSelectedShopId(shop.id); setSelectedShopName(shop.name); setIsShopDropdownOpen(false); setCurrentPage(0); }}
-                            className={`w-full px-5 py-4 text-left text-sm hover:bg-stone-50 border-b border-stone-50 transition-colors ${selectedShopId === shop.id ? 'bg-red-50 text-red-600 font-bold' : 'text-stone-700'}`}
+                            className={`w-full border-b border-stone-50 px-5 py-4 text-left text-sm transition-colors hover:bg-stone-50 ${selectedShopId === shop.id ? 'bg-red-50 font-bold text-[#e60000]' : 'text-stone-700'}`}
                           >
                             <div className="font-bold">{shop.name}</div>
                             <div className="text-[10px] text-stone-400 font-mono mt-0.5">{shop.region}</div>
@@ -234,10 +233,10 @@ export default function CommunityPage() {
                     <div
                       key={pId}
                       onClick={() => router.push(`/community/${pId}`)}
-                      className="group bg-white rounded-2xl p-6 shadow-sm border border-stone-200 hover:border-red-300 hover:shadow-md transition-all flex flex-col md:flex-row gap-6 cursor-pointer"
+                      className="group flex cursor-pointer flex-col gap-6 rounded-sm border border-stone-200 bg-white p-6 transition-colors hover:border-[#e60000] md:flex-row"
                     >
                       {post.imageUrl && (
-                        <div className="w-full md:w-48 h-32 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0 relative">
+                        <div className="relative h-32 w-full flex-shrink-0 overflow-hidden rounded-md bg-stone-100 md:w-48">
                           <img 
                             src={post.imageUrl} 
                             alt={post.title} 
@@ -248,7 +247,7 @@ export default function CommunityPage() {
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-3">
-                          <span className="text-[10px] font-black text-red-600 uppercase tracking-tighter bg-red-50 px-2 py-1 rounded">
+                          <span className="rounded-sm border border-[#e60000] bg-white px-2 py-1 text-[10px] font-black uppercase tracking-tighter text-[#25282b]">
                             {getCategoryLabel(post.category)}
                           </span>
                           {post.storeName && (
@@ -257,13 +256,13 @@ export default function CommunityPage() {
                             </span>
                           )}
                         </div>
-                        <h2 className="text-xl font-bold text-stone-900 mb-2 group-hover:text-red-600 transition-colors truncate">{post.title}</h2>
+                        <h2 className="mb-2 truncate text-xl font-bold text-[#25282b] transition-colors group-hover:text-[#e60000]">{post.title}</h2>
                         <p className="text-stone-500 text-sm line-clamp-2 leading-relaxed mb-4">{stripHtml(post.contentPreview)}</p>
                         <div className="flex items-center justify-between text-[10px] text-stone-400 font-black uppercase tracking-widest border-t border-stone-50 pt-4">
                           <div className="flex items-center gap-4">
                             {/* Inner link for author stays, but parent is now a div */}
                             <div className="flex items-center gap-2" onClick={(e) => { e.stopPropagation(); router.push(`/user/${post.authorId}`); }}>
-                              <div className="w-5 h-5 rounded-full overflow-hidden bg-stone-100 border border-stone-200 shadow-sm flex-shrink-0">
+                              <div className="h-5 w-5 flex-shrink-0 overflow-hidden rounded-full border border-stone-200 bg-stone-100">
                                 {post.authorImageUrl ? (
                                   <img src={post.authorImageUrl} alt={post.authorName} className="w-full h-full object-cover" />
                                 ) : (
@@ -285,7 +284,7 @@ export default function CommunityPage() {
                 })}
               </div>
             ) : (
-              <div className="bg-white rounded-2xl py-32 text-center border border-dashed border-stone-300">
+              <div className="rounded-sm border border-dashed border-stone-300 bg-white py-32 text-center">
                 <div className="text-4xl mb-4 opacity-20">🍜</div>
                 <p className="text-stone-400 font-bold tracking-widest uppercase">게시글이 없습니다</p>
                 <p className="text-stone-300 text-xs mt-2">첫 번째 글의 주인공이 되어보세요!</p>
@@ -298,7 +297,7 @@ export default function CommunityPage() {
                 <button
                   disabled={!pageInfo.hasPrevious}
                   onClick={() => { setCurrentPage(p => p - 1); window.scrollTo(0, 0); }}
-                  className="flex items-center gap-2 text-xs font-black text-stone-400 hover:text-red-600 disabled:opacity-20 disabled:cursor-not-allowed transition-all uppercase tracking-widest"
+                  className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-stone-400 transition-colors hover:text-[#e60000] disabled:cursor-not-allowed disabled:opacity-20"
                 >
                   <ChevronLeft className="w-4 h-4" /> 이전
                 </button>
@@ -307,9 +306,9 @@ export default function CommunityPage() {
                     <button
                       key={i}
                       onClick={() => { setCurrentPage(i); window.scrollTo(0, 0); }}
-                      className={`w-8 h-8 rounded-lg text-xs font-black transition-all ${
+                      className={`h-8 w-8 rounded-sm text-xs font-black transition-colors ${
                         currentPage === i 
-                          ? 'bg-red-600 text-white shadow-lg' 
+                          ? 'bg-[#e60000] text-white' 
                           : 'bg-white text-stone-400 border border-stone-200 hover:bg-stone-50'
                       }`}
                     >
@@ -320,7 +319,7 @@ export default function CommunityPage() {
                 <button
                   disabled={!pageInfo.hasNext}
                   onClick={() => { setCurrentPage(p => p + 1); window.scrollTo(0, 0); }}
-                  className="flex items-center gap-2 text-xs font-black text-stone-400 hover:text-red-600 disabled:opacity-20 disabled:cursor-not-allowed transition-all uppercase tracking-widest"
+                  className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-stone-400 transition-colors hover:text-[#e60000] disabled:cursor-not-allowed disabled:opacity-20"
                 >
                   다음 <ChevronRight className="w-4 h-4" />
                 </button>

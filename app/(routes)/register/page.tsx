@@ -82,15 +82,15 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="animate-fade-in flex flex-col items-center py-12 px-4 min-h-screen bg-transparent">
+    <div className="flex min-h-screen flex-col items-center px-4 py-12 animate-fade-in">
       <div className="w-full max-w-lg">
-        <div className="bg-white border border-stone-200 rounded-2xl shadow-xl overflow-hidden">
+        <div className="overflow-hidden rounded-sm border border-stone-200 bg-white">
           <div className="p-8">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-stone-900 mb-2 font-black tracking-tight">
+              <h1 className="mb-2 text-3xl font-black tracking-tight text-[#25282b]">
                 반가워요! <br/> 기본 정보를 알려주세요
               </h1>
-              <p className="text-stone-500 text-sm font-medium">
+              <p className="text-sm font-medium text-[#7e7e7e]">
                 라오타에서 사용하실 닉네임과 프로필을 설정합니다.
               </p>
             </div>
@@ -103,14 +103,14 @@ export default function RegisterPage() {
                     className="relative group cursor-pointer"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <div className="w-24 h-24 rounded-full bg-stone-100 border-2 border-stone-200 flex items-center justify-center overflow-hidden group-hover:border-orange-400 transition-colors relative">
+                    <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-stone-200 bg-stone-100 transition-colors group-hover:border-[#e60000]">
                       {previewUrl ? (
                         <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                       ) : (
-                        <Camera className="w-8 h-8 text-stone-400 group-hover:text-orange-400 transition-colors" />
+                        <Camera className="h-8 w-8 text-stone-400 transition-colors group-hover:text-[#e60000]" />
                       )}
                     </div>
-                    <div className="absolute bottom-0 right-0 bg-stone-900 p-1.5 rounded-full text-white border-2 border-white shadow-sm">
+                    <div className="absolute bottom-0 right-0 rounded-full border-2 border-white bg-[#25282b] p-1.5 text-white">
                       <Camera className="w-3 h-3" />
                     </div>
                     {previewUrl && (
@@ -121,7 +121,7 @@ export default function RegisterPage() {
                           setSelectedFile(null);
                           setPreviewUrl(null);
                         }}
-                        className="absolute -top-1 -right-1 bg-white border border-stone-200 p-1 rounded-full text-stone-400 hover:text-red-500 shadow-sm transition-colors"
+                        className="absolute -right-1 -top-1 rounded-full border border-stone-200 bg-white p-1 text-stone-400 transition-colors hover:text-[#e60000]"
                       >
                         <X size={14} />
                       </button>
@@ -143,18 +143,18 @@ export default function RegisterPage() {
                     type="text"
                     required
                     placeholder="라멘을사랑하는사람"
-                    className="w-full px-4 py-3.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all bg-stone-50 font-bold"
+                    className="w-full rounded-sm border border-stone-200 bg-white px-4 py-3.5 font-bold transition-colors focus:border-[#e60000] focus:outline-none"
                     value={formData.nickname}
                     onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
                   />
-                  <p className="text-[11px] text-stone-400 mt-2 ml-1 font-medium italic">한글, 영문, 숫자 조합 2~12자 이내</p>
+                  <p className="ml-1 mt-2 text-[11px] font-medium text-stone-400">한글, 영문, 숫자 조합 2~12자 이내</p>
                 </div>
 
                 <div>
                   <label className="block text-xs font-black text-stone-400 uppercase tracking-widest mb-2">한줄 소개 (선택)</label>
                   <textarea
                     placeholder="라멘에 진심인 편입니다."
-                    className="w-full px-4 py-3.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all bg-stone-50 min-h-[100px] resize-none text-sm"
+                    className="min-h-[100px] w-full resize-none rounded-sm border border-stone-200 bg-white px-4 py-3.5 text-sm transition-colors focus:border-[#e60000] focus:outline-none"
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   />
@@ -169,7 +169,7 @@ export default function RegisterPage() {
                         checked={formData.agreeTerms}
                         onChange={(e) => setFormData({ ...formData, agreeTerms: e.target.checked })}
                       />
-                      <div className="w-5 h-5 border-2 border-stone-300 rounded peer-checked:bg-stone-900 peer-checked:border-stone-900 transition-colors flex items-center justify-center">
+                      <div className="flex h-5 w-5 items-center justify-center rounded-sm border border-stone-300 transition-colors peer-checked:border-[#e60000] peer-checked:bg-[#e60000]">
                         <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
                       </div>
                     </div>
@@ -182,7 +182,7 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={!formData.nickname || !formData.agreeTerms || isLoading}
-                  className="w-full bg-stone-950 hover:bg-orange-600 text-white font-black py-4 rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 uppercase tracking-widest text-sm"
+                  className="flex w-full items-center justify-center space-x-2 rounded-sm bg-[#e60000] py-4 text-sm font-black uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isLoading ? (
                     <Loader2 className="w-6 h-6 animate-spin text-white" />
@@ -197,10 +197,6 @@ export default function RegisterPage() {
             </form>
           </div>
         </div>
-
-        <p className="mt-8 text-center text-stone-400 text-xs">
-          이미 계정이 있으신가요? <button onClick={() => router.push('/login')} className="text-stone-600 font-bold underline underline-offset-4">로그인하기</button>
-        </p>
       </div>
     </div>
   );
