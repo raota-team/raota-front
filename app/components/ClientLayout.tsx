@@ -11,7 +11,7 @@ import { getMyProfile } from '@/lib/api/user';
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoggedIn, handleLogout, toast, confirm, setConfirm, currentUser, setCurrentUser } = useApp();
+  const { isLoggedIn, isAuthChecking, handleLogout, toast, confirm, setConfirm, currentUser, setCurrentUser } = useApp();
   const isHomePage = pathname === '/';
 
   // 실제 프로필 정보 동기화
@@ -32,8 +32,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
   }, [isLoggedIn, currentUser, setCurrentUser]);
 
-  const onLogout = useCallback(() => {
-    handleLogout();
+  const onLogout = useCallback(async () => {
+    await handleLogout();
     if (pathname === '/mypage') {
       router.push('/');
     }
@@ -41,7 +41,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#25282b] selection:bg-red-100 selection:text-red-900">
-      <Header isLoggedIn={isLoggedIn} handleLogout={onLogout} />
+      <Header isLoggedIn={isLoggedIn} isAuthChecking={isAuthChecking} handleLogout={onLogout} />
 
       <main className={`flex-1 w-full ${isHomePage ? 'pt-0' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-8'}`}>
         {children}
