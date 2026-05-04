@@ -233,10 +233,10 @@ export default function CommunityPage() {
                     <div
                       key={pId}
                       onClick={() => router.push(`/community/${pId}`)}
-                      className="group flex cursor-pointer flex-col gap-6 rounded-sm border border-stone-200 bg-white p-6 transition-colors hover:border-[#e60000] md:flex-row"
+                      className="group flex cursor-pointer flex-col gap-4 rounded-sm border border-stone-200 bg-white p-4 transition-colors hover:border-[#e60000] md:flex-row md:gap-6 md:p-6"
                     >
                       {post.imageUrl && (
-                        <div className="relative h-32 w-full flex-shrink-0 overflow-hidden rounded-md bg-stone-100 md:w-48">
+                        <div className="relative h-28 w-full flex-shrink-0 overflow-hidden rounded-md bg-stone-100 md:h-32 md:w-48">
                           <img 
                             src={post.imageUrl} 
                             alt={post.title} 
@@ -256,9 +256,9 @@ export default function CommunityPage() {
                             </span>
                           )}
                         </div>
-                        <h2 className="mb-2 truncate text-xl font-bold text-[#25282b] transition-colors group-hover:text-[#e60000]">{post.title}</h2>
+                        <h2 className="mb-2 truncate text-lg font-bold text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-xl">{post.title}</h2>
                         <p className="text-stone-500 text-sm line-clamp-2 leading-relaxed mb-4">{stripHtml(post.contentPreview)}</p>
-                        <div className="flex items-center justify-between text-[10px] text-stone-400 font-black uppercase tracking-widest border-t border-stone-50 pt-4">
+                        <div className="flex items-center justify-between border-t border-stone-50 pt-3 text-[10px] font-black uppercase tracking-widest text-stone-400 md:pt-4">
                           <div className="flex items-center gap-4">
                             {/* Inner link for author stays, but parent is now a div */}
                             <div className="flex items-center gap-2" onClick={(e) => { e.stopPropagation(); router.push(`/user/${post.authorId}`); }}>
