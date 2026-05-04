@@ -46,39 +46,36 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const isTransparent = isHomePage && !scrolled && !isMobile;
-  const isFloating = isHomePage && scrolled;
-  const navTextColor = isTransparent ? 'text-white/95 hover:text-white font-extrabold' : 'text-stone-500 hover:text-red-500 font-extrabold';
-  const activeTextColor = isTransparent ? 'text-white font-black scale-105' : 'text-red-600 font-black';
+  const navTextColor = isTransparent ? 'text-white/95 hover:text-white font-normal' : 'text-[#25282b] hover:text-[#e60000] font-normal';
+  const activeTextColor = isTransparent ? 'text-white font-bold' : 'text-[#e60000] font-bold';
   const logoTextColor = isTransparent ? 'text-white' : 'text-stone-900';
   const loginBtnClass = isTransparent 
-    ? 'bg-white text-stone-900 hover:bg-stone-100' 
-    : 'bg-stone-900 text-white hover:bg-red-600';
+    ? 'bg-white text-[#25282b] hover:bg-stone-100' 
+    : 'bg-[#e60000] text-white hover:opacity-90';
 
   // 마이페이지 경로 결정 (로그인 시 본인 ID 주소, 미로그인 시 로그인 페이지)
   const myPagePath = isLoggedIn && currentUser ? `/user/${currentUser.user_id || currentUser.id}` : '/login';
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 flex justify-center w-full pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isFloating ? 'md:px-6 md:lg:px-8 md:mt-4' : 'px-0 mt-0'}`}>
-        <nav className={`pointer-events-auto w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          isFloating 
-            ? 'md:max-w-5xl bg-white/95 backdrop-blur-md shadow-lg border-b md:border border-stone-200/60 md:rounded-full'
-            : `max-w-full ${isTransparent ? 'bg-transparent border-transparent' : 'bg-white/95 backdrop-blur-md border-b border-stone-200/50 shadow-sm'}`
+      <header className="fixed left-0 right-0 top-0 z-50 flex w-full justify-center pointer-events-none">
+        <nav className={`pointer-events-auto w-full border-b transition-colors duration-300 ${
+          isTransparent ? 'border-transparent bg-transparent' : 'border-stone-200 bg-white'
         }`}>
-          <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isFloating ? 'py-1 md:py-1' : 'py-1 md:py-0'}`}>
-            <div className="flex items-center justify-between h-11 md:h-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex h-14 items-center justify-between md:h-16">
               <Link href="/" className="flex items-center cursor-pointer">
                 <img src="/logo.png" alt="RAOTA Logo" className="w-7 h-7 md:w-10 md:h-10 transition-all duration-300" />
-                <span className={`text-base md:text-xl font-black tracking-tighter ml-1 transition-colors ${logoTextColor}`}>RAOTA<span className="text-red-500">.</span></span>
+                <span className={`ml-2 text-base font-extrabold uppercase tracking-[-0.02em] transition-colors md:text-xl ${logoTextColor}`}>RAOTA<span className="text-[#e60000]">.</span></span>
               </Link>
 
               {/* Desktop Navigation */}
               <div className="hidden md:block flex-1">
-                <div className="ml-10 flex items-baseline justify-end space-x-8">
-                  <Link href="/" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/' ? activeTextColor : navTextColor}`}>홈</Link>
-                  <Link href="/shops" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
-                  <Link href="/community" className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
-                  <Link href={myPagePath} className={`px-4 py-2 text-sm transition-colors uppercase ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
+                <div className="ml-10 flex items-center justify-end gap-7">
+                  <Link href="/" className={`text-sm transition-colors ${currentPath === '/' ? activeTextColor : navTextColor}`}>홈</Link>
+                  <Link href="/shops" className={`text-sm transition-colors ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
+                  <Link href="/community" className={`text-sm transition-colors ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
+                  <Link href={myPagePath} className={`text-sm transition-colors ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
 
                   {isLoggedIn ? (
                     <button
@@ -90,7 +87,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
                   ) : (
                     <Link
                       href="/login"
-                      className={`px-4 py-2 rounded-full text-sm font-bold transition-all uppercase flex items-center shadow-sm ${loginBtnClass}`}
+                      className={`flex items-center rounded-sm px-4 py-3 text-sm font-bold transition-opacity ${loginBtnClass}`}
                     >
                       <LogIn className="w-4 h-4 mr-2" /> 로그인
                     </Link>
@@ -100,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
 
               {/* Mobile Hamburger Button */}
               <button
-                className={`md:hidden p-1.5 transition-colors ${isTransparent ? 'text-white' : 'text-stone-600 hover:text-red-600'}`}
+                className={`md:hidden p-1.5 transition-colors ${isTransparent ? 'text-white' : 'text-[#25282b] hover:text-[#e60000]'}`}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
                 {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -116,13 +113,13 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
       )}
 
       {/* Mobile Slide-out Menu */}
-      <div className={`md:hidden fixed inset-y-0 right-0 w-64 pt-12 pb-safe bg-white z-40 shadow-xl transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`md:hidden fixed inset-y-0 right-0 z-40 w-full max-w-72 transform bg-white pt-14 pb-safe transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full">
           <div className="flex-1 py-3">
             <Link
               href="/"
               onClick={closeMobileMenu}
-              className={`flex items-center px-6 py-3.5 text-base font-bold transition-colors ${isActive('/') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
+              className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
             >
               <Home className="w-5 h-5 mr-3" />
               홈
@@ -130,7 +127,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
             <Link
               href="/shops"
               onClick={closeMobileMenu}
-              className={`flex items-center px-6 py-3.5 text-base font-bold transition-colors ${isActive('/shops') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
+              className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/shops') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
             >
               <UtensilsCrossed className="w-5 h-5 mr-3" />
               가게
@@ -138,7 +135,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
             <Link
               href="/community"
               onClick={closeMobileMenu}
-              className={`flex items-center px-6 py-3.5 text-base font-bold transition-colors ${isActive('/community') ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
+              className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/community') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
             >
               <MessageSquare className="w-5 h-5 mr-3" />
               커뮤니티
@@ -146,7 +143,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
             <Link
               href={myPagePath}
               onClick={closeMobileMenu}
-              className={`flex items-center px-6 py-3.5 text-base font-bold transition-colors ${isActive(myPagePath) ? 'text-red-600 bg-red-50 border-l-4 border-red-600' : 'text-stone-600 hover:text-red-500 hover:bg-stone-50 border-l-4 border-transparent'}`}
+              className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive(myPagePath) ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
             >
               <User className="w-5 h-5 mr-3" />
               마이페이지
@@ -161,7 +158,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
                   handleLogout();
                   closeMobileMenu();
                 }}
-                className="w-full py-3 text-center text-stone-500 hover:text-stone-900 font-bold text-sm transition-colors uppercase border border-stone-300 rounded-sm"
+                className="w-full rounded-sm border border-[#333333] py-3 text-center text-sm font-bold text-[#333333] transition-opacity hover:opacity-90"
               >
                 로그아웃
               </button>
@@ -169,7 +166,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
               <Link
                 href="/login"
                 onClick={closeMobileMenu}
-                className="flex items-center justify-center w-full py-3 bg-stone-900 text-white hover:bg-red-600 rounded-sm text-sm font-bold transition-all uppercase"
+                className="flex w-full items-center justify-center rounded-sm bg-[#e60000] py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
               >
                 <LogIn className="w-4 h-4 mr-2" /> 로그인
               </Link>

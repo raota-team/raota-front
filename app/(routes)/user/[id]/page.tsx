@@ -304,45 +304,43 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   if (isInitialLoading) return <Loading />;
   if (isError || !profile) return (
     <div className="max-w-5xl mx-auto px-4 py-32 text-center flex flex-col items-center">
-      <div className="bg-stone-100 p-6 rounded-full mb-6"><AlertCircle size={48} className="text-stone-300" /></div>
-      <h2 className="text-2xl font-black text-stone-900 mb-2">정보를 볼 수 없는 사용자입니다.</h2>
-      <button onClick={() => router.back()} className="bg-stone-900 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-red-600 transition-colors">이전으로 돌아가기</button>
+      <div className="mb-6 rounded-full bg-stone-100 p-6"><AlertCircle size={48} className="text-stone-300" /></div>
+      <h2 className="mb-2 text-2xl font-black text-[#25282b]">정보를 볼 수 없는 사용자입니다.</h2>
+      <button onClick={() => router.back()} className="rounded-sm bg-[#e60000] px-8 py-3 font-bold text-white transition-opacity hover:opacity-90">이전으로 돌아가기</button>
     </div>
   );
 
   const displayBio = (profile.userDescription && profile.userDescription !== profile.nickname) ? profile.userDescription : '자기소개가 아직 없습니다.';
 
   const EmptyState = ({ message, icon: Icon, tab }: { message: string; icon: any; tab: string }) => (
-    <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-stone-300 rounded-xl bg-stone-50/50">
-      <div className="bg-white p-5 rounded-full mb-4 shadow-sm border border-stone-100"><Icon className="w-10 h-10 text-stone-300" /></div>
+    <div className="flex flex-col items-center justify-center rounded-sm border border-dashed border-stone-300 bg-stone-50 py-20 text-center">
+      <div className="mb-4 rounded-full border border-stone-100 bg-white p-5"><Icon className="h-10 w-10 text-stone-300" /></div>
       <p className="text-stone-500 font-bold mb-6">{message}</p>
-      <Link href={tab === 'posts' || tab === 'comments' ? '/community' : '/shops'} className="inline-flex items-center gap-2 bg-stone-900 hover:bg-red-600 text-white px-8 py-3 rounded-full font-bold text-sm transition-all shadow-lg">
+      <Link href={tab === 'posts' || tab === 'comments' ? '/community' : '/shops'} className="inline-flex items-center gap-2 rounded-sm bg-[#e60000] px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
         {tab === 'posts' || tab === 'comments' ? '커뮤니티 가기' : '맛집 찾아보기'} <ArrowRight className="w-4 h-4" />
       </Link>
     </div>
   );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 pb-32">
+    <div className="mx-auto max-w-5xl px-4 py-8 pb-32">
       {/* Profile Header */}
-      <div className="bg-white border border-stone-200 mb-8 shadow-sm rounded-xl overflow-hidden relative group">
-        <div className="h-48 md:h-64 bg-stone-800 relative overflow-hidden">
+      <div className="group relative mb-8 overflow-hidden rounded-sm border border-stone-200 bg-white">
+        <div className="relative h-48 overflow-hidden bg-[#25282b] md:h-64">
           {(editForm.backgroundImage || (profile.background_image_url && !markedForDelete.background)) ? (
             <img src={editForm.backgroundImage || profile.background_image_url} alt="Cover" className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity" onClick={() => handleZoomImage(editForm.backgroundImage || profile.background_image_url, '배경 이미지')} />
           ) : (
-            <div className="w-full h-full bg-gradient-to-r from-stone-800 to-stone-900 relative">
-              <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-            </div>
+            <div className="relative h-full w-full bg-[#25282b]" />
           )}
 
           {isEditing && isOwnProfile && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-3 z-20">
-              <label className="bg-white hover:bg-stone-100 text-stone-800 px-5 py-2.5 rounded-full text-sm font-black shadow-xl cursor-pointer transition-all active:scale-95 flex items-center gap-2">
+              <label className="flex cursor-pointer items-center gap-2 rounded-sm bg-white px-5 py-2.5 text-sm font-black text-[#25282b] transition-colors hover:bg-stone-100">
                 <Camera className="w-4 h-4" /> 배경 변경
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'backgroundImage')} />
               </label>
               {(editForm.backgroundImage || profile.background_image_url) && !markedForDelete.background && (
-                <button onClick={() => handleImageDelete('background')} className="bg-stone-900/90 hover:bg-red-600 text-white p-2.5 rounded-full shadow-xl transition-all active:scale-95 border border-white/20">
+                <button onClick={() => handleImageDelete('background')} className="rounded-full border border-white/20 bg-[#25282b] p-2.5 text-white transition-colors hover:bg-[#e60000]">
                   <X className="w-5 h-5" />
                 </button>
               )}
@@ -352,7 +350,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
         <div className="px-6 pb-6 md:px-10 md:pb-10 flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16 md:-mt-20 relative z-30">
           <div className="relative">
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white shadow-lg bg-white relative cursor-pointer" onClick={() => handleZoomImage(editForm.profileImage || profile.profile_image_url, '프로필 이미지')}>
+            <div className="relative h-32 w-32 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-white md:h-40 md:w-40" onClick={() => handleZoomImage(editForm.profileImage || profile.profile_image_url, '프로필 이미지')}>
               {(editForm.profileImage || (profile.profile_image_url && !markedForDelete.profile)) ? (
                  <img src={editForm.profileImage || profile.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
               ) : (
@@ -360,7 +358,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
               )}
               {isEditing && isOwnProfile && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
-                  <label className="text-white cursor-pointer hover:text-orange-400 transition-colors">
+                  <label className="cursor-pointer text-white transition-colors hover:text-[#e60000]">
                     <Camera className="w-8 h-8" />
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'profileImage')} />
                   </label>
@@ -370,7 +368,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             {isEditing && isOwnProfile && (editForm.profileImage || profile.profile_image_url) && !markedForDelete.profile && (
               <button 
                 onClick={(e) => { e.stopPropagation(); handleImageDelete('profile'); }}
-                className="absolute -top-1 -right-1 bg-stone-900 text-white p-1.5 rounded-full shadow-lg hover:bg-red-600 transition-colors z-40 border-2 border-white"
+                className="absolute -right-1 -top-1 z-40 rounded-full border-2 border-white bg-[#25282b] p-1.5 text-white transition-colors hover:bg-[#e60000]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -379,27 +377,27 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
           <div className="flex-1 w-full md:w-auto text-center md:text-left">
             {isEditing ? (
-              <div className="bg-white/80 backdrop-blur-md border border-stone-200 rounded-xl p-4 shadow-lg relative z-40">
+              <div className="relative z-40 rounded-sm border border-stone-200 bg-white p-4">
                 <div className="space-y-4">
-                  <input type="text" value={editForm.nickname} onChange={(e) => setEditForm({ ...editForm, nickname: e.target.value })} className="w-full px-4 py-2 bg-white border border-stone-200 rounded-lg font-bold text-xl outline-none" />
-                  <textarea value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} placeholder="자기소개를 입력하세요" className="w-full px-4 py-2 bg-white border border-stone-200 rounded-lg text-sm outline-none" rows={2} />
+                  <input type="text" value={editForm.nickname} onChange={(e) => setEditForm({ ...editForm, nickname: e.target.value })} className="w-full rounded-sm border border-stone-200 bg-white px-4 py-2 text-xl font-bold outline-none focus:border-[#e60000]" />
+                  <textarea value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} placeholder="자기소개를 입력하세요" className="w-full rounded-sm border border-stone-200 bg-white px-4 py-2 text-sm outline-none focus:border-[#e60000]" rows={2} />
                   <div className="flex gap-2 justify-center md:justify-start">
-                    <button onClick={handleSave} disabled={isSubmitting} className="px-6 py-2 bg-stone-900 text-white font-bold rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50">저장</button>
-                    <button onClick={handleEditCancel} disabled={isSubmitting} className="px-6 py-2 bg-stone-100 text-stone-600 font-bold rounded-lg border border-stone-200 hover:bg-stone-200 hover:text-stone-900 transition-colors disabled:opacity-50">취소</button>
+                    <button onClick={handleSave} disabled={isSubmitting} className="rounded-sm bg-[#e60000] px-6 py-2 font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50">저장</button>
+                    <button onClick={handleEditCancel} disabled={isSubmitting} className="rounded-sm border border-stone-200 bg-stone-100 px-6 py-2 font-bold text-stone-600 transition-colors hover:bg-stone-200 hover:text-[#25282b] disabled:opacity-50">취소</button>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="relative z-10">
-                <h2 className="text-3xl font-black text-stone-900 mb-1 tracking-tight">{profile.nickname}</h2>
-                <p className="text-stone-500 text-sm font-medium">{displayBio}</p>
+                <h2 className="mb-1 text-3xl font-black tracking-tight text-[#25282b]">{profile.nickname}</h2>
+                <p className="text-sm font-medium text-[#7e7e7e]">{displayBio}</p>
               </div>
             )}
           </div>
 
           <div className="mt-4 md:mt-0 relative z-10">
             {isOwnProfile && !isEditing && (
-              <button onClick={handleEditStart} className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-red-700 shadow-sm transition-all hover:border-red-600 hover:bg-red-600 hover:text-white active:scale-[0.98]">
+              <button onClick={handleEditStart} className="inline-flex items-center gap-2 rounded-sm border border-[#e60000] bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:bg-[#e60000] hover:text-white">
                 <Edit3 className="h-3.5 w-3.5" />
                 프로필 수정
               </button>
@@ -409,7 +407,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-stone-200 mb-8 overflow-x-auto scrollbar-hide">
+      <div className="mb-8 flex overflow-x-auto border-b border-stone-200 scrollbar-hide">
         {[
           { id: 'photos', label: '사진', icon: Camera, count: profile.stats.total_photo_count },
           { id: 'visits', label: '방문기록', icon: MapPin, count: profile.stats.visited_restaurant_count },
@@ -417,15 +415,15 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           { id: 'comments', label: '댓글', icon: MessageSquare, count: profile.stats.comment_count },
           { id: 'bookmarks', label: '북마크', icon: Heart, count: profile.stats.total_bookmark_count, private: true }
         ].filter(tab => isOwnProfile || !tab.private).map(tab => (
-          <button key={tab.id} onClick={() => handleTabChange(tab.id)} className={`px-6 py-4 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${activeTab === tab.id ? 'border-red-600 text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-700'}`}>
-            <div className="flex items-center"><tab.icon className="w-3.5 h-3.5 mr-2" />{tab.label}<span className={`ml-1 ${activeTab === tab.id ? 'text-red-600' : 'text-stone-400'}`}>({tab.count})</span></div>
+          <button key={tab.id} onClick={() => handleTabChange(tab.id)} className={`whitespace-nowrap border-b-2 px-6 py-4 text-xs font-bold transition-colors ${activeTab === tab.id ? 'border-[#e60000] text-[#25282b]' : 'border-transparent text-stone-500 hover:text-[#25282b]'}`}>
+            <div className="flex items-center"><tab.icon className="mr-2 h-3.5 w-3.5" />{tab.label}<span className={`ml-1 ${activeTab === tab.id ? 'text-[#e60000]' : 'text-stone-400'}`}>({tab.count})</span></div>
           </button>
         ))}
       </div>
 
       <div className="min-h-[400px] pb-20 relative">
         {isLoading && (!pageMeta || pageMeta.number === 0) && (
-          <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-[1px] flex justify-center pt-20"><Loader2 className="w-10 h-10 text-red-600 animate-spin" /></div>
+          <div className="absolute inset-0 z-10 flex justify-center bg-white/50 pt-20"><Loader2 className="h-10 w-10 animate-spin text-[#e60000]" /></div>
         )}
         {items.length > 0 ? (
           <div className={activeTab === 'photos' ? "grid grid-cols-3 gap-1 md:gap-4" : "flex flex-col gap-3"}>
@@ -433,7 +431,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
               const itemId = item.photo_id || item.restaurant_id || item.post_id || item.postId || item.commentId || item.id || 'no-id';
               const uniqueKey = `${activeTab}-${itemId}-${index}`;
               if (activeTab === 'photos') return (
-                <div key={uniqueKey} ref={items.length === index + 1 ? lastItemRef : null} className="group relative aspect-square bg-stone-100 overflow-hidden rounded-lg shadow-sm border border-stone-200">
+                <div key={uniqueKey} ref={items.length === index + 1 ? lastItemRef : null} className="group relative aspect-square overflow-hidden rounded-md border border-stone-200 bg-stone-100">
                   <img src={item.image_url} alt={item.menuName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03] cursor-pointer" onClick={() => setSelectedPhoto(item)} />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pointer-events-none">
                     <p className="text-white text-xs font-bold truncate">{item.menuName}</p>
@@ -442,39 +440,39 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 </div>
               );
               if (activeTab === 'visits' || activeTab === 'bookmarks') return (
-                <Link key={uniqueKey} href={`/shop/${item.restaurant_id || item.id}`} ref={items.length === index + 1 ? lastItemRef : null} className="flex items-center gap-4 p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group shadow-sm">
-                  <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-stone-100"><img src={item.restaurant_image_url || item.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" /></div>
+                <Link key={uniqueKey} href={`/shop/${item.restaurant_id || item.id}`} ref={items.length === index + 1 ? lastItemRef : null} className="group flex items-center gap-4 rounded-md border border-stone-200 bg-white p-4 transition-colors hover:border-[#e60000]">
+                  <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md bg-stone-100"><img src={item.restaurant_image_url || item.thumbnailUrl} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /></div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">{item.restaurant_name || item.name}</h4>
+                    <h4 className="truncate text-lg font-bold text-[#25282b] transition-colors group-hover:text-[#e60000]">{item.restaurant_name || item.name}</h4>
                     <p className="text-sm text-stone-500 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3" /> {item.simple_address || item.address_simple || item.region}</p>
                   </div>
-                  {activeTab === 'visits' && <div className="text-right flex-shrink-0 min-w-[100px] flex flex-col items-end justify-center"><div className="flex items-center gap-1 text-red-600 font-bold"><Award className="w-4 h-4" /> <span>{item.visit_count_for_user}회 방문</span></div><p className="text-xs text-stone-400 mt-1">{new Date(item.last_visited_at).toLocaleDateString('ko-KR')}</p></div>}
+                  {activeTab === 'visits' && <div className="flex min-w-[100px] flex-shrink-0 flex-col items-end justify-center text-right"><div className="flex items-center gap-1 font-bold text-[#e60000]"><Award className="h-4 w-4" /> <span>{item.visit_count_for_user}회 방문</span></div><p className="mt-1 text-xs text-stone-400">{new Date(item.last_visited_at).toLocaleDateString('ko-KR')}</p></div>}
                 </Link>
               );
               if (activeTab === 'posts') return (
-                <Link key={uniqueKey} href={`/community/${item.post_id || item.postId || item.id}`} ref={items.length === index + 1 ? lastItemRef : null} className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group shadow-sm">
+                <Link key={uniqueKey} href={`/community/${item.post_id || item.postId || item.id}`} ref={items.length === index + 1 ? lastItemRef : null} className="group block rounded-md border border-stone-200 bg-white p-4 transition-colors hover:border-[#e60000]">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2"><span className="px-2 py-1 bg-red-100 text-red-600 text-[10px] font-black rounded uppercase">{getCategoryLabel(item.category)}</span> {item.storeName && <span className="text-[10px] text-stone-400 font-bold uppercase tracking-tighter">@ {item.storeName}</span>}</div>
-                      <h4 className="font-bold text-stone-900 text-lg truncate group-hover:text-red-600 transition-colors">{item.title}</h4>
+                      <div className="mb-2 flex items-center gap-2"><span className="rounded-sm border border-[#e60000] bg-white px-2 py-1 text-[10px] font-black uppercase text-[#25282b]">{getCategoryLabel(item.category)}</span> {item.storeName && <span className="text-[10px] font-bold uppercase tracking-tighter text-stone-400">@ {item.storeName}</span>}</div>
+                      <h4 className="truncate text-lg font-bold text-[#25282b] transition-colors group-hover:text-[#e60000]">{item.title}</h4>
                       <p className="text-sm text-stone-500 mt-2 line-clamp-1 leading-relaxed">{stripHtml(item.contentPreview)}</p>
                       <div className="flex items-center gap-4 mt-3 text-[10px] font-black uppercase text-stone-400 tracking-widest"><span>{new Date(item.createdAt).toLocaleDateString('ko-KR')}</span><span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5" /> {item.likeCount}</span><span className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5" /> {item.commentCount}</span></div>
                     </div>
-                    {item.imageUrl && <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-stone-100 border border-stone-100 shadow-sm"><img src={item.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" /></div>}
+                    {item.imageUrl && <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-stone-100 bg-stone-100"><img src={item.imageUrl} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" /></div>}
                   </div>
                 </Link>
               );
               if (activeTab === 'comments') return (
-                <Link key={uniqueKey} href={`/community/${item.post_id || item.postId}`} ref={items.length === index + 1 ? lastItemRef : null} className="block p-4 bg-white border border-stone-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all group shadow-sm">
+                <Link key={uniqueKey} href={`/community/${item.post_id || item.postId}`} ref={items.length === index + 1 ? lastItemRef : null} className="group block rounded-md border border-stone-200 bg-white p-4 transition-colors hover:border-[#e60000]">
                   <p className="text-stone-800 font-medium mb-2 line-clamp-2">"{item.content}"</p>
-                  <div className="flex items-center justify-between text-sm text-stone-500"><div className="flex items-center gap-2">{item.postTitle && <span className="truncate max-w-[200px] md:max-w-[400px] text-stone-400 transition-colors group-hover:text-red-600">원본글 보기 <ArrowRight className="w-2.5 h-2.5 ml-1 inline" /></span>}<span>{new Date(item.createdAt).toLocaleDateString('ko-KR')}</span></div>{item.taggedParentAuthorNickname && <span className="text-red-500 font-bold">@ {item.taggedParentAuthorNickname}</span>}</div>
+                  <div className="flex items-center justify-between text-sm text-stone-500"><div className="flex items-center gap-2">{item.postTitle && <span className="max-w-[200px] truncate text-stone-400 transition-colors group-hover:text-[#e60000] md:max-w-[400px]">원본글 보기 <ArrowRight className="ml-1 inline h-2.5 w-2.5" /></span>}<span>{new Date(item.createdAt).toLocaleDateString('ko-KR')}</span></div>{item.taggedParentAuthorNickname && <span className="font-bold text-[#e60000]">@ {item.taggedParentAuthorNickname}</span>}</div>
                 </Link>
               );
               return null;
             })}
           </div>
         ) : !isLoading && <EmptyState tab={activeTab} message={`아직 항목이 없습니다.`} icon={activeTab === 'photos' ? Camera : activeTab === 'visits' ? MapPin : activeTab === 'bookmarks' ? Heart : activeTab === 'posts' ? FileText : MessageSquare} />}
-        {isLoading && pageMeta && pageMeta.number > 0 && <div className="flex justify-center py-8"><Loader2 className="w-8 h-8 text-red-600 animate-spin" /></div>}
+        {isLoading && pageMeta && pageMeta.number > 0 && <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-[#e60000]" /></div>}
       </div>
       {selectedPhoto && <PhotoModal photo={{ id: selectedPhoto.photo_id || selectedPhoto.id, imageUrl: selectedPhoto.image_url, menuName: selectedPhoto.menuName || '이미지 보기', restaurantName: selectedPhoto.restaurant_name || '사용자 프로필', restaurantId: selectedPhoto.restaurant_id, date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-', comment: selectedPhoto.description || '', isUserPhoto: selectedPhoto.isUserPhoto }} onClose={() => setSelectedPhoto(null)} disableNavigation={false} />}
     </div>

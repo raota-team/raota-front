@@ -11,24 +11,23 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   return (
     <Link
       href={`/shop/${shop.id}`}
-      className="group bg-white border border-stone-200 hover:border-red-400 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col shadow-sm hover:shadow-lg relative before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-red-500 before:to-red-600 before:opacity-0 hover:before:opacity-100 before:transition-opacity"
+      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-md bg-white transition-colors duration-200 hover:text-[#e60000]"
     >
-      <div className="aspect-w-16 aspect-h-9 h-48 overflow-hidden relative">
+      <div className="aspect-w-16 aspect-h-9 relative h-48 overflow-hidden rounded-t-md">
         <img 
           src={shop.imageUrl} 
           alt={shop.name} 
           loading="lazy"
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent"></div>
       </div>
       <div className="p-5 flex flex-col flex-grow">
         <div className="mb-3">
-          <span className="text-red-500 text-xs font-bold tracking-widest uppercase mb-1 block">{shop.type}</span>
-          <h3 className="text-lg font-bold text-stone-900 group-hover:text-red-500 transition-colors leading-tight">{shop.name}</h3>
+          <span className="mb-2 inline-flex rounded-sm border border-[#e60000] bg-white/80 px-2 py-1 text-xs font-semibold uppercase text-black/80">{shop.type}</span>
+          <h3 className="text-2xl font-bold leading-tight text-[#25282b] transition-colors group-hover:text-[#e60000]">{shop.name}</h3>
         </div>
-        <p className="text-stone-500 text-sm line-clamp-2 leading-relaxed mb-6 flex-grow">{shop.description}</p>
-        <div className="flex items-center justify-between text-xs text-stone-400 font-mono border-t border-stone-200 pt-4 mt-auto">
+        <p className="mb-6 line-clamp-2 flex-grow text-base leading-relaxed text-[#7e7e7e]">{shop.description}</p>
+        <div className="mt-auto flex items-center justify-between border-t border-stone-200 pt-4 text-xs font-medium text-[#7e7e7e]">
           <div className="flex items-center"><MapPin className="w-3 h-3 mr-1" />{shop.location}</div>
           <div className="flex items-center"><Camera className="w-3 h-3 mr-1" />방문수: {shop.stats.visit_count}</div>
         </div>

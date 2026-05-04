@@ -125,36 +125,30 @@ export default function CommunityWritePage() {
     }
   };
 
-  const getCategoryStyle = (categoryId: string, isSelected: boolean) => {
-    const baseStyle = 'px-4 py-2.5 rounded-lg border-2 text-sm font-semibold transition-all flex items-center gap-1.5';
+  const getCategoryStyle = (_categoryId: string, isSelected: boolean) => {
+    const baseStyle = 'px-4 py-3 rounded-sm border text-sm font-bold transition-colors flex items-center';
     if (isSelected) {
-      switch (categoryId) {
-        case 'REVIEW': return `${baseStyle} bg-red-600 border-red-600 text-white shadow-md`;
-        case 'TIP': return `${baseStyle} bg-amber-500 border-amber-500 text-white shadow-md`;
-        case 'QUESTION': return `${baseStyle} bg-blue-600 border-blue-600 text-white shadow-md`;
-        default: return `${baseStyle} bg-stone-900 border-stone-900 text-white shadow-md`;
-      }
+      return `${baseStyle} bg-[#e60000] border-[#e60000] text-white`;
     }
-    return `${baseStyle} bg-white border-stone-200 text-stone-600 hover:bg-stone-50`;
+    return `${baseStyle} bg-white border-stone-200 text-[#25282b] hover:border-[#e60000]`;
   };
 
   return (
-    <div className="max-w-2xl mx-auto pb-12 px-4 sm:px-0">
+    <div className="mx-auto max-w-3xl px-4 pb-12 sm:px-0">
       <div className="mb-6 flex items-center justify-between">
-        <button onClick={() => router.back()} className="flex items-center text-stone-500 hover:text-red-500 transition-colors text-sm font-bold uppercase tracking-wider">
+        <button onClick={() => router.back()} className="flex items-center text-sm font-bold uppercase tracking-wider text-[#7e7e7e] transition-colors hover:text-[#e60000]">
           <ArrowLeft className="w-4 h-4 mr-2" /> 취소
         </button>
-        <h1 className="text-xl font-black text-stone-900">새 글 작성</h1>
+        <h1 className="text-3xl font-black text-[#25282b]">새 글 작성</h1>
         <div className="w-16"></div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm">
+      <form onSubmit={handleSubmit} className="overflow-hidden rounded-sm border border-stone-200 bg-white">
         <div className="p-6 border-b border-stone-100">
           <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">카테고리</label>
           <div className="flex flex-wrap gap-2">
             {categories.map(cat => (
               <button key={cat.id} type="button" onClick={() => setCategory(cat.id)} className={getCategoryStyle(cat.id, category === cat.id)}>
-                <span>{cat.icon}</span>
                 {cat.name}
               </button>
             ))}
@@ -165,26 +159,26 @@ export default function CommunityWritePage() {
           <div className="p-6 border-b border-stone-100">
             <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">라멘집 선택</label>
             <div className="relative" ref={dropdownRef}>
-              <button type="button" onClick={() => setIsShopDropdownOpen(!isShopDropdownOpen)} className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg text-sm font-medium text-stone-700 hover:border-stone-300 transition-colors">
+              <button type="button" onClick={() => setIsShopDropdownOpen(!isShopDropdownOpen)} className="flex w-full items-center justify-between gap-2 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000]">
                 <div className="flex items-center gap-2">
-                  <Store className="w-4 h-4 text-stone-400" />
+                  <Store className="w-4 h-4 text-[#e60000]" />
                   <span>{selectedShop ? selectedShop.name : '라멘집을 선택하세요'}</span>
                 </div>
                 <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform ${isShopDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isShopDropdownOpen && (
-                <div className="absolute left-0 right-0 mt-2 bg-white border border-stone-200 rounded-lg shadow-xl z-20 overflow-hidden flex flex-col max-h-64">
+                <div className="absolute left-0 right-0 z-20 mt-2 flex max-h-64 flex-col overflow-hidden rounded-sm border border-stone-200 bg-white">
                   <div className="p-2 border-b border-stone-100 bg-stone-50">
                     <div className="relative">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
-                      <input type="text" placeholder="라멘집 검색..." value={shopSearchQuery} onChange={(e) => setShopSearchQuery(e.target.value)} className="w-full pl-8 pr-3 py-1.5 text-xs border border-stone-200 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 bg-white" autoFocus />
+                      <input type="text" placeholder="라멘집 검색..." value={shopSearchQuery} onChange={(e) => setShopSearchQuery(e.target.value)} className="w-full rounded-sm border border-stone-200 bg-white py-2 pl-8 pr-3 text-xs focus:border-[#e60000] focus:outline-none" autoFocus />
                     </div>
                   </div>
                   <div className="overflow-y-auto">
-                    <button type="button" onClick={() => { setSelectedShopId(null); setIsShopDropdownOpen(false); }} className={`w-full px-4 py-3 text-left text-sm hover:bg-stone-50 ${!selectedShopId ? 'bg-red-50 text-red-600 font-semibold' : 'text-stone-700'}`}>선택 안함</button>
+                    <button type="button" onClick={() => { setSelectedShopId(null); setIsShopDropdownOpen(false); }} className={`w-full px-4 py-3 text-left text-sm hover:bg-stone-50 ${!selectedShopId ? 'text-[#e60000] font-semibold' : 'text-stone-700'}`}>선택 안함</button>
                     {shops?.filter(shop => !shopSearchQuery || shop.name.toLowerCase().includes(shopSearchQuery.toLowerCase())).map(shop => (
-                      <button key={shop.id} type="button" onClick={() => { setSelectedShopId(shop.id); setIsShopDropdownOpen(false); }} className={`w-full px-4 py-3 text-left text-sm hover:bg-stone-50 border-t border-stone-100 ${selectedShopId === shop.id ? 'bg-red-50 text-red-600 font-semibold' : 'text-stone-700'}`}>
+                      <button key={shop.id} type="button" onClick={() => { setSelectedShopId(shop.id); setIsShopDropdownOpen(false); }} className={`w-full border-t border-stone-100 px-4 py-3 text-left text-sm hover:bg-stone-50 ${selectedShopId === shop.id ? 'font-semibold text-[#e60000]' : 'text-stone-700'}`}>
                         <div className="font-medium">{shop.name}</div>
                         <div className="text-xs text-stone-400">{shop.location}</div>
                       </button>
@@ -198,7 +192,7 @@ export default function CommunityWritePage() {
 
         <div className="p-6 border-b border-stone-100">
           <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">제목</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full px-4 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-lg font-bold" maxLength={100} />
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full rounded-sm border border-stone-200 px-4 py-3 text-lg font-bold text-[#25282b] focus:border-[#e60000] focus:outline-none" maxLength={100} />
         </div>
 
         <div className="p-6 border-b border-stone-100">
@@ -215,20 +209,20 @@ export default function CommunityWritePage() {
           <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">대표 이미지 (선택)</label>
           {imagePreview ? (
             <div className="relative inline-block mt-2">
-              <img src={imagePreview} alt="Preview" className="max-w-full h-48 object-cover rounded-lg border border-stone-200" />
-              <button type="button" onClick={() => { setImagePreview(null); setSelectedFile(null); }} className="absolute -top-2 -right-2 p-1 bg-stone-800 text-white rounded-full hover:bg-stone-900 transition-colors shadow-lg"><X className="w-4 h-4" /></button>
+              <img src={imagePreview} alt="Preview" className="h-48 max-w-full rounded-md border border-stone-200 object-cover" />
+              <button type="button" onClick={() => { setImagePreview(null); setSelectedFile(null); }} className="absolute -right-2 -top-2 rounded-full bg-[#25282b] p-1 text-white transition-opacity hover:opacity-90"><X className="w-4 h-4" /></button>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-stone-300 rounded-lg cursor-pointer hover:border-red-400 hover:bg-red-50 transition-all mt-2 group">
-              <ImageIcon className="w-8 h-8 text-stone-400 mb-2 group-hover:scale-110 transition-transform" />
+            <label className="group mt-2 flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-sm border border-dashed border-stone-300 transition-colors hover:border-[#e60000]">
+              <ImageIcon className="mb-2 h-8 w-8 text-stone-400 transition-colors group-hover:text-[#e60000]" />
               <span className="text-sm text-stone-500">클릭하여 이미지 업로드</span>
               <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
             </label>
           )}
         </div>
 
-        <div className="p-6 bg-stone-50">
-          <button type="submit" disabled={!title.trim() || !content.trim() || isSubmitting} className={`w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center space-x-2 transition-all transform active:scale-[0.98] ${isSubmitting || !title.trim() || !content.trim() ? 'bg-stone-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}>
+        <div className="bg-stone-50 p-6">
+          <button type="submit" disabled={!title.trim() || !content.trim() || isSubmitting} className={`flex w-full items-center justify-center space-x-2 rounded-sm py-4 font-bold text-white transition-opacity active:opacity-90 ${isSubmitting || !title.trim() || !content.trim() ? 'cursor-not-allowed bg-stone-300' : 'bg-[#e60000] hover:opacity-90'}`}>
             {isSubmitting ? <><Loader2 className="w-5 h-5 animate-spin" /><span>작성 중...</span></> : <span>글 작성 완료</span>}
           </button>
         </div>

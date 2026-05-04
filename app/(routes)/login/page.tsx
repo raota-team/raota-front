@@ -23,21 +23,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center py-20 px-4">
-      <div className="w-full max-w-md bg-white border border-stone-200 p-8 shadow-lg text-center rounded-2xl">
+    <div className="flex flex-col items-center px-4 py-20">
+      <div className="w-full max-w-md rounded-sm border border-stone-200 bg-white p-8 text-center">
         <div className="mb-8">
-          <div className="w-20 h-20 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-stone-100">
             <img src="/logo.png" alt="RAOTA Logo" className="w-14 h-14 object-contain" />
           </div>
-          <h2 className="text-2xl font-bold text-stone-900 mb-2">라오타에 오신것을<br />환영합니다!</h2>
-          <p className="text-stone-500 text-sm">라멘을 사랑하는 미식가들의 공간</p>
+          <h2 className="mb-2 text-3xl font-black text-[#25282b]">라오타에 오신것을<br />환영합니다!</h2>
+          <p className="text-sm text-[#7e7e7e]">라멘을 사랑하는 미식가들의 공간</p>
         </div>
 
         <div className="space-y-3">
           {/* Kakao Login Button */}
           <button
             onClick={onKaKaoLogin}
-            className="w-full bg-[#FEE500] hover:bg-[#FDD835] text-[#000000] font-semibold py-4 px-4 rounded-xl transition-all flex items-center justify-center relative shadow-sm hover:shadow-md"
+            className="relative flex w-full items-center justify-center rounded-sm border border-stone-200 bg-white px-4 py-4 font-semibold text-[#25282b] transition-colors hover:border-[#e60000]"
           >
             <MessageCircle className="w-5 h-5 absolute left-5" fill="currentColor" strokeWidth={0} />
             <span>카카오로 시작하기</span>
@@ -46,7 +46,7 @@ export default function LoginPage() {
           {/* Google Login Button */}
           <button
             onClick={onGoogleLogin}
-            className="w-full bg-white hover:bg-stone-50 text-stone-700 font-semibold py-4 px-4 rounded-xl transition-all flex items-center justify-center border border-stone-200 relative shadow-sm hover:shadow-md"
+            className="relative flex w-full items-center justify-center rounded-sm border border-stone-200 bg-white px-4 py-4 font-semibold text-[#25282b] transition-colors hover:border-[#e60000]"
           >
             <svg className="w-5 h-5 absolute left-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -70,9 +70,9 @@ export default function LoginPage() {
           {/* Passkey Login Button */}
           <button
             onClick={onPasskeyLogin}
-            className="w-full bg-stone-900 hover:bg-stone-800 text-white font-semibold py-4 px-4 rounded-xl transition-all flex items-center justify-center relative shadow-md hover:shadow-lg group"
+            className="group relative flex w-full items-center justify-center rounded-sm bg-[#e60000] px-4 py-4 font-semibold text-white transition-opacity hover:opacity-90"
           >
-            <Fingerprint className="w-5 h-5 absolute left-5 text-orange-500 group-hover:scale-110 transition-transform" strokeWidth={2} />
+            <Fingerprint className="absolute left-5 h-5 w-5 text-white" strokeWidth={2} />
             <span>패스키로 시작하기</span>
           </button>
         </div>
