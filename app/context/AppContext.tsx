@@ -11,16 +11,17 @@ import React, {
 import { usePathname } from "next/navigation";
 import { mockUserProfile } from "../lib/data";
 import type { UserProfile } from "../types";
-import { clearAccessToken, getAccessToken, loadOAuthSessionMeta, saveRaotaOAuthSession, updateNewMemberStatus } from "@/lib/auth/accessToken";
-import { refreshAuthSession } from "@/lib/api/client";
+import { blockAutoRefresh, clearAccessToken, getAccessToken, isAutoRefreshBlocked, loadOAuthSessionMeta, saveRaotaOAuthSession, shouldRefreshAccessToken, updateNewMemberStatus } from "@/lib/auth/accessToken";
+import { logoutAuthSession, refreshAuthSession } from "@/lib/api/client";
 
 interface AppContextType {
   isLoggedIn: boolean;
+  isAuthChecking: boolean;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   currentUser: any;
   setCurrentUser: React.Dispatch<React.SetStateAction<any>>;
   handleLogin: () => void;
-  handleLogout: () => void;
+  handleLogout: () => Promise<void>;
   /** localStorage의 Bearer 토큰 존재 여부로 로그인 상태 동기화 (oauth2/redirect 직후 등) */
   syncAuthFromStorage: () => void;
   /** 회원가입 완료 처리 (newMember 플래그를 false로 전환) */
@@ -38,6 +39,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
   const [confirm, setConfirm] = useState<{ message: string, onConfirm: () => void } | null>(null);
@@ -71,7 +73,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } else {
       setCurrentUser(null);
     }
+    setIsAuthChecking(false);
   }, []);
+
+  const ensureAuthSession = useCallback(async () => {
+    const token = getAccessToken();
+
+    if (!token && isAutoRefreshBlocked()) {
+      syncAuthFromStorage();
+      return;
+    }
+
+    if (!shouldRefreshAccessToken(token)) {
+      syncAuthFromStorage();
+      return;
+    }
+
+    setIsAuthChecking(true);
+
+    try {
+      await refreshAuthSession();
+      syncAuthFromStorage();
+    } catch {
+      clearAccessToken();
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+      setIsAuthChecking(false);
+    }
+  }, [syncAuthFromStorage]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -98,43 +127,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [syncAuthFromStorage]);
 
   useEffect(() => {
-    syncAuthFromStorage();
-  }, [syncAuthFromStorage]);
-
-  useEffect(() => {
     if (typeof window === "undefined") return;
-    if (getAccessToken()) return;
 
     let cancelled = false;
 
-    refreshAuthSession()
-      .then(() => {
-        if (!cancelled) {
-          syncAuthFromStorage();
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setIsLoggedIn(false);
-          setCurrentUser(null);
-        }
-      });
+    ensureAuthSession().catch(() => {
+      if (!cancelled) setIsAuthChecking(false);
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [syncAuthFromStorage]);
+  }, [ensureAuthSession, pathname]);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
     setCurrentUser(mockUserProfile.data);
   };
 
-  const handleLogout = () => {
-    clearAccessToken();
-    setIsLoggedIn(false);
-    setCurrentUser(null);
-  };
+  const handleLogout = useCallback(async () => {
+    blockAutoRefresh();
+    try {
+      await logoutAuthSession();
+    } catch (error) {
+      console.error("Failed to revoke refresh token:", error);
+    } finally {
+      clearAccessToken();
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+      setIsAuthChecking(false);
+    }
+  }, []);
 
   const completeRegistration = useCallback(() => {
     updateNewMemberStatus(false);
@@ -154,6 +177,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider
       value={{
         isLoggedIn,
+        isAuthChecking,
         setIsLoggedIn,
         currentUser,
         setCurrentUser,
