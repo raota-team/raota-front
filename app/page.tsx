@@ -21,55 +21,57 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div className="bg-stone-950 overflow-hidden">
-      {/* Full Screen Hero Section */}
-      <section className="h-[100dvh] relative flex items-center justify-center">
-        {/* Background Image with Cinematic Overlay */}
+    <div className="overflow-hidden bg-white">
+      <section className="relative flex min-h-[calc(100dvh-56px)] items-center justify-center overflow-hidden bg-[#25282b]">
         <div className="absolute inset-0">
           <img
             src="/hero-home.jpg"
             alt="Ramen Shop"
-            className="w-full h-full object-cover opacity-60"
+            className="h-full w-full object-cover opacity-70 saturate-[0.85]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
-          <div className="absolute inset-0 bg-stone-950/20"></div>
+          <div className="absolute inset-0 bg-[#25282b]/35"></div>
         </div>
 
-        {/* Hero Content - Refined Layout */}
-        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
-          <h1 className={`text-6xl md:text-8xl text-white mb-8 leading-[1.1] tracking-tighter ${doHyeon.className}`}>
-            <span className="block md:inline">전국 라멘</span><span className="hidden md:inline"> </span>
-            <span className="block md:inline">맛집 지도 <span className="text-red-500 font-sans font-black italic tracking-tighter drop-shadow-[0_0_20px_rgba(239,68,68,0.4)]">RAOTA</span></span>
+        <div className="relative z-10 mx-auto max-w-6xl px-6 text-center text-white">
+          <h1 className={`vodafone-display mb-8 text-[clamp(4rem,13vw,9rem)] ${doHyeon.className}`}>
+            <span className="block">RAOTA</span>
+            <span className="block text-[clamp(3rem,10vw,7rem)]">전국 라멘 지도</span>
           </h1>
 
-          <p className={`text-lg md:text-xl text-stone-400 mb-14 max-w-2xl mx-auto leading-relaxed font-medium animate-fade-in-up`}>
+          <p className="mx-auto mb-12 max-w-2xl text-lg font-medium leading-relaxed text-white/85 md:text-xl">
             <span className="block sm:inline">지역별 라멘 맛집과</span><span className="hidden sm:inline"> </span>
             <span className="block sm:inline">매니아들의 솔직한 기록을 확인하세요.</span>
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/shops"
-              className="group relative overflow-hidden bg-white text-stone-950 px-10 py-5 font-black text-lg rounded-full transition-all hover:scale-105 active:scale-95 shadow-2xl"
+              className="vodafone-button-pill min-w-48 bg-[#e60000]"
             >
-              <span className="relative z-10 flex items-center gap-2">
-                맛집 탐색하기
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </span>
+              맛집 탐색하기
+              <ChevronRight className="h-5 w-5" />
             </Link>
             <Link
               href="/community"
-              className="group px-10 py-5 font-black text-lg rounded-full transition-all bg-stone-100/10 hover:bg-stone-100/20 border border-white/10 text-white backdrop-blur-md shadow-xl"
+              className="inline-flex min-w-48 items-center justify-center gap-2 rounded-full bg-white/10 px-6 py-4 text-sm font-bold text-white transition-colors hover:bg-white/15 active:opacity-90"
             >
-              <span className="flex items-center gap-2 text-stone-200 group-hover:text-white">
-                커뮤니티
-                <Users className="w-5 h-5 opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all" />
-              </span>
+              커뮤니티
+              <Users className="h-5 w-5" />
             </Link>
           </div>
         </div>
       </section>
-
+      <section className="bg-white px-6 py-14 md:py-20">
+        <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-[1fr_1.2fr] md:items-end">
+          <h2 className="text-4xl font-light leading-tight text-[#25282b] md:text-5xl">
+            라멘에 진심인 사람들을 위한 간결한 아카이브.
+          </h2>
+          <p className="text-lg leading-8 text-[#7e7e7e]">
+            전국 라멘집 정보, 방문 기록, 커뮤니티 후기를 한 화면에서 빠르게 탐색할 수 있도록
+            브랜드 레드와 편집형 레이아웃 중심으로 정리했습니다.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

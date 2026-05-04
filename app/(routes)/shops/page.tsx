@@ -114,38 +114,37 @@ export default function ShopsListPage() {
   return (
     <div className="min-h-screen">
       {/* Header Section */}
-      <section className="relative min-h-[17rem] md:min-h-[21rem] overflow-hidden">
+      <section className="relative min-h-[17rem] overflow-hidden md:min-h-[21rem]">
         <div className="absolute inset-0">
           <img src="/header-shoplist-anime.png" alt="Ramen Shops" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-stone-900/40"></div>
+          <div className="absolute inset-0 bg-[#25282b]/45"></div>
         </div>
         <div className="relative z-10 mx-auto flex min-h-[17rem] max-w-7xl flex-col justify-center px-4 py-8 sm:px-6 lg:min-h-[21rem] lg:px-8">
           <div className="flex flex-col gap-5">
             <div className="text-center text-white">
-              <h1 className="mb-3 text-3xl font-black tracking-tight uppercase italic text-white md:text-5xl">
+              <h1 className="vodafone-display mb-4 text-5xl text-white md:text-7xl">
                 RAOTA RAMEN ARCHIVE
               </h1>
-              <p className="text-white max-w-lg mx-auto font-bold leading-relaxed">
+              <p className="mx-auto max-w-lg text-lg font-medium leading-relaxed text-white/85">
                 전국의 인기 라멘 맛집을 탐색하고<br className="md:hidden" /> 나만의 인생 라멘을 찾아보세요
               </p>
             </div>
 
             <div className="mx-auto w-full max-w-5xl">
               <div className="relative">
-                <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-red-400" />
+                <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#e60000]" />
                 <input
                   type="text"
                   placeholder="가게 이름을 검색해보세요"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-2xl border border-white/20 bg-white py-5 pl-14 pr-6 text-sm font-bold text-stone-700 shadow-[0_20px_50px_-28px_rgba(0,0,0,0.75)] outline-none transition-all placeholder:text-stone-400 focus:border-red-300 focus:ring-2 focus:ring-red-200"
+                  className="w-full rounded-sm border border-white bg-white py-5 pl-14 pr-6 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-[#7e7e7e] focus:border-[#e60000]"
                 />
               </div>
             </div>
           </div>
         </div>
       </section>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
@@ -184,7 +183,7 @@ export default function ShopsListPage() {
                 {activeRegion !== ALL_FILTER && (
                   <button
                     onClick={() => setActiveRegion(ALL_FILTER)}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700 transition-colors hover:bg-red-200"
+                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
                   >
                     {activeRegion}
                     <X className="h-3 w-3" />
@@ -193,7 +192,7 @@ export default function ShopsListPage() {
                 {activeType !== "All" && (
                   <button
                     onClick={() => setActiveType("All")}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700 transition-colors hover:bg-red-200"
+                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
                   >
                     {activeType}
                     <X className="h-3 w-3" />
@@ -202,7 +201,7 @@ export default function ShopsListPage() {
                 {sortBy !== "name" && (
                   <button
                     onClick={() => setSortBy("name")}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700 transition-colors hover:bg-red-200"
+                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
                   >
                     인기순
                     <X className="h-3 w-3" />
@@ -219,7 +218,7 @@ export default function ShopsListPage() {
                     setActiveType("All");
                     setSortBy("name");
                   }}
-                  className="shrink-0 text-xs font-black uppercase tracking-[0.16em] text-stone-400 transition-colors hover:text-red-600"
+                  className="shrink-0 text-xs font-black uppercase tracking-[0.16em] text-stone-400 transition-colors hover:text-[#e60000]"
                 >
                   전체 초기화
                 </button>
@@ -244,7 +243,7 @@ export default function ShopsListPage() {
               </div>
             ) : shops.length > 0 ? (
               <div className={`transition-opacity duration-200 ${showListLoading ? "opacity-35" : "opacity-100"}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
+                <div className="mt-4 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                   {shops.map((shop) => (
                     <ShopCard key={shop.id} shop={shop} />
                   ))}
@@ -270,7 +269,7 @@ export default function ShopsListPage() {
                     aria-label="이전 페이지 묶음 보기"
                     disabled={pageWindowStart === 0}
                     onClick={showPreviousPageGroup}
-                    className="p-3 rounded-lg border border-stone-200 text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed hover:border-stone-400 hover:text-stone-900 transition-all"
+                    className="rounded-sm border border-stone-200 p-3 text-stone-400 transition-colors hover:border-[#25282b] hover:text-[#25282b] disabled:cursor-not-allowed disabled:opacity-20"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -283,10 +282,10 @@ export default function ShopsListPage() {
                         aria-label={`${pageNumber + 1} 페이지로 이동`}
                         aria-current={pageNumber === currentPage ? "page" : undefined}
                         onClick={() => goToShopsPage(pageNumber)}
-                        className={`w-10 h-10 rounded-lg text-xs font-black transition-all ${
+                        className={`h-10 w-10 rounded-sm text-xs font-black transition-colors ${
                           pageNumber === currentPage 
-                            ? "bg-stone-900 text-white" 
-                            : "bg-white text-stone-400 border border-stone-200 hover:border-stone-400 hover:text-stone-900"
+                            ? "bg-[#e60000] text-white" 
+                            : "border border-stone-200 bg-white text-stone-400 hover:border-[#25282b] hover:text-[#25282b]"
                         }`}
                       >
                         {pageNumber + 1}
@@ -299,7 +298,7 @@ export default function ShopsListPage() {
                     aria-label="다음 페이지 묶음 보기"
                     disabled={pageWindowStart + maxVisiblePages >= totalPages}
                     onClick={showNextPageGroup}
-                    className="p-3 rounded-lg border border-stone-200 text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed hover:border-stone-400 hover:text-stone-900 transition-all"
+                    className="rounded-sm border border-stone-200 p-3 text-stone-400 transition-colors hover:border-[#25282b] hover:text-[#25282b] disabled:cursor-not-allowed disabled:opacity-20"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -365,7 +364,7 @@ function FilterSelect({
       </span>
       <div
         ref={containerRef}
-        className="group relative rounded-xl transition-all focus-within:ring-2 focus-within:ring-red-100"
+        className="group relative rounded-sm transition-all"
       >
         <button
           type="button"
@@ -379,17 +378,17 @@ function FilterSelect({
               setIsOpen(true);
             }
           }}
-          className={`w-full rounded-xl border bg-white px-4 py-3 pr-11 text-left text-sm font-bold text-stone-700 shadow-sm outline-none transition-all ${
+          className={`w-full rounded-sm border bg-white px-4 py-3 pr-11 text-left text-sm font-bold text-[#25282b] outline-none transition-colors ${
             isOpen
-              ? "border-red-300 bg-white shadow-[0_0_0_1px_rgba(252,165,165,0.65)]"
-              : "border-stone-200 hover:border-red-300 hover:bg-stone-50/60"
+              ? "border-[#e60000] bg-white"
+              : "border-stone-200 hover:border-[#e60000]"
           }`}
         >
           {selectedOption?.label}
         </button>
         <ChevronDown
           className={`pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 transition-all ${
-            isOpen ? "rotate-180 text-red-500" : "text-stone-400 group-hover:text-red-400"
+            isOpen ? "rotate-180 text-[#e60000]" : "text-stone-400 group-hover:text-[#e60000]"
           }`}
         />
         {isOpen && (
@@ -397,7 +396,7 @@ function FilterSelect({
             id={listboxId}
             role="listbox"
             aria-label={label}
-            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-2xl border border-stone-200 bg-white/95 p-2 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-sm border border-stone-200 bg-white p-2 shadow-none"
           >
             <div className="max-h-64 overflow-y-auto">
               {options.map((option) => {
@@ -410,10 +409,10 @@ function FilterSelect({
                     role="option"
                     aria-selected={isSelected}
                     onClick={() => handleSelect(option.value)}
-                    className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-bold transition-all ${
+                    className={`flex w-full items-center justify-between rounded-sm px-4 py-3 text-left text-sm font-bold transition-colors ${
                       isSelected
-                        ? "bg-red-50 text-red-600 shadow-sm"
-                        : "text-stone-700 hover:bg-stone-50 hover:text-stone-900"
+                        ? "bg-[#e60000] text-white"
+                        : "text-stone-700 hover:bg-stone-50 hover:text-[#25282b]"
                     }`}
                   >
                     <span>{option.label}</span>
@@ -431,7 +430,7 @@ function FilterSelect({
 function ShopListLoading() {
   return (
     <div className="absolute inset-0 z-20 flex items-start justify-center pt-24">
-      <div className="flex flex-col items-center gap-5 rounded-xl border border-stone-200 bg-white/90 px-10 py-8 shadow-xl shadow-stone-200/60 backdrop-blur-md">
+      <div className="flex flex-col items-center gap-5 rounded-sm border border-stone-200 bg-white px-10 py-8 shadow-none">
         <div className="relative">
           <div className="absolute inset-0 rounded-full bg-red-500/20 blur-md animate-ping"></div>
           <img src="/logo.png" alt="RAOTA Loading" className="relative h-14 w-14 animate-bounce-slow object-contain" />
@@ -439,7 +438,7 @@ function ShopListLoading() {
         <div className="flex flex-col items-center gap-3">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-stone-500">Loading shops</p>
           <div className="h-1 w-40 overflow-hidden rounded-full bg-stone-200">
-            <div className="h-full rounded-full bg-red-600 animate-loading-bar"></div>
+            <div className="h-full rounded-full bg-[#e60000] animate-loading-bar"></div>
           </div>
         </div>
       </div>

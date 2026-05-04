@@ -53,7 +53,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#dc2626", // 브랜드 컬러 (Red-600)
+  themeColor: "#e60000", // DESIGN.md Vodafone Red
 };
 
 export const metadata: Metadata = {
