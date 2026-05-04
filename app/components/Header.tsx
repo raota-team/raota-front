@@ -8,10 +8,11 @@ import { useApp } from '../context/AppContext';
 
 interface HeaderProps {
   isLoggedIn: boolean;
-  handleLogout: () => void;
+  isAuthChecking: boolean;
+  handleLogout: () => void | Promise<void>;
 }
 
-const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
+const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogout }) => {
   const pathname = usePathname();
   const currentPath = pathname;
   const { currentUser } = useApp();
@@ -78,7 +79,9 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
                   <Link href="/community" className={`text-sm transition-colors ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
                   <Link href={myPagePath} className={`text-sm transition-colors ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
 
-                  {isLoggedIn ? (
+                  {isAuthChecking && !isLoggedIn ? (
+                    <div className="h-11 w-24 rounded-sm bg-stone-100" aria-hidden="true" />
+                  ) : isLoggedIn ? (
                     <button
                       onClick={handleLogout}
                       className={`font-bold text-sm transition-colors uppercase ${navTextColor}`}
@@ -161,7 +164,9 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, handleLogout }) => {
 
           {/* Login/Logout at bottom */}
           <div className="border-t border-stone-200 p-4">
-            {isLoggedIn ? (
+            {isAuthChecking && !isLoggedIn ? (
+              <div className="h-11 w-full rounded-sm bg-stone-100" aria-hidden="true" />
+            ) : isLoggedIn ? (
               <button
                 onClick={() => {
                   handleLogout();

@@ -90,6 +90,19 @@ export const refreshAuthSession = async (): Promise<string> => {
   return refreshAccessToken(process.env.NEXT_PUBLIC_API_URL || "");
 };
 
+export const logoutAuthSession = async (): Promise<void> => {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new ApiClientError("Logout failed", response.status, null);
+  }
+};
+
 export const apiClient = async <T>(
   path: string,
   options: ApiClientOptions = {},
