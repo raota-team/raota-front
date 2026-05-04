@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ChevronRight, Users } from 'lucide-react';
 import { Do_Hyeon } from 'next/font/google';
+import HomeHeroActions from './components/HomeHeroActions';
 
 const doHyeon = Do_Hyeon({
   weight: '400',
@@ -43,22 +42,7 @@ export default function HomePage() {
             <span className="block sm:inline">매니아들의 솔직한 기록을 확인하세요.</span>
           </p>
 
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/shops"
-              className="vodafone-button-pill min-w-48 bg-[#e60000]"
-            >
-              맛집 탐색하기
-              <ChevronRight className="h-5 w-5" />
-            </Link>
-            <Link
-              href="/community"
-              className="inline-flex min-w-48 items-center justify-center gap-2 rounded-full border border-white/70 bg-white/24 px-6 py-4 text-sm font-bold text-white backdrop-blur-sm transition-colors hover:bg-white/32 active:opacity-90"
-            >
-              커뮤니티
-              <Users className="h-5 w-5" />
-            </Link>
-          </div>
+          <HomeHeroActions />
         </div>
       </section>
       <section className="bg-white px-6 py-14 md:py-20">
