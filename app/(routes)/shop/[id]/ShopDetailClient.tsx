@@ -197,36 +197,40 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
 
       <div className="mb-10 grid grid-cols-1 gap-6 lg:mb-12 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-8">
-          <div className="group relative mb-5 h-72 w-full overflow-hidden rounded-md bg-[#25282b] md:mb-6 md:h-80 lg:h-96">
+          <div className="group relative h-72 w-full overflow-hidden rounded-md bg-stone-100 md:h-80 lg:h-96">
             <img 
               src={shop.imageUrl} 
               alt={shop.name} 
-              className="h-full w-full object-cover brightness-110 saturate-105 transition-all duration-700" 
+              className="h-full w-full object-cover saturate-105" 
             />
-            <div className="absolute inset-0 bg-[#25282b]/10"></div>
-            <span className="absolute right-5 top-5 flex items-center rounded-sm border border-white/20 bg-[#25282b]/45 px-3 py-1.5 font-mono text-[10px] font-bold text-white backdrop-blur-md md:right-8 md:top-8 md:text-sm">
-              <Camera className="mr-1 h-3 w-3 md:h-4 md:w-4" /> 인증 {shopPhotos.length}회
+            <span className="absolute right-4 top-4 inline-flex items-center rounded-sm border border-stone-200 bg-white px-3 py-1.5 text-xs font-black text-[#25282b] shadow-lg shadow-black/10 md:right-5 md:top-5 md:text-sm">
+              <Camera className="mr-1.5 h-3.5 w-3.5 text-[#e60000] md:h-4 md:w-4" /> 인증 {shopPhotos.length}회
             </span>
-            <div className="absolute bottom-0 left-0 w-full min-w-0 p-4 md:p-8">
-              <h1 className="vodafone-display mb-3 inline-block max-w-full break-words rounded-md border border-white/20 bg-[#25282b]/45 px-3 py-2.5 text-3xl text-white backdrop-blur-md sm:text-4xl md:mb-4 md:px-4 md:py-3 md:text-6xl">{shop.name}</h1>
-              <div className="flex flex-wrap items-center gap-2 md:gap-3 text-[10px] md:text-sm font-mono">
-                <span className="flex items-center rounded-sm bg-[#25282b]/45 backdrop-blur-md border border-white/20 px-3 py-1.5 text-stone-200">
-                  <MapPin className="w-3 h-3 md:w-4 md:h-4 mr-1 text-[#e60000]" /> {shop.location}
-                </span>
-                <span className="flex items-center rounded-sm bg-[#25282b]/45 backdrop-blur-md border border-white/20 px-3 py-1.5 text-stone-200">
-                  <Menu className="w-3 h-3 md:w-4 md:h-4 mr-1 text-stone-400" /> {shop.type}
-                </span>
-              </div>
+          </div>
+
+          <div className="mb-10 border-b border-stone-200 bg-white py-5 md:mb-12 md:py-7">
+            <div className="mb-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+              <h1 className="vodafone-display min-w-0 max-w-full break-words text-4xl leading-none text-[#25282b] [overflow-wrap:anywhere] sm:text-5xl md:text-6xl">{shop.name}</h1>
+              <button onClick={handleBookmarkToggle} className={`flex w-fit items-center gap-2 rounded-sm border px-4 py-2 text-sm font-bold transition-colors ${isBookmarked ? "border-[#e60000] bg-[#e60000] text-white" : "border-stone-200 bg-white text-stone-500 hover:border-[#e60000]"}`}>
+                <Heart className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
+                <span>{isBookmarked ? "찜 취소" : "가게 찜하기"}</span>
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold text-stone-600">
+              <span className="flex min-w-0 items-start gap-1.5">
+                <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#e60000]" />
+                <span className="break-keep leading-relaxed">{shop.location}</span>
+              </span>
+              <span className="flex min-w-0 items-start gap-1.5">
+                <Menu className="mt-0.5 h-4 w-4 flex-shrink-0 text-stone-400" />
+                <span className="break-words leading-relaxed">{shop.type}</span>
+              </span>
             </div>
           </div>
 
           <div className="prose prose-stone mb-10 max-w-none md:mb-12">
-            <div className="mb-4 flex items-center justify-between border-l-4 border-[#e60000] pl-4">
+            <div className="mb-4 flex items-center border-l-4 border-[#e60000] pl-4">
               <h3 className="m-0 text-lg font-bold text-[#25282b] md:text-xl">한줄평</h3>
-              <button onClick={handleBookmarkToggle} className={`flex items-center gap-2 rounded-sm border px-4 py-2 text-sm font-bold transition-colors ${isBookmarked ? "border-[#e60000] bg-[#e60000] text-white" : "border-stone-200 bg-white text-stone-500 hover:border-[#e60000]"}`}>
-                <Heart className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`} />
-                <span>{isBookmarked ? "찜 취소" : "가게 찜하기"}</span>
-              </button>
             </div>
             <p className="text-base leading-relaxed text-[#7e7e7e] md:text-lg">{shop.description}</p>
           </div>
