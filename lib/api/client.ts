@@ -45,16 +45,49 @@ const buildUrl = (path: string, query?: Record<string, QueryValue>) => {
 };
 
 // 동시 다발적인 401 발생 시 한 번만 refresh를 수행하기 위한 간단한 잠금 장치
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let refreshPromise: Promise<string> | null = null;
 
-const subscribeTokenRefresh = (callback: (token: string) => void) => {
-  refreshSubscribers.push(callback);
+const readAccessTokenFromRefreshPayload = (payload: any): string | null => {
+  if (!payload) return null;
+  return payload.data?.accessToken ?? payload.accessToken ?? null;
 };
 
-const onRefreshed = (token: string) => {
-  refreshSubscribers.map((callback) => callback(token));
-  refreshSubscribers = [];
+const refreshAccessToken = async (apiBaseUrl: string): Promise<string> => {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      const refreshResponse = await fetch(`${apiBaseUrl}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (!refreshResponse.ok) {
+        throw new ApiClientError("Session expired", refreshResponse.status, null);
+      }
+
+      const contentType = refreshResponse.headers.get("content-type") || "";
+      const refreshData = contentType.includes("application/json")
+        ? await refreshResponse.json()
+        : null;
+      const newToken = readAccessTokenFromRefreshPayload(refreshData);
+      const isSuccess = !refreshData?.status || refreshData.status === "SUCCESS";
+
+      if (!isSuccess || !newToken) {
+        throw new ApiClientError("Session expired", 401, refreshData);
+      }
+
+      updateAccessToken(newToken);
+      return newToken;
+    })().finally(() => {
+      refreshPromise = null;
+    });
+  }
+
+  return refreshPromise;
+};
+
+export const refreshAuthSession = async (): Promise<string> => {
+  return refreshAccessToken(process.env.NEXT_PUBLIC_API_URL || "");
 };
 
 export const apiClient = async <T>(
@@ -106,65 +139,21 @@ export const apiClient = async <T>(
 
   // 401 Unauthorized 발생 시 토큰 갱신 시도
   if (response.status === 401 && typeof window !== "undefined") {
-    // 이미 갱신 중이라면 대기 후 새 토큰으로 재시도
-    if (isRefreshing) {
-      return new Promise((resolve) => {
-        subscribeTokenRefresh((newToken) => {
-          resolve(apiClient<T>(path, {
-            ...options,
-            headers: {
-              ...options.headers,
-              Authorization: `Bearer ${newToken}`,
-            },
-          }));
-        });
-      });
-    }
-
-    isRefreshing = true;
-
     try {
-      const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
+      const newToken = await refreshAuthSession();
 
-      if (refreshResponse.ok) {
-        const refreshData = await refreshResponse.json();
-        
-        // 사용자가 제공한 구조 { status: "SUCCESS", data: { accessToken: "..." } } 반영
-        const newToken = refreshData.data?.accessToken;
-        const isSuccess = refreshData.status === "SUCCESS";
-        
-        if (isSuccess && newToken) {
-          updateAccessToken(newToken);
-          isRefreshing = false;
-          onRefreshed(newToken);
-          
-          // 새 토큰으로 원래 요청 재시도
-          return apiClient<T>(path, {
-            ...options,
-            headers: {
-              ...options.headers,
-              Authorization: `Bearer ${newToken}`,
-            },
-          });
-        }
-      }
-      
-      // 갱신 실패 시 (응답이 ok가 아니거나 status가 SUCCESS가 아님)
-      isRefreshing = false;
-      clearAccessToken();
-      window.location.href = "/login";
-      throw new ApiClientError("Session expired", 401, null);
+      // 새 토큰으로 원래 요청 재시도
+      return apiClient<T>(path, {
+        ...options,
+        headers: {
+          ...options.headers,
+          Authorization: `Bearer ${newToken}`,
+        },
+      });
     } catch (error) {
-      isRefreshing = false;
       clearAccessToken();
       window.location.href = "/login";
       throw error;
-    } finally {
-      isRefreshing = false;
     }
   }
 

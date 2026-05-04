@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
 import { mockUserProfile } from "../lib/data";
 import type { UserProfile } from "../types";
 import { clearAccessToken, getAccessToken, loadOAuthSessionMeta, saveRaotaOAuthSession, updateNewMemberStatus } from "@/lib/auth/accessToken";
+import { refreshAuthSession } from "@/lib/api/client";
 
 interface AppContextType {
   isLoggedIn: boolean;
@@ -98,6 +99,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     syncAuthFromStorage();
+  }, [syncAuthFromStorage]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (getAccessToken()) return;
+
+    let cancelled = false;
+
+    refreshAuthSession()
+      .then(() => {
+        if (!cancelled) {
+          syncAuthFromStorage();
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIsLoggedIn(false);
+          setCurrentUser(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [syncAuthFromStorage]);
 
   const handleLogin = () => {
