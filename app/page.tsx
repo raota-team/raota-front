@@ -53,7 +53,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/community"
-              className="inline-flex min-w-48 items-center justify-center gap-2 rounded-full bg-white/10 px-6 py-4 text-sm font-bold text-white transition-colors hover:bg-white/15 active:opacity-90"
+              className="inline-flex min-w-48 items-center justify-center gap-2 rounded-full border border-white/70 bg-white/24 px-6 py-4 text-sm font-bold text-white backdrop-blur-sm transition-colors hover:bg-white/32 active:opacity-90"
             >
               커뮤니티
               <Users className="h-5 w-5" />
@@ -67,8 +67,8 @@ export default function HomePage() {
             라멘에 진심인 사람들을 위한 간결한 아카이브.
           </h2>
           <p className="text-lg leading-8 text-[#7e7e7e]">
-            전국 라멘집 정보, 방문 기록, 커뮤니티 후기를 한 화면에서 빠르게 탐색할 수 있도록
-            브랜드 레드와 편집형 레이아웃 중심으로 정리했습니다.
+            지역과 라멘 종류로 전국 라멘집을 찾아보고, 매장별 메뉴 정보와 영업시간,
+            유저 인증 사진, 커뮤니티 후기를 함께 확인하는 라멘 맛집 기록 서비스입니다.
           </p>
         </div>
       </section>
