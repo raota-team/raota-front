@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <div className="overflow-hidden bg-white">
-      <section className="relative flex min-h-[calc(100dvh-56px)] items-center justify-center overflow-hidden bg-[#25282b]">
+      <section className="relative flex min-h-[calc(100svh-56px)] items-center justify-center overflow-hidden bg-[#25282b]">
         <div className="absolute inset-0">
           <img
             src="/hero-home.jpg"
