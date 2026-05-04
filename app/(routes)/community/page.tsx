@@ -233,10 +233,10 @@ export default function CommunityPage() {
                     <div
                       key={pId}
                       onClick={() => router.push(`/community/${pId}`)}
-                      className="group flex cursor-pointer flex-col gap-4 rounded-sm border border-stone-200 bg-white p-4 transition-colors hover:border-[#e60000] md:flex-row md:gap-6 md:p-6"
+                      className="group flex cursor-pointer flex-row gap-3 rounded-sm border border-stone-200 bg-white p-3.5 transition-colors hover:border-[#e60000] md:gap-6 md:p-6"
                     >
                       {post.imageUrl && (
-                        <div className="relative h-28 w-full flex-shrink-0 overflow-hidden rounded-md bg-stone-100 md:h-32 md:w-48">
+                        <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md bg-stone-100 md:h-32 md:w-48">
                           <img 
                             src={post.imageUrl} 
                             alt={post.title} 
@@ -246,22 +246,22 @@ export default function CommunityPage() {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="rounded-sm border border-[#e60000] bg-white px-2 py-1 text-[10px] font-black uppercase tracking-tighter text-[#25282b]">
+                        <div className="mb-2 flex min-w-0 items-center gap-2 md:mb-3 md:gap-3">
+                          <span className="flex-shrink-0 rounded-sm border border-[#e60000] bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-tighter text-[#25282b] md:py-1">
                             {getCategoryLabel(post.category)}
                           </span>
                           {post.storeName && (
-                            <span className="text-[10px] font-bold text-stone-400 flex items-center gap-1 uppercase tracking-tighter">
-                              <Store className="w-3 h-3" /> {post.storeName}
+                            <span className="flex min-w-0 items-center gap-1 truncate text-[10px] font-bold uppercase tracking-tighter text-stone-400">
+                              <Store className="h-3 w-3 flex-shrink-0" /> <span className="truncate">{post.storeName}</span>
                             </span>
                           )}
                         </div>
-                        <h2 className="mb-2 truncate text-lg font-bold text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-xl">{post.title}</h2>
-                        <p className="text-stone-500 text-sm line-clamp-2 leading-relaxed mb-4">{stripHtml(post.contentPreview)}</p>
-                        <div className="flex items-center justify-between border-t border-stone-50 pt-3 text-[10px] font-black uppercase tracking-widest text-stone-400 md:pt-4">
-                          <div className="flex items-center gap-4">
+                        <h2 className="mb-1.5 truncate text-base font-bold text-[#25282b] transition-colors group-hover:text-[#e60000] md:mb-2 md:text-xl">{post.title}</h2>
+                        <p className="mb-2 line-clamp-1 text-xs leading-relaxed text-stone-500 md:mb-4 md:line-clamp-2 md:text-sm">{stripHtml(post.contentPreview)}</p>
+                        <div className="flex items-center justify-between gap-2 border-t border-stone-50 pt-2 text-[10px] font-black uppercase tracking-widest text-stone-400 md:pt-4">
+                          <div className="flex min-w-0 items-center gap-2 md:gap-4">
                             {/* Inner link for author stays, but parent is now a div */}
-                            <div className="flex items-center gap-2" onClick={(e) => { e.stopPropagation(); router.push(`/user/${post.authorId}`); }}>
+                            <div className="flex min-w-0 items-center gap-1.5 md:gap-2" onClick={(e) => { e.stopPropagation(); router.push(`/user/${post.authorId}`); }}>
                               <div className="h-5 w-5 flex-shrink-0 overflow-hidden rounded-full border border-stone-200 bg-stone-100">
                                 {post.authorImageUrl ? (
                                   <img src={post.authorImageUrl} alt={post.authorName} className="w-full h-full object-cover" />
@@ -269,13 +269,13 @@ export default function CommunityPage() {
                                   <div className="w-full h-full flex items-center justify-center text-[8px] bg-stone-200 text-stone-400">🍜</div>
                                 )}
                               </div>
-                              <span className="hover:text-stone-900 transition-colors">{post.authorName}</span>
+                              <span className="truncate transition-colors hover:text-stone-900">{post.authorName}</span>
                             </div>
-                            <span className="font-mono">{new Date(post.createdAt).toLocaleDateString()}</span>
+                            <span className="hidden font-mono sm:inline">{new Date(post.createdAt).toLocaleDateString()}</span>
                           </div>
-                          <div className="flex items-center gap-4">
-                            <span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5" /> {post.likeCount}</span>
-                            <span className="flex items-center gap-1"><MessageCircle className="w-3.5 h-3.5" /> {post.commentCount}</span>
+                          <div className="flex flex-shrink-0 items-center gap-2 md:gap-4">
+                            <span className="flex items-center gap-1"><Heart className="h-3.5 w-3.5" /> {post.likeCount}</span>
+                            <span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" /> {post.commentCount}</span>
                           </div>
                         </div>
                       </div>
