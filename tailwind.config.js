@@ -1,4 +1,5 @@
 import typography from '@tailwindcss/typography';
+import defaultTheme from 'tailwindcss/defaultTheme';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -9,6 +10,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Pretendard', ...defaultTheme.fontFamily.sans],
+      },
       keyframes: {
         'fade-in': {
           '0%': { opacity: '0' },

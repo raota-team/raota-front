@@ -195,9 +195,9 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
         <span className="font-bold text-sm uppercase tracking-widest">목록으로 돌아가기</span>
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+      <div className="mb-10 grid grid-cols-1 gap-6 lg:mb-12 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-8">
-          <div className="group relative mb-6 h-80 w-full overflow-hidden rounded-md bg-[#25282b] lg:h-96">
+          <div className="group relative mb-5 h-72 w-full overflow-hidden rounded-md bg-[#25282b] md:mb-6 md:h-80 lg:h-96">
             <img 
               src={shop.imageUrl} 
               alt={shop.name} 
@@ -207,8 +207,8 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
             <span className="absolute right-5 top-5 flex items-center rounded-sm border border-white/20 bg-[#25282b]/45 px-3 py-1.5 font-mono text-[10px] font-bold text-white backdrop-blur-md md:right-8 md:top-8 md:text-sm">
               <Camera className="mr-1 h-3 w-3 md:h-4 md:w-4" /> 인증 {shopPhotos.length}회
             </span>
-            <div className="absolute bottom-0 left-0 w-full p-5 md:p-8">
-              <h1 className="vodafone-display mb-4 inline-block rounded-md bg-[#25282b]/45 backdrop-blur-md border border-white/20 px-4 py-3 break-keep text-4xl text-white md:text-6xl">{shop.name}</h1>
+            <div className="absolute bottom-0 left-0 w-full min-w-0 p-4 md:p-8">
+              <h1 className="vodafone-display mb-3 inline-block max-w-full break-words rounded-md border border-white/20 bg-[#25282b]/45 px-3 py-2.5 text-3xl text-white backdrop-blur-md sm:text-4xl md:mb-4 md:px-4 md:py-3 md:text-6xl">{shop.name}</h1>
               <div className="flex flex-wrap items-center gap-2 md:gap-3 text-[10px] md:text-sm font-mono">
                 <span className="flex items-center rounded-sm bg-[#25282b]/45 backdrop-blur-md border border-white/20 px-3 py-1.5 text-stone-200">
                   <MapPin className="w-3 h-3 md:w-4 md:h-4 mr-1 text-[#e60000]" /> {shop.location}
@@ -220,24 +220,24 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
             </div>
           </div>
 
-          <div className="prose prose-stone max-w-none mb-12">
+          <div className="prose prose-stone mb-10 max-w-none md:mb-12">
             <div className="mb-4 flex items-center justify-between border-l-4 border-[#e60000] pl-4">
-              <h3 className="m-0 text-xl font-bold text-[#25282b]">한줄평</h3>
+              <h3 className="m-0 text-lg font-bold text-[#25282b] md:text-xl">한줄평</h3>
               <button onClick={handleBookmarkToggle} className={`flex items-center gap-2 rounded-sm border px-4 py-2 text-sm font-bold transition-colors ${isBookmarked ? "border-[#e60000] bg-[#e60000] text-white" : "border-stone-200 bg-white text-stone-500 hover:border-[#e60000]"}`}>
                 <Heart className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`} />
                 <span>{isBookmarked ? "찜 취소" : "가게 찜하기"}</span>
               </button>
             </div>
-            <p className="text-lg leading-relaxed text-[#7e7e7e]">{shop.description}</p>
+            <p className="text-base leading-relaxed text-[#7e7e7e] md:text-lg">{shop.description}</p>
           </div>
 
           {shop.event_menus && shop.event_menus.length > 0 && (
-            <div className="mb-12">
-              <h3 className="mb-6 flex items-center text-xl font-bold text-[#25282b]"><Sparkles className="mr-2 h-5 w-5 text-[#e60000]" /> 이벤트 메뉴</h3>
-              <div className="grid grid-cols-1 gap-6">
+            <div className="mb-10 md:mb-12">
+              <h3 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Sparkles className="mr-2 h-5 w-5 text-[#e60000]" /> 이벤트 메뉴</h3>
+              <div className="grid grid-cols-1 gap-4 md:gap-6">
                 {shop.event_menus.map((event) => (
                   <div key={event.id} className="group flex flex-col overflow-hidden rounded-md border border-stone-200 bg-white transition-colors hover:border-[#e60000] md:flex-row">
-                    <div className="md:w-1/3 h-48 md:h-auto overflow-hidden relative">
+                    <div className="relative h-40 overflow-hidden md:h-auto md:w-1/3">
                       <img 
                         src={event.image_url} 
                         alt={event.name} 
@@ -246,10 +246,10 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
                       />
                       <div className="absolute left-2 top-2"><span className="rounded-sm bg-[#e60000] px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">{event.badge_text}</span></div>
                     </div>
-                    <div className="p-6 md:w-2/3 flex flex-col justify-center">
+                    <div className="flex flex-col justify-center p-4 md:w-2/3 md:p-6">
                       <div className="flex justify-between items-start mb-2">
-                        <h4 className="text-xl font-black text-[#25282b] transition-colors group-hover:text-[#e60000]">{event.name}</h4>
-                        <span className="font-mono text-lg font-bold text-[#25282b]">{event.price.toLocaleString()}원</span>
+                        <h4 className="text-lg font-black text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-xl">{event.name}</h4>
+                        <span className="font-mono text-base font-bold text-[#25282b] md:text-lg">{event.price.toLocaleString()}원</span>
                       </div>
                       <p className="text-sm leading-relaxed text-[#7e7e7e]">{event.description}</p>
                     </div>
@@ -260,13 +260,13 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
           )}
 
           {shop.menu_list && shop.menu_list.length > 0 && (
-            <div className="mb-12">
-              <h3 className="mb-6 flex items-center text-xl font-bold text-[#25282b]"><Utensils className="mr-2 h-5 w-5 text-stone-500" /> 일반 메뉴</h3>
+            <div className="mb-10 md:mb-12">
+              <h3 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Utensils className="mr-2 h-5 w-5 text-stone-500" /> 일반 메뉴</h3>
               <div className="rounded-md border border-stone-200 bg-white p-2">
                 {shop.menu_list.map((menu, idx) => (
-                  <div key={menu.id} onClick={() => setSelectedMenu(menu)} className={`flex cursor-pointer items-center justify-between border-l-4 border-l-transparent p-4 transition-colors hover:border-l-[#e60000] hover:bg-stone-50 ${idx !== shop.menu_list.length - 1 ? "border-b border-stone-200" : ""}`}>
+                  <div key={menu.id} onClick={() => setSelectedMenu(menu)} className={`flex cursor-pointer items-center justify-between border-l-4 border-l-transparent p-3 transition-colors hover:border-l-[#e60000] hover:bg-stone-50 md:p-4 ${idx !== shop.menu_list.length - 1 ? "border-b border-stone-200" : ""}`}>
                     <div className="flex items-center">
-                      <div className="w-12 h-12 rounded-sm overflow-hidden mr-4 bg-stone-100 flex-shrink-0">
+                      <div className="mr-3 h-10 w-10 flex-shrink-0 overflow-hidden rounded-sm bg-stone-100 md:mr-4 md:h-12 md:w-12">
                         <img 
                           src={menu.image_url} 
                           alt={menu.name} 
@@ -275,24 +275,24 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
                         />
                       </div>
                       <div>
-                        <div className="flex items-center"><span className="mr-2 font-bold text-[#25282b]">{menu.name}</span>{menu.is_signature && <span className="rounded-sm bg-[#e60000] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter text-white">SIG</span>}</div>
+                        <div className="flex items-center"><span className="mr-2 text-sm font-bold text-[#25282b] md:text-base">{menu.name}</span>{menu.is_signature && <span className="rounded-sm bg-[#e60000] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter text-white">SIG</span>}</div>
                         <span className="text-xs text-stone-400 hidden sm:inline-block">클릭하면 자세히 보기</span>
                       </div>
                     </div>
-                    <div className="font-mono text-stone-700 font-bold">{menu.price.toLocaleString()}원</div>
+                    <div className="font-mono text-sm font-bold text-stone-700 md:text-base">{menu.price.toLocaleString()}원</div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="mt-12 border-t border-stone-200 pt-8">
-            <div className="flex justify-between items-end mb-6">
-              <h3 className="flex items-center text-xl font-bold text-[#25282b]"><ImageIcon className="mr-2 h-5 w-5 text-[#e60000]" /> 유저 메뉴 인증</h3>
+          <div className="mt-10 border-t border-stone-200 pt-6 md:mt-12 md:pt-8">
+            <div className="mb-4 flex items-end justify-between md:mb-6">
+              <h3 className="flex items-center text-lg font-bold text-[#25282b] md:text-xl"><ImageIcon className="mr-2 h-5 w-5 text-[#e60000]" /> 유저 메뉴 인증</h3>
               <span className="text-xs text-stone-400 font-mono">{shopPhotos.length}개 사진</span>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
               {shopPhotos.map((photo) => (
                 <div key={photo.id} onClick={() => setSelectedPhoto(photo)} className="group relative aspect-square cursor-pointer overflow-hidden rounded-sm border border-stone-200 bg-stone-100 transition-colors hover:border-[#e60000]">
                   <img 
@@ -321,12 +321,12 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
                   }
                   setIsUploadModalOpen(true);
                 }}
-                className="group flex aspect-square flex-col items-center justify-center gap-3 rounded-sm border border-dashed border-stone-300 bg-stone-50 p-4 text-center transition-colors hover:border-[#e60000]"
+                className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-stone-300 bg-stone-50 p-3 text-center transition-colors hover:border-[#e60000] md:gap-3 md:p-4"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition-colors group-hover:border-[#e60000] group-hover:text-[#e60000]">
-                  <Camera className="w-6 h-6" />
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition-colors group-hover:border-[#e60000] group-hover:text-[#e60000] md:h-12 md:w-12">
+                  <Camera className="h-5 w-5 md:h-6 md:w-6" />
                 </span>
-                <span className="break-keep text-sm font-black leading-tight text-[#25282b] transition-colors group-hover:text-[#e60000]">
+                <span className="break-keep text-xs font-black leading-tight text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-sm">
                   라멘 인증샷 올리기
                 </span>
                 <span className="text-[11px] font-bold text-stone-400 leading-tight break-keep">
@@ -338,12 +338,12 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
         </div>
 
         <div className="lg:col-span-4">
-          <div className="sticky top-24 space-y-8">
-            <div className="rounded-md border border-stone-200 bg-white p-6">
-              <h3 className="mb-6 flex items-center text-xl font-bold text-[#25282b]"><Award className="mr-2 h-5 w-5 text-[#e60000]" /> 베스트 메뉴 투표</h3>
-              <p className="text-stone-500 text-sm mb-8 leading-relaxed">이 가게에서 제일 맛있었던 메뉴는?</p>
+          <div className="sticky top-24 space-y-6 md:space-y-8">
+            <div className="rounded-md border border-stone-200 bg-white p-4 md:p-6">
+              <h3 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Award className="mr-2 h-5 w-5 text-[#e60000]" /> 베스트 메뉴 투표</h3>
+              <p className="mb-6 text-sm leading-relaxed text-stone-500 md:mb-8">이 가게에서 제일 맛있었던 메뉴는?</p>
               
-              <div className="space-y-6">
+              <div className="space-y-5 md:space-y-6">
                 {votingMenus.map((menu) => (
                   <div key={menu.id || menu.name} className="relative">
                     <div className="flex justify-between items-center mb-2">
@@ -377,7 +377,7 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-md bg-[#25282b] p-8 text-white">
+            <div className="relative overflow-hidden rounded-md bg-[#25282b] p-5 text-white md:p-8">
               <div className="relative z-10">
                 <h4 className="text-lg font-black mb-4 uppercase tracking-tighter italic">Information</h4>
                 <div className="space-y-4 text-sm font-mono text-stone-300">

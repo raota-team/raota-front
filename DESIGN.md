@@ -57,8 +57,9 @@ Vodafone's design is intentionally gradient-free. The only tonal variation is a 
 
 ### Font Family
 
-- **Primary**: `Vodafone` (custom corporate sans-serif)
-- **Fallback stack**: `Vodafone, "Helvetica Neue", Arial, sans-serif`
+- **Primary**: `Pretendard` — RAOTA's default application sans-serif, used for body copy, navigation, controls, cards, forms, and most headings
+- **Display exception**: homepage hero display type may use `Do Hyeon` as a branded Korean display treatment, while still following the same uppercase-scale and tight layout principles
+- **Fallback stack**: `Pretendard, "Helvetica Neue", Arial, sans-serif`
 - **Icon font**: `icomoon` — carries pictograph glyphs at 18px/24px/48px fixed sizes
 - **Rendering**: `font-smoothing: antialiased` across the board; OpenType features are not aggressively used — the design relies on weight and tracking, not stylistic alternates
 
@@ -101,7 +102,7 @@ Vodafone's design is intentionally gradient-free. The only tonal variation is a 
 
 ### Note on Font Substitutes
 
-The Vodafone corporate typeface is proprietary. When recreating the look in open systems, substitute with **Inter** at weights 400/600/800, or **Neue Haas Grotesk** if available. Inter needs its letter-spacing reduced by roughly 1-2% at display sizes (80px+) to approximate the Vodafone face's tight tracking; its line-height should be set to 0.85-0.95 for the uppercase display tier.
+The original Vodafone corporate typeface is proprietary, so RAOTA uses **Pretendard** as the practical production sans-serif. Pretendard gives Korean UI text consistent weight, spacing, and legibility across dense lists, forms, and editorial sections. At large display sizes, keep the tight tracking and compact line-height rules from this document; use the homepage `Do Hyeon` display treatment only where a deliberate RAOTA brand moment is needed.
 
 ## 4. Component Stylings
 
@@ -418,6 +419,6 @@ When refining existing screens generated with this design system:
 ### Known Gaps
 
 - Form input styles (text fields, dropdowns, toggles) are not exposed on these page templates; their specs are inferred from the ghost-button pattern and may need refinement when real forms are designed
-- The Vodafone corporate typeface is proprietary and cannot be reproduced exactly in open systems; Inter with tightened tracking at display sizes is the closest open substitute
+- The Vodafone corporate typeface is proprietary and cannot be reproduced exactly in open systems; RAOTA standardizes on Pretendard for production UI, with Do Hyeon reserved only for selected brand/display moments
 - Animation and transition timings are intentionally not documented — the site uses them sparingly and the values are not extractable from static analysis
 - The share ticker's exact number styling (separators, currency glyph) is documented from the investor-page screenshot; other regional variants may display differently
