@@ -176,23 +176,23 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
     );
 
     return (
-      <div className={`${isReply ? 'pl-14 pr-6 py-4 bg-stone-50' : 'p-6'} border-t border-stone-100 transition-colors hover:bg-stone-50 first:border-t-0`}>
-        <div className="flex gap-4">
-          {isReply && <CornerDownRight className="w-4 h-4 text-stone-300 flex-shrink-0 mt-1" />}
+      <div className={`${isReply ? 'bg-stone-50 py-3 pl-9 pr-4 md:py-4 md:pl-14 md:pr-6' : 'p-4 md:p-6'} border-t border-stone-100 transition-colors hover:bg-stone-50 first:border-t-0`}>
+        <div className="flex gap-3 md:gap-4">
+          {isReply && <CornerDownRight className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-stone-300 md:h-4 md:w-4" />}
           {!isReply && (
             <Link href={`/user/${comment.authorId}`} className="flex-shrink-0">
-              <div className="h-10 w-10 overflow-hidden rounded-full border border-stone-200 bg-stone-100">
+              <div className="h-9 w-9 overflow-hidden rounded-full border border-stone-200 bg-stone-100 md:h-10 md:w-10">
                 {comment.authorImageUrl ? (
                   <img src={comment.authorImageUrl} alt={comment.authorNickname} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xl bg-stone-200 text-stone-400">🍜</div>
+                  <div className="flex h-full w-full items-center justify-center bg-stone-200 text-lg text-stone-400 md:text-xl">🍜</div>
                 )}
               </div>
             </Link>
           )}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <div className="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-center md:gap-3">
                 <Link href={`/user/${comment.authorId}`} className="truncate font-bold text-[#25282b] transition-colors hover:text-[#e60000]">
                   <span className={isReply ? 'text-xs' : 'text-sm'}>{comment.authorNickname}</span>
                 </Link>
@@ -222,7 +222,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
                   </p>
                 ) : (
                   <>
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#25282b]">
+                    <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#25282b] md:text-sm">
                       {comment.taggedParentAuthorNickname && (
                         <span className="vertical-middle mr-2 rounded-sm bg-stone-100 px-1.5 py-0.5 text-[11px] font-black text-[#25282b]">
                           @{comment.taggedParentAuthorNickname}
@@ -251,15 +251,15 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
         </button>
       </div>
 
-      <article className="mb-8 overflow-hidden rounded-sm border border-stone-200 bg-white">
-        <div className="p-8">
-          <div className="flex justify-between items-start mb-6">
+      <article className="mb-6 overflow-hidden rounded-sm border border-stone-200 bg-white md:mb-8">
+        <div className="p-5 md:p-8">
+          <div className="mb-5 flex items-start justify-between md:mb-6">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-black uppercase tracking-tighter text-[#25282b]">
+              <span className="rounded-sm border border-[#e60000] bg-white px-2.5 py-1 text-[11px] font-black uppercase tracking-tighter text-[#25282b] md:px-3 md:py-1.5 md:text-xs">
                 {getCategoryLabel(post.category)}
               </span>
               {post.storeName && (
-                <span className="flex items-center gap-1.5 rounded-sm border border-stone-100 bg-stone-50 px-3 py-1.5 text-xs text-[#7e7e7e]">
+                <span className="flex items-center gap-1.5 rounded-sm border border-stone-100 bg-stone-50 px-2.5 py-1 text-[11px] text-[#7e7e7e] md:px-3 md:py-1.5 md:text-xs">
                   <Store className="w-3.5 h-3.5" /> {post.storeName}
                 </span>
               )}
@@ -273,37 +273,37 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
             )}
           </div>
 
-          <h1 className="mb-6 text-3xl font-black leading-tight tracking-tight text-[#25282b] md:text-5xl">{post.title}</h1>
+          <h1 className="mb-5 text-2xl font-black leading-snug tracking-tight text-[#25282b] md:mb-6 md:text-5xl md:leading-tight">{post.title}</h1>
 
-          <div className="flex items-center justify-between border-b border-stone-100 pb-6 mb-8">
+          <div className="mb-6 flex items-center justify-between border-b border-stone-100 pb-5 md:mb-8 md:pb-6">
             <Link href={`/user/${post.authorId}`} className="flex items-center gap-3 group">
-              <div className="h-10 w-10 overflow-hidden rounded-full border border-stone-200 bg-stone-100">
+              <div className="h-9 w-9 overflow-hidden rounded-full border border-stone-200 bg-stone-100 md:h-10 md:w-10">
                 {post.authorImageUrl ? (
                   <img src={post.authorImageUrl} alt={post.authorName} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xl bg-stone-200 text-stone-400">🍜</div>
+                  <div className="w-full h-full flex items-center justify-center text-lg bg-stone-200 text-stone-400 md:text-xl">🍜</div>
                 )}
               </div>
               <div>
-                <div className="font-bold text-[#25282b] transition-colors group-hover:text-[#e60000]">{post.authorName}</div>
+                <div className="text-sm font-bold text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-base">{post.authorName}</div>
                 <div className="text-xs text-stone-400 font-mono">{new Date(post.createdAt).toLocaleDateString()}</div>
               </div>
             </Link>
           </div>
 
           {post.imageUrl && (
-            <div className="mb-8 overflow-hidden rounded-md border border-stone-100">
+            <div className="mb-6 overflow-hidden rounded-md border border-stone-100 md:mb-8">
               <img src={post.imageUrl} alt="" loading="lazy" className="w-full h-auto max-h-[600px] object-cover" />
             </div>
           )}
 
-          <div className="prose prose-stone max-w-none text-lg leading-relaxed text-[#25282b] prose-headings:font-black prose-img:rounded-md prose-a:text-[#3860be]" dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div className="prose prose-sm prose-stone max-w-none leading-relaxed text-[#25282b] prose-headings:font-black prose-img:rounded-md prose-a:text-[#3860be] md:prose-base md:text-lg" dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
 
-        <div className="flex items-center justify-between border-t border-stone-100 bg-stone-50 px-8 py-6">
+        <div className="flex items-center justify-between border-t border-stone-100 bg-stone-50 px-5 py-4 md:px-8 md:py-6">
           <button 
             onClick={handleLike} 
-            className={`flex items-center gap-2 rounded-sm border px-6 py-2.5 font-bold transition-colors ${
+            className={`flex items-center gap-2 rounded-sm border px-4 py-2 text-sm font-bold transition-colors md:px-6 md:py-2.5 md:text-base ${
               likeMutation.isPending ? 'opacity-50' : '' 
             } ${
               post.isLiked 
@@ -314,7 +314,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
             <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-white text-white' : ''}`} /> 
             <span>{post.likeCount}</span>
           </button>
-          <div className="flex items-center gap-2 text-stone-400 font-bold">
+          <div className="flex items-center gap-2 text-sm font-bold text-stone-400 md:text-base">
             <MessageCircle className="w-4 h-4" /> <span>댓글 {comments.length}</span>
           </div>
         </div>
@@ -322,9 +322,9 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
 
       {/* Comments Section */}
       <div className="overflow-hidden rounded-sm border border-stone-200 bg-white">
-        <div className="border-b border-stone-100 bg-stone-50 p-6">
-          <h3 className="flex items-center gap-2 font-black uppercase tracking-tighter text-[#25282b]">
-            <MessageCircle className="w-5 h-5 text-[#e60000]" /> 댓글 ({comments.length})
+        <div className="border-b border-stone-100 bg-stone-50 p-4 md:p-6">
+          <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-tighter text-[#25282b] md:text-base">
+            <MessageCircle className="h-4 w-4 text-[#e60000] md:h-5 md:w-5" /> 댓글 ({comments.length})
           </h3>
         </div>
 
@@ -332,7 +332,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
           {isCommentsLoading ? (
              <div className="p-10 flex justify-center"><Loader2 className="w-6 h-6 text-stone-300 animate-spin" /></div>
           ) : comments.length === 0 ? (
-            <div className="py-20 text-center text-stone-400 font-bold">아직 댓글이 없습니다.</div>
+            <div className="py-16 text-center text-sm font-bold text-stone-400 md:py-20 md:text-base">아직 댓글이 없습니다.</div>
           ) : (
             comments.map((comment: any) => (
               <div key={comment.commentId}>
@@ -380,7 +380,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
       <div className="mt-8 flex justify-center">
         <button 
           onClick={() => router.push('/community')} 
-          className="flex items-center gap-2 rounded-sm border border-stone-200 bg-white px-8 py-3 font-bold text-stone-600 transition-colors hover:border-[#25282b] hover:bg-stone-50"
+          className="flex items-center gap-2 rounded-sm border border-stone-200 bg-white px-6 py-2.5 text-sm font-bold text-stone-600 transition-colors hover:border-[#25282b] hover:bg-stone-50 md:px-8 md:py-3 md:text-base"
         >
           <ArrowLeft className="w-4 h-4" />
           목록으로 돌아가기
