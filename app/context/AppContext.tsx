@@ -11,7 +11,7 @@ import React, {
 import { usePathname } from "next/navigation";
 import { mockUserProfile } from "../lib/data";
 import type { UserProfile } from "../types";
-import { blockAutoRefresh, clearAccessToken, getAccessToken, isAutoRefreshBlocked, loadOAuthSessionMeta, saveRaotaOAuthSession, shouldRefreshAccessToken, updateNewMemberStatus } from "@/lib/auth/accessToken";
+import { clearAccessToken, getAccessToken, loadOAuthSessionMeta, saveRaotaOAuthSession, updateNewMemberStatus } from "@/lib/auth/accessToken";
 import { logoutAuthSession, refreshAuthSession } from "@/lib/api/client";
 
 interface AppContextType {
@@ -76,69 +76,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsAuthChecking(false);
   }, []);
 
-  const ensureAuthSession = useCallback(async () => {
-    const token = getAccessToken();
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-    if (!token && isAutoRefreshBlocked()) {
+    const initializeAuth = async () => {
+      // 1. URL 해시에 토큰이 있는지 먼저 확인 (로그인 리다이렉트 직후인 경우)
+      const rawHash = window.location.hash;
+      if (rawHash && rawHash.includes("accessToken")) {
+        const params = new URLSearchParams(rawHash.startsWith("#") ? rawHash.substring(1) : rawHash);
+        const token = params.get("accessToken")?.trim();
+        
+        if (token) {
+          const expiresInRaw = params.get("expiresIn");
+          const memberIdRaw = params.get("memberId");
+          const newMemberVal = params.get("newMember")?.toLowerCase().trim();
+          const isNewMember = newMemberVal === "true" || newMemberVal === "1";
+          
+          saveRaotaOAuthSession(token, {
+            tokenType: params.get("tokenType"),
+            expiresIn: expiresInRaw ? Number(expiresInRaw) : null,
+            memberId: memberIdRaw ? Number(memberIdRaw) : null,
+            newMember: isNewMember,
+            provider: params.get("provider"),
+          });
+          
+          // 해시 제거 (URL 깔끔하게 유지)
+          window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+        }
+      }
+
+      // 2. 최종적으로 저장된 토큰(신규 또는 기존) 기반으로 상태 동기화
       syncAuthFromStorage();
-      return;
-    }
-
-    if (!shouldRefreshAccessToken(token)) {
-      syncAuthFromStorage();
-      return;
-    }
-
-    setIsAuthChecking(true);
-
-    try {
-      await refreshAuthSession();
-      syncAuthFromStorage();
-    } catch {
-      clearAccessToken();
-      setIsLoggedIn(false);
-      setCurrentUser(null);
       setIsAuthChecking(false);
-    }
-  }, [syncAuthFromStorage]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const rawHash = window.location.hash;
-    if (!rawHash || !rawHash.includes("accessToken")) return;
-
-    const params = new URLSearchParams(rawHash.startsWith("#") ? rawHash.substring(1) : rawHash);
-    const token = params.get("accessToken")?.trim();
-    if (!token) return;
-
-    const expiresInRaw = params.get("expiresIn");
-    const memberIdRaw = params.get("memberId");
-    const newMemberVal = params.get("newMember")?.toLowerCase().trim();
-    const isNewMember = newMemberVal === "true" || newMemberVal === "1";
-    
-    saveRaotaOAuthSession(token, {
-      tokenType: params.get("tokenType"),
-      expiresIn: expiresInRaw ? Number(expiresInRaw) : null,
-      memberId: memberIdRaw ? Number(memberIdRaw) : null,
-      newMember: isNewMember,
-      provider: params.get("provider"),
-    });
-    syncAuthFromStorage();
-  }, [syncAuthFromStorage]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    let cancelled = false;
-
-    ensureAuthSession().catch(() => {
-      if (!cancelled) setIsAuthChecking(false);
-    });
-
-    return () => {
-      cancelled = true;
     };
-  }, [ensureAuthSession, pathname]);
+
+    initializeAuth();
+  }, [syncAuthFromStorage]);
+
+  // 기존의 ensureAuthSession과 hash 처리용 useEffect들은 삭제/통합됨
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -146,16 +121,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const handleLogout = useCallback(async () => {
-    blockAutoRefresh();
     try {
+      // 1. 서버 세션 종료 시도
       await logoutAuthSession();
-    } catch (error) {
-      console.error("Failed to revoke refresh token:", error);
     } finally {
+      // 2. 서버 응답 여부와 상관없이 클라이언트 상태는 반드시 초기화 (Best Practice)
       clearAccessToken();
       setIsLoggedIn(false);
       setCurrentUser(null);
       setIsAuthChecking(false);
+      
+      // 3. 홈으로 리다이렉트 (필요한 경우)
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
     }
   }, []);
 

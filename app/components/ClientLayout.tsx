@@ -34,10 +34,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   const onLogout = useCallback(async () => {
     await handleLogout();
-    if (pathname === '/mypage') {
-      router.push('/');
-    }
-  }, [handleLogout, pathname, router]);
+  }, [handleLogout]);
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#25282b] selection:bg-red-100 selection:text-red-900">
