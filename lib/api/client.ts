@@ -91,15 +91,13 @@ export const refreshAuthSession = async (): Promise<string> => {
 };
 
 export const logoutAuthSession = async (): Promise<void> => {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new ApiClientError("Logout failed", response.status, null);
+  try {
+    await apiClient("/auth/logout", {
+      method: "POST",
+    });
+  } catch (error) {
+    // 로그아웃 요청 자체가 실패하더라도 클라이언트 상태는 지워야 하므로 에러를 삼킴
+    console.error("Server-side logout failed:", error);
   }
 };
 
@@ -151,7 +149,7 @@ export const apiClient = async <T>(
   const response = await fetch(buildUrl(fullUrl, options.query), fetchOptions);
 
   // 401 Unauthorized 발생 시 토큰 갱신 시도
-  if (response.status === 401 && typeof window !== "undefined") {
+  if (response.status === 401 && typeof window !== "undefined" && token) {
     try {
       const newToken = await refreshAuthSession();
 
@@ -165,7 +163,11 @@ export const apiClient = async <T>(
       });
     } catch (error) {
       clearAccessToken();
-      window.location.href = "/login";
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+        // 리다이렉트 중이므로 호출부에서 에러 처리를 하지 않도록 영구 대기 프로미스 반환
+        return new Promise(() => {});
+      }
       throw error;
     }
   }
