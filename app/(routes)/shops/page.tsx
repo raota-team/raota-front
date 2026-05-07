@@ -9,6 +9,7 @@ import { useApp } from "@/app/context/AppContext";
 
 const PAGE_SIZE = 12;
 const ALL_FILTER = "전체";
+const ALL_TYPE_FILTER = "전체";
 const REGIONS = [
   ALL_FILTER,
   "서울",
@@ -26,14 +27,54 @@ const REGIONS = [
   "경북",
   "경남",
 ];
-const TYPES = ["All", "돈코츠", "쇼유", "미소", "시오", "츠케멘", "탄탄멘"];
+const DISTRICTS_BY_REGION: Record<string, string[]> = {
+  서울: ["강남구", "강동구", "강서구", "관악구", "광진구", "구로구", "금천구", "노원구", "동작구", "마포구", "서초구", "성동구", "송파구", "영등포구", "용산구", "은평구", "종로구", "중구"],
+  경기: ["고양시", "부천시", "성남시", "수원시", "안산시", "안양시", "의왕시", "의정부시", "평택시", "화성시"],
+  부산: ["금정구", "남구", "부산진구", "북구", "사상구", "서구", "수영구", "중구"],
+  충북: ["제천시", "청주시"],
+  인천: ["남동구", "부평구", "서구"],
+  대전: ["유성구"],
+  광주: ["서구"],
+  대구: ["중구"],
+  세종: ["한누리대로"],
+  전북: ["전주시"],
+  충남: ["천안시"],
+  제주: ["제주시"],
+  경북: ["안동시"],
+  경남: ["창원시"],
+};
+const TYPES = [
+  { value: ALL_TYPE_FILTER, label: "모든 종류" },
+  { value: "시오라멘", label: "시오라멘" },
+  { value: "쇼유라멘", label: "쇼유라멘" },
+  { value: "아부라소바", label: "아부라소바" },
+  { value: "마제소바", label: "마제소바" },
+  { value: "츠케멘", label: "츠케멘" },
+  { value: "이에케라멘", label: "이에케라멘" },
+  { value: "돈코츠라멘", label: "돈코츠라멘" },
+  { value: "매운돈코츠라멘", label: "매운돈코츠라멘" },
+  { value: "토리파이탄", label: "토리파이탄" },
+  { value: "미소라멘", label: "미소라멘" },
+  { value: "쇼유파이탄", label: "쇼유파이탄" },
+  { value: "쇼유 라멘", label: "쇼유 라멘" },
+  { value: "블랙쇼유라멘", label: "블랙쇼유라멘" },
+  { value: "토마토라멘", label: "토마토라멘" },
+  { value: "차슈멘", label: "차슈멘" },
+  { value: "돈코츠 라멘", label: "돈코츠 라멘" },
+  { value: "특선쇼유라멘", label: "특선쇼유라멘" },
+  { value: "탄탄멘", label: "탄탄멘" },
+  { value: "중화소바", label: "중화소바" },
+];
+
+const normalizeFilterValue = (value: string) => value.replace(/\s+/g, "").toLowerCase();
 
 export default function ShopsListPage() {
   const { showToast } = useApp();
   const [currentPage, setCurrentPage] = useState(0);
   const [activeRegion, setActiveRegion] = useState(ALL_FILTER);
-  const [activeType, setActiveType] = useState("All");
-  const [sortBy, setSortBy] = useState("name");
+  const [activeDistrict, setActiveDistrict] = useState(ALL_FILTER);
+  const [activeType, setActiveType] = useState(ALL_TYPE_FILTER);
+  const [sortBy, setSortBy] = useState("default");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [pageWindowStart, setPageWindowStart] = useState(0);
@@ -48,32 +89,55 @@ export default function ShopsListPage() {
   useEffect(() => {
     setCurrentPage(0);
     setPageWindowStart(0);
-  }, [activeRegion, activeType, sortBy, debouncedSearchQuery]);
+  }, [activeRegion, activeDistrict, activeType, sortBy, debouncedSearchQuery]);
+
+  useEffect(() => {
+    setActiveDistrict(ALL_FILTER);
+  }, [activeRegion]);
 
   const sortParam = useMemo(() => {
+    if (sortBy === "default") return undefined;
     if (sortBy === "popular") return ["visits,desc"];
     return ["name,asc"];
   }, [sortBy]);
 
   const { data, isLoading, isFetching, isError } = useRamenShops({
-    page: currentPage,
-    size: PAGE_SIZE,
+    page: 0,
+    size: 1000,
     region: activeRegion === ALL_FILTER ? undefined : activeRegion,
     keyword: debouncedSearchQuery || undefined,
-    tag: activeType === "All" ? undefined : activeType,
     sort: sortParam,
   });
-  const shops = data?.shops ?? [];
-  const shopPageInfo = data?.page ?? {
-    number: currentPage,
-    size: PAGE_SIZE,
-    totalElements: 0,
-    totalPages: 1,
-    hasNext: false,
-    hasPrevious: currentPage > 0,
-  };
+  const regionOptions = REGIONS.map((region) => ({
+    value: region,
+    label: region,
+  }));
+  const districtOptions = [
+    { value: ALL_FILTER, label: activeRegion === ALL_FILTER ? "지역을 먼저 선택하세요" : "전체 구/시" },
+    ...(DISTRICTS_BY_REGION[activeRegion] ?? []).map((district) => ({
+      value: district,
+      label: district,
+    })),
+  ];
+  const allShops = data?.shops ?? [];
+  const filteredShops = useMemo(() => {
+    return allShops.filter((shop) => {
+      const locationText = `${shop.location} ${shop.address ?? ""}`;
+      const matchesDistrict =
+        activeDistrict === ALL_FILTER || locationText.includes(activeDistrict);
+      const matchesType =
+        activeType === ALL_TYPE_FILTER ||
+        normalizeFilterValue(shop.type).includes(normalizeFilterValue(activeType));
 
-  const totalPages = Math.max(shopPageInfo.totalPages || 1, 1);
+      return matchesDistrict && matchesType;
+    });
+  }, [allShops, activeDistrict, activeType]);
+  const shops = useMemo(() => {
+    const start = currentPage * PAGE_SIZE;
+    return filteredShops.slice(start, start + PAGE_SIZE);
+  }, [filteredShops, currentPage]);
+
+  const totalPages = Math.max(Math.ceil(filteredShops.length / PAGE_SIZE), 1);
   const maxVisiblePages = 5;
   const visiblePageNumbers = useMemo(() => {
     const pageCount = Math.min(maxVisiblePages, totalPages - pageWindowStart);
@@ -148,29 +212,31 @@ export default function ShopsListPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-end gap-3">
+            <div className="grid grid-cols-2 items-end gap-3 md:flex md:flex-wrap">
               <FilterSelect
                 label="지역"
                 value={activeRegion}
-                options={REGIONS.map((region) => ({
-                  value: region,
-                  label: region,
-                }))}
+                options={regionOptions}
                 onChange={setActiveRegion}
+              />
+              <FilterSelect
+                label="구/시"
+                value={activeDistrict}
+                options={districtOptions}
+                onChange={setActiveDistrict}
+                disabled={activeRegion === ALL_FILTER}
               />
               <FilterSelect
                 label="종류"
                 value={activeType}
-                options={TYPES.map((type) => ({
-                  value: type,
-                  label: type === "All" ? "모든 종류" : type,
-                }))}
+                options={TYPES}
                 onChange={setActiveType}
               />
               <FilterSelect
                 label="정렬"
                 value={sortBy}
                 options={[
+                  { value: "default", label: "기본순" },
                   { value: "name", label: "이름순" },
                   { value: "popular", label: "인기순" },
                 ]}
@@ -189,36 +255,46 @@ export default function ShopsListPage() {
                     <X className="h-3 w-3" />
                   </button>
                 )}
-                {activeType !== "All" && (
+                {activeDistrict !== ALL_FILTER && (
                   <button
-                    onClick={() => setActiveType("All")}
+                    onClick={() => setActiveDistrict(ALL_FILTER)}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
+                  >
+                    {activeDistrict}
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+                {activeType !== ALL_TYPE_FILTER && (
+                  <button
+                    onClick={() => setActiveType(ALL_TYPE_FILTER)}
                     className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
                   >
                     {activeType}
                     <X className="h-3 w-3" />
                   </button>
                 )}
-                {sortBy !== "name" && (
+                {sortBy !== "default" && (
                   <button
-                    onClick={() => setSortBy("name")}
+                    onClick={() => setSortBy("default")}
                     className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
                   >
-                    인기순
+                    {sortBy === "name" ? "이름순" : "인기순"}
                     <X className="h-3 w-3" />
                   </button>
                 )}
-                {activeRegion === ALL_FILTER && activeType === "All" && sortBy === "name" && (
+                {activeRegion === ALL_FILTER && activeDistrict === ALL_FILTER && activeType === ALL_TYPE_FILTER && sortBy === "default" && (
                   <p className="shrink-0 text-sm text-stone-400">아직 선택된 필터 조건이 없습니다.</p>
                 )}
               </div>
-              {(activeRegion !== ALL_FILTER || activeType !== "All" || sortBy !== "name") && (
+              {(activeRegion !== ALL_FILTER || activeDistrict !== ALL_FILTER || activeType !== ALL_TYPE_FILTER || sortBy !== "default") && (
                 <button
                   onClick={() => {
                     setActiveRegion(ALL_FILTER);
-                    setActiveType("All");
-                    setSortBy("name");
+                    setActiveDistrict(ALL_FILTER);
+                    setActiveType(ALL_TYPE_FILTER);
+                    setSortBy("default");
                   }}
-                  className="shrink-0 text-xs font-black uppercase tracking-[0.16em] text-stone-400 transition-colors hover:text-[#e60000]"
+                  className="shrink-0 whitespace-nowrap text-[11px] font-black uppercase tracking-[0.12em] text-stone-400 transition-colors hover:text-[#e60000]"
                 >
                   전체 초기화
                 </button>
@@ -229,7 +305,7 @@ export default function ShopsListPage() {
           {/* Results Summary */}
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs font-black text-stone-400 uppercase tracking-[0.1em]">
-              검색 결과: <span className="text-stone-900">{shopPageInfo.totalElements}</span>
+              검색 결과: <span className="text-stone-900">{filteredShops.length}</span>
             </p>
             <div className="h-[1px] flex-1 mx-6 bg-stone-200 hidden md:block"></div>
             <Link href="/" className="text-[10px] font-black text-stone-400 hover:text-stone-900 transition-colors uppercase tracking-[0.2em]">← 홈으로 돌아가기</Link>
@@ -261,7 +337,7 @@ export default function ShopsListPage() {
 
             {/* Pagination - Clean Style */}
             {totalPages > 1 && (
-              <div className={`mt-16 flex flex-col items-center gap-6 pb-20 border-t border-stone-200 pt-10 transition-opacity duration-200 md:flex-row md:justify-between ${showListLoading ? "opacity-35 pointer-events-none" : "opacity-100"}`}>
+                <div className={`mt-16 flex flex-col items-center gap-6 pb-20 border-t border-stone-200 pt-10 transition-opacity duration-200 md:flex-row md:justify-between ${showListLoading ? "opacity-35 pointer-events-none" : "opacity-100"}`}>
                 <div className="text-center text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] md:text-left">페이지 {currentPage + 1} / {totalPages}</div>
                 <div className="flex max-w-full items-center justify-center gap-2 overflow-x-auto pb-1">
                   <button
@@ -317,11 +393,13 @@ function FilterSelect({
   value,
   options,
   onChange,
+  disabled = false,
 }: {
   label: string;
   value: string;
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
+  disabled?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -353,13 +431,14 @@ function FilterSelect({
   }, [isOpen]);
 
   const handleSelect = (nextValue: string) => {
+    if (disabled) return;
     onChange(nextValue);
     setIsOpen(false);
   };
 
   return (
-    <div className="block w-full md:w-[180px]">
-      <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
+    <div className="block min-w-0 w-full md:w-[220px]">
+      <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-stone-400 md:mb-2 md:tracking-[0.2em]">
         {label}
       </span>
       <div
@@ -371,27 +450,35 @@ function FilterSelect({
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           aria-controls={listboxId}
+          disabled={disabled}
           onClick={() => setIsOpen((open) => !open)}
           onKeyDown={(event) => {
+            if (disabled) return;
             if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
               event.preventDefault();
               setIsOpen(true);
             }
           }}
-          className={`w-full rounded-sm border bg-white px-4 py-3 pr-11 text-left text-sm font-bold text-[#25282b] outline-none transition-colors ${
-            isOpen
-              ? "border-[#e60000] bg-white"
-              : "border-stone-200 hover:border-[#e60000]"
+          className={`w-full rounded-sm border bg-white px-3 py-2.5 pr-10 text-left text-sm font-bold text-[#25282b] outline-none transition-colors md:px-4 md:py-3 md:pr-11 ${
+            disabled
+              ? "cursor-not-allowed border-stone-200 bg-stone-50 text-stone-400"
+              : isOpen
+                ? "border-[#e60000] bg-white"
+                : "border-stone-200 hover:border-[#e60000]"
           }`}
         >
-          {selectedOption?.label}
+          <span className="block truncate whitespace-nowrap pr-2">{selectedOption?.label}</span>
         </button>
         <ChevronDown
-          className={`pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 transition-all ${
-            isOpen ? "rotate-180 text-[#e60000]" : "text-stone-400 group-hover:text-[#e60000]"
+          className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-all md:right-4 ${
+            disabled
+              ? "text-stone-300"
+              : isOpen
+                ? "rotate-180 text-[#e60000]"
+                : "text-stone-400 group-hover:text-[#e60000]"
           }`}
         />
-        {isOpen && (
+        {isOpen && !disabled && (
           <div
             id={listboxId}
             role="listbox"
@@ -409,7 +496,7 @@ function FilterSelect({
                     role="option"
                     aria-selected={isSelected}
                     onClick={() => handleSelect(option.value)}
-                    className={`flex w-full items-center justify-between rounded-sm px-4 py-3 text-left text-sm font-bold transition-colors ${
+                    className={`flex w-full items-center justify-between rounded-sm px-3 py-2.5 text-left text-sm font-bold transition-colors md:px-4 md:py-3 ${
                       isSelected
                         ? "bg-[#e60000] text-white"
                         : "text-stone-700 hover:bg-stone-50 hover:text-[#25282b]"
