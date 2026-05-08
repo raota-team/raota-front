@@ -210,3 +210,46 @@ body {
 .animate-bounce-slow {
   animation: bounce-slow 2s infinite ease-in-out;
 }
+
+@keyframes noodle-float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes steam-drift {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.92);
+  }
+
+  20% {
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(1.08);
+  }
+}
+
+.animate-noodle-float {
+  animation: noodle-float 3.2s ease-in-out infinite;
+}
+
+.animate-steam-1 {
+  animation: steam-drift 2.4s ease-out infinite;
+}
+
+.animate-steam-2 {
+  animation: steam-drift 2.4s ease-out 0.45s infinite;
+}
+
+.animate-steam-3 {
+  animation: steam-drift 2.4s ease-out 0.9s infinite;
+}

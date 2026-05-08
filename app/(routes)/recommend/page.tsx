@@ -226,7 +226,7 @@ const buildDisplayShop = (template: Shop, option: ShopOption | null): Shop => {
 };
 
 export default function RecommendPage() {
-  const workspaceRef = useRef<HTMLElement | null>(null);
+  const workspaceRef = useRef<HTMLDivElement | null>(null);
   const [activeMode, setActiveMode] = useState<ModeId>("taste");
   const [selectedSoup, setSelectedSoup] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -298,9 +298,9 @@ export default function RecommendPage() {
         </div>
       </section>
 
-      <section ref={workspaceRef} className="border-b border-stone-200 bg-white">
+      <section className="border-b border-stone-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-          <div>
+          <div ref={workspaceRef}>
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-2xl font-black text-[#25282b]">라오타 추천</h2>
               <span className="inline-flex items-center border border-[#e60000]/20 bg-[#fff4f2] px-2.5 py-1 text-[11px] font-black tracking-[0.12em] text-[#e60000]">
@@ -422,9 +422,6 @@ export default function RecommendPage() {
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-black text-[#e60000]">RESULT</p>
-              <h3 className="mt-1 text-2xl font-black text-[#25282b]">
-                {isCurrentModeReady ? modeCopy[activeMode].result : getEmptyStateCopy(activeMode).resultTitle}
-              </h3>
             </div>
           </div>
 
@@ -515,10 +512,50 @@ function RecommendEmptyState({ mode }: { mode: ModeId }) {
   const copy = getEmptyStateCopy(mode);
 
   return (
-    <div className="border border-dashed border-stone-300 bg-stone-50/70 p-6 sm:p-8">
-      <p className="text-sm font-black text-[#e60000]">{copy.eyebrow}</p>
-      <h4 className="mt-2 text-2xl font-black leading-tight text-[#25282b] break-keep">{copy.title}</h4>
-      <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-[#606060] break-keep">{copy.description}</p>
+    <div className="overflow-hidden border border-stone-200 bg-[radial-gradient(circle_at_top_left,rgba(255,244,242,0.95),rgba(255,255,255,1)_55%)] p-6 sm:p-8">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <span className="inline-flex items-center rounded-full border border-[#e60000]/15 bg-white px-3 py-1 text-xs font-black tracking-[0.08em] text-[#e60000]">
+            {copy.eyebrow}
+          </span>
+          <h4 className="mt-3 text-2xl font-black leading-tight text-[#25282b] break-keep">{copy.title}</h4>
+          <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-[#606060] break-keep">{copy.description}</p>
+        </div>
+        <RamenEmptyIllustration mode={mode} />
+      </div>
+    </div>
+  );
+}
+
+function RamenEmptyIllustration({ mode }: { mode: ModeId }) {
+  const accentClass =
+    mode === "taste"
+      ? "bg-[#fff1e8]"
+      : mode === "compare"
+        ? "bg-[#eef4ff]"
+        : "bg-[#f5efe7]";
+
+  const ringClass =
+    mode === "taste"
+      ? "ring-[#e60000]/8"
+      : mode === "compare"
+        ? "ring-[#4f7cff]/8"
+        : "ring-[#8b5e3c]/8";
+
+  return (
+    <div className={`relative flex h-40 w-full max-w-[13rem] shrink-0 items-center justify-center self-end rounded-[2rem] ${accentClass}`}>
+      <span className="absolute top-6 left-[3.9rem] h-8 w-3 rounded-full bg-white/70 blur-[1px] animate-steam-1" />
+      <span className="absolute top-3 left-[5.9rem] h-10 w-3 rounded-full bg-white/80 blur-[1px] animate-steam-2" />
+      <span className="absolute top-6 right-[3.9rem] h-8 w-3 rounded-full bg-white/70 blur-[1px] animate-steam-3" />
+      <div className="animate-noodle-float">
+        <div className={`flex h-28 w-28 items-center justify-center rounded-full bg-white shadow-[0_18px_36px_rgba(37,40,43,0.08)] ring-1 ${ringClass}`}>
+          <img
+            src="/ramen-bowl-icon.svg"
+            alt="라멘 그릇 아이콘"
+            className="h-16 w-16 object-contain opacity-90"
+          />
+        </div>
+      </div>
     </div>
   );
 }
