@@ -208,7 +208,7 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
               <Camera className="mr-1 h-3 w-3 md:h-4 md:w-4" /> 인증 {shopPhotos.length}회
             </span>
             <div className="absolute bottom-0 left-0 w-full min-w-0 p-4 md:p-8">
-              <h1 className="vodafone-display mb-3 inline-block max-w-full break-words rounded-md border border-white/20 bg-[#25282b]/45 px-3 py-2.5 text-3xl text-white backdrop-blur-md sm:text-4xl md:mb-4 md:px-4 md:py-3 md:text-6xl">{shop.name}</h1>
+              <h1 className="vodafone-display mb-3 inline-block max-w-full break-words leading-none rounded-md border border-white/20 bg-[#25282b]/45 px-3 py-2.5 text-2xl text-white backdrop-blur-md sm:text-4xl md:mb-4 md:px-4 md:py-3 md:text-6xl">{shop.name}</h1>
               <div className="flex flex-wrap items-center gap-2 md:gap-3 text-[10px] md:text-sm font-mono">
                 <span className="flex items-center rounded-sm bg-[#25282b]/45 backdrop-blur-md border border-white/20 px-3 py-1.5 text-stone-200">
                   <MapPin className="w-3 h-3 md:w-4 md:h-4 mr-1 text-[#e60000]" /> {shop.location}
