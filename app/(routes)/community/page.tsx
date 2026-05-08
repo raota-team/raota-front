@@ -116,8 +116,8 @@ export default function CommunityPage() {
           <div className="absolute inset-0 bg-[#25282b]/45"></div>
         </div>
         <div className="relative z-10 mx-auto flex min-h-[17rem] max-w-7xl flex-col justify-center px-6 py-8 text-center text-white md:min-h-[21rem]">
-          <h1 className="vodafone-display mb-4 text-5xl text-white md:text-7xl">RAOTA COMMUNITY</h1>
-          <p className="mx-auto max-w-lg text-lg font-medium text-white/85">라멘 매니아들의 솔직한 이야기와 꿀팁을 공유하세요</p>
+          <h1 className="vodafone-display mb-4 text-4xl leading-none text-white sm:text-5xl md:text-7xl">RAOTA COMMUNITY</h1>
+          <p className="mx-auto max-w-md text-base font-medium leading-relaxed text-white/85 sm:max-w-lg sm:text-lg">라멘 매니아들의 이야기와 꿀팁을 나눠보세요</p>
         </div>
       </section>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
