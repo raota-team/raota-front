@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -226,6 +226,7 @@ const buildDisplayShop = (template: Shop, option: ShopOption | null): Shop => {
 };
 
 export default function RecommendPage() {
+  const workspaceRef = useRef<HTMLElement | null>(null);
   const [activeMode, setActiveMode] = useState<ModeId>("taste");
   const [selectedSoup, setSelectedSoup] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -253,6 +254,9 @@ export default function RecommendPage() {
 
   const handleModeChange = (mode: ModeId) => {
     setActiveMode(mode);
+    window.requestAnimationFrame(() => {
+      workspaceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   };
 
   const handleReset = () => {
@@ -294,7 +298,7 @@ export default function RecommendPage() {
         </div>
       </section>
 
-      <section className="border-b border-stone-200 bg-white">
+      <section ref={workspaceRef} className="border-b border-stone-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
           <div>
             <div className="flex flex-wrap items-center gap-3">
