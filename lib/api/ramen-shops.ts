@@ -80,7 +80,8 @@ export interface RamenShopsParams {
   page?: number;
   size?: number;
   sort?: string[];
-  region?: string;
+  city?: string;
+  district?: string;
   keyword?: string;
   tag?: string;
 }
@@ -236,7 +237,8 @@ export const getRamenShops = async (
       page: params.page,
       size: params.size,
       sort: params.sort,
-      region: params.region,
+      city: params.city,
+      district: params.district,
       keyword: params.keyword,
       tag: params.tag,
     },
