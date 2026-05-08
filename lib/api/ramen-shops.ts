@@ -79,7 +79,7 @@ interface RamenShopDetailResponse {
 export interface RamenShopsParams {
   page?: number;
   size?: number;
-  sort?: string[];
+  sort?: "LATEST" | "POPULAR" | "BOOKMARKS" | "VISITS";
   city?: string;
   district?: string;
   keyword?: string;
