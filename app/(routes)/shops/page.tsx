@@ -11,8 +11,8 @@ const ALL_FILTER = "전체";
 const ALL_TYPE_FILTER = "전체";
 const SORT_OPTIONS = [
   { value: "LATEST", label: "최신순" },
+  { value: "NAME", label: "이름순" },
   { value: "POPULAR", label: "인기순" },
-  { value: "BOOKMARKS", label: "북마크순" },
   { value: "VISITS", label: "방문순" },
 ] as const;
 const REGIONS = [
