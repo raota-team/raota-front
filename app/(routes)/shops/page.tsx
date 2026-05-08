@@ -66,8 +66,6 @@ const TYPES = [
   { value: "중화소바", label: "중화소바" },
 ];
 
-const normalizeFilterValue = (value: string) => value.replace(/\s+/g, "").toLowerCase();
-
 export default function ShopsListPage() {
   const { showToast } = useApp();
   const [currentPage, setCurrentPage] = useState(0);
@@ -102,10 +100,12 @@ export default function ShopsListPage() {
   }, [sortBy]);
 
   const { data, isLoading, isFetching, isError } = useRamenShops({
-    page: 0,
-    size: 1000,
-    region: activeRegion === ALL_FILTER ? undefined : activeRegion,
+    page: currentPage,
+    size: PAGE_SIZE,
+    city: activeRegion === ALL_FILTER ? undefined : activeRegion,
+    district: activeDistrict === ALL_FILTER ? undefined : activeDistrict,
     keyword: debouncedSearchQuery || undefined,
+    tag: activeType === ALL_TYPE_FILTER ? undefined : activeType,
     sort: sortParam,
   });
   const regionOptions = REGIONS.map((region) => ({
@@ -119,25 +119,9 @@ export default function ShopsListPage() {
       label: district,
     })),
   ];
-  const allShops = data?.shops ?? [];
-  const filteredShops = useMemo(() => {
-    return allShops.filter((shop) => {
-      const locationText = `${shop.location} ${shop.address ?? ""}`;
-      const matchesDistrict =
-        activeDistrict === ALL_FILTER || locationText.includes(activeDistrict);
-      const matchesType =
-        activeType === ALL_TYPE_FILTER ||
-        normalizeFilterValue(shop.type).includes(normalizeFilterValue(activeType));
-
-      return matchesDistrict && matchesType;
-    });
-  }, [allShops, activeDistrict, activeType]);
-  const shops = useMemo(() => {
-    const start = currentPage * PAGE_SIZE;
-    return filteredShops.slice(start, start + PAGE_SIZE);
-  }, [filteredShops, currentPage]);
-
-  const totalPages = Math.max(Math.ceil(filteredShops.length / PAGE_SIZE), 1);
+  const shops = data?.shops ?? [];
+  const totalPages = Math.max(data?.page.totalPages ?? 1, 1);
+  const totalElements = data?.page.totalElements ?? 0;
   const maxVisiblePages = 5;
   const visiblePageNumbers = useMemo(() => {
     const pageCount = Math.min(maxVisiblePages, totalPages - pageWindowStart);
@@ -199,7 +183,7 @@ export default function ShopsListPage() {
                 <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#e60000]" />
                 <input
                   type="text"
-                  placeholder="가게 이름을 검색해보세요"
+                  placeholder="가게 이름이나 키워드를 검색해보세요"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full rounded-sm border border-white bg-white py-5 pl-14 pr-6 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-[#7e7e7e] focus:border-[#e60000]"
@@ -227,7 +211,7 @@ export default function ShopsListPage() {
                 disabled={activeRegion === ALL_FILTER}
               />
               <FilterSelect
-                label="종류"
+                label="메뉴"
                 value={activeType}
                 options={TYPES}
                 onChange={setActiveType}
@@ -305,7 +289,7 @@ export default function ShopsListPage() {
           {/* Results Summary */}
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs font-black text-stone-400 uppercase tracking-[0.1em]">
-              검색 결과: <span className="text-stone-900">{filteredShops.length}</span>
+              검색 결과: <span className="text-stone-900">{totalElements}</span>
             </p>
             <div className="h-[1px] flex-1 mx-6 bg-stone-200 hidden md:block"></div>
             <Link href="/" className="text-[10px] font-black text-stone-400 hover:text-stone-900 transition-colors uppercase tracking-[0.2em]">← 홈으로 돌아가기</Link>
