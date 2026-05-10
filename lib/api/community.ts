@@ -1,5 +1,7 @@
 import { apiClient } from "./client";
 
+export type RamenShopSortType = "LATEST" | "POPULAR" | "NAME" | "VISITS";
+
 export interface CommunityPostCard {
   postId: number;
   category: string;
@@ -122,7 +124,7 @@ export const deleteComment = async (commentId: number) => {
 };
 
 /** 글 작성용 라멘집 목록 조회 */
-export const getRamenShopOptions = async (keyword?: string, page = 0, sort?: string[]) => {
+export const getRamenShopOptions = async (keyword?: string, page = 0, sort?: RamenShopSortType) => {
   return await apiClient<any>("/community/ramen-shops", {
     query: { keyword, page, size: 100, sort }
   });
