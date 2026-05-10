@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { MouseEvent } from 'react';
 import { LogIn, Menu, X, Home, MessageSquare, User, UtensilsCrossed, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -45,6 +46,10 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
   };
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
+  const handleRecommendClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    window.alert('추천받기 페이지는 아직 개발 중입니다.');
+  };
 
   const isTransparent = isHomePage && !scrolled && !isMobile;
   const navTextColor = isTransparent ? 'text-white/95 hover:text-white font-normal' : 'text-[#25282b] hover:text-[#e60000] font-normal';
@@ -75,7 +80,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
                 <div className="ml-10 flex items-center justify-end gap-7">
                   <Link href="/" className={`text-sm transition-colors ${currentPath === '/' ? activeTextColor : navTextColor}`}>홈</Link>
                   <Link href="/shops" className={`text-sm transition-colors ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
-                  <Link href="/recommend" className={`text-sm transition-colors ${currentPath === '/recommend' ? activeTextColor : navTextColor}`}>추천받기</Link>
+                  <Link href="/recommend" onClick={handleRecommendClick} className={`text-sm transition-colors ${currentPath === '/recommend' ? activeTextColor : navTextColor}`}>추천받기</Link>
                   <Link href="/community" className={`text-sm transition-colors ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
                   <Link href={myPagePath} className={`text-sm transition-colors ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
 
@@ -146,7 +151,10 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
             </Link>
             <Link
               href="/recommend"
-              onClick={closeMobileMenu}
+              onClick={(event) => {
+                handleRecommendClick(event);
+                closeMobileMenu();
+              }}
               className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/recommend') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
             >
               <Sparkles className="w-5 h-5 mr-3" />
