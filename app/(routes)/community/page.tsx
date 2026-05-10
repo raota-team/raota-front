@@ -66,7 +66,7 @@ export default function CommunityPage() {
   useEffect(() => {
     const fetchShopOptions = async () => {
       try {
-        const res = await getRamenShopOptions(shopSearchQuery, 0, ["name,asc"]);
+        const res = await getRamenShopOptions(shopSearchQuery, 0, "NAME");
         setShopOptions(res.data.items || []);
       } catch (err) {
         console.error('Failed to fetch shop options:', err);

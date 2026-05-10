@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ChevronRight, Users } from 'lucide-react';
 import { getRamenShops } from '@/lib/api/ramen-shops';
 
-const shopsQueryKey = ['ramen-shops', 0, 12, '', '', '', 'name,asc'];
+const shopsQueryKey = ['ramen-shops', 0, 12, '', '', '', 'NAME'];
 
 export default function HomeHeroActions() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function HomeHeroActions() {
     router.prefetch('/shops');
     queryClient.prefetchQuery({
       queryKey: shopsQueryKey,
-      queryFn: () => getRamenShops({ page: 0, size: 12, sort: ['name,asc'] }),
+      queryFn: () => getRamenShops({ page: 0, size: 12, sort: 'NAME' }),
       staleTime: 30 * 1000,
     });
   };

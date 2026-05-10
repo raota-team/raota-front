@@ -22,7 +22,7 @@ export default function CommunityWritePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { showToast } = useApp();
-  const { data } = useRamenShops({ page: 0, size: 100, sort: ["name,asc"] });
+  const { data } = useRamenShops({ page: 0, size: 100, sort: "NAME" });
   const shops = data?.shops ?? [];
 
   const [category, setCategory] = useState('REVIEW');

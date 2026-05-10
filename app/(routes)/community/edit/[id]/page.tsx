@@ -24,7 +24,7 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
   const { showToast, currentUser } = useApp();
   const postId = Number(resolvedParams.id);
   
-  const { data: shopData } = useRamenShops({ page: 0, size: 100, sort: ["name,asc"] });
+  const { data: shopData } = useRamenShops({ page: 0, size: 100, sort: "NAME" });
   const shops = shopData?.shops ?? [];
 
   const [category, setCategory] = useState('REVIEW');

@@ -575,7 +575,7 @@ function ShopOptionList({
 
   const shopOptionsQuery = useQuery({
     queryKey: ["recommend-shop-options", label, deferredSearchQuery],
-    queryFn: () => getRamenShopOptions(deferredSearchQuery.trim(), 0, ["name,asc"]),
+    queryFn: () => getRamenShopOptions(deferredSearchQuery.trim(), 0, "NAME"),
     enabled: isOpen,
     staleTime: 60 * 1000,
   });
