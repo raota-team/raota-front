@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -226,7 +226,6 @@ const buildDisplayShop = (template: Shop, option: ShopOption | null): Shop => {
 };
 
 export default function RecommendPage() {
-  const workspaceRef = useRef<HTMLDivElement | null>(null);
   const [activeMode, setActiveMode] = useState<ModeId>("taste");
   const [selectedSoup, setSelectedSoup] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -254,9 +253,6 @@ export default function RecommendPage() {
 
   const handleModeChange = (mode: ModeId) => {
     setActiveMode(mode);
-    window.requestAnimationFrame(() => {
-      workspaceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
   };
 
   const handleReset = () => {
@@ -300,7 +296,7 @@ export default function RecommendPage() {
 
       <section className="border-b border-stone-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-          <div ref={workspaceRef}>
+          <div>
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-2xl font-black text-[#25282b]">라오타 추천</h2>
               <span className="inline-flex items-center border border-[#e60000]/20 bg-[#fff4f2] px-2.5 py-1 text-[11px] font-black tracking-[0.12em] text-[#e60000]">
