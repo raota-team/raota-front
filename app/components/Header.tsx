@@ -16,7 +16,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogout }) => {
   const pathname = usePathname();
   const currentPath = pathname;
-  const { currentUser } = useApp();
+  const { currentUser, showToast } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -48,7 +48,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
   const handleRecommendClick = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    window.alert('추천받기 페이지는 아직 개발 중입니다.');
+    showToast('추천받기 페이지는 아직 개발 중입니다.', 'info');
   };
 
   const isTransparent = isHomePage && !scrolled && !isMobile;
