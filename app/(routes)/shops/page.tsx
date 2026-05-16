@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronLeft, ChevronRight, X, Search } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Sparkles, X, Search } from "lucide-react";
 import ShopCard from "../../components/ShopCard";
 import { useRamenShops } from "@/hooks/queries/useRamenShops";
 
@@ -152,38 +152,43 @@ export default function ShopsListPage() {
   return (
     <div className="min-h-screen">
       {/* Header Section */}
-      <section className="relative min-h-[17rem] overflow-hidden md:min-h-[21rem]">
+      <section className="relative min-h-[10rem] overflow-hidden md:min-h-[16rem]">
         <div className="absolute inset-0">
           <img src="/header-shoplist-anime.png" alt="Ramen Shops" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[#25282b]/45"></div>
         </div>
-        <div className="relative z-10 mx-auto flex min-h-[17rem] max-w-7xl flex-col justify-center px-4 py-8 sm:px-6 lg:min-h-[21rem] lg:px-8">
-          <div className="flex flex-col gap-5">
-            <div className="text-center text-white">
-              <h1 className="vodafone-display mb-4 text-5xl text-white md:text-7xl">
-                RAOTA RAMEN ARCHIVE
-              </h1>
-              <p className="mx-auto max-w-lg text-lg font-medium leading-relaxed text-white/85">
-                전국의 인기 라멘 맛집을 탐색하고<br className="md:hidden" /> 나만의 인생 라멘을 찾아보세요
-              </p>
-            </div>
+        <div className="relative z-10 mx-auto flex min-h-[10rem] max-w-7xl flex-col justify-center px-4 py-6 sm:px-6 lg:min-h-[16rem] lg:px-8">
+          <div className="text-center text-white">
+            <h1 className="vodafone-display mb-3 text-4xl text-white sm:text-5xl md:text-6xl">
+              RAMEN ARCHIVE<span className="text-[#e60000]">.</span>
+            </h1>
+            <p className="mx-auto max-w-lg text-base font-medium leading-relaxed text-white/85 sm:text-lg">
+              <span className="block md:hidden">전국의 라멘 가게를 탐색하고</span>
+              <span className="block md:hidden">취향에 맞는 한 그릇을 찾아보세요</span>
+              <span className="hidden md:block">전국의 라멘 가게를 탐색하고 취향에 맞는 한 그릇을 찾아보세요</span>
+            </p>
+          </div>
+        </div>
+      </section>
 
-            <div className="mx-auto w-full max-w-5xl">
-              <div className="relative">
-                <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#e60000]" />
-                <input
-                  type="text"
-                  placeholder="가게 이름이나 키워드를 검색해보세요"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-sm border border-white bg-white py-5 pl-14 pr-6 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-[#7e7e7e] focus:border-[#e60000]"
-                />
-              </div>
+      <section className="relative z-20 -mt-6 px-4 sm:px-6 lg:-mt-8 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mx-auto w-full max-w-3xl rounded-[18px] border border-stone-200 bg-white p-2 shadow-[0_10px_28px_rgba(37,40,43,0.06)] sm:max-w-[44rem] sm:p-2.5">
+            <div className="relative mx-auto w-full">
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#e60000] md:left-5 md:h-5 md:w-5" />
+              <input
+                type="text"
+                placeholder="가게 이름이나 키워드를 검색해보세요"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-[16px] border border-stone-200 bg-white py-3 pl-12 pr-5 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-[#7e7e7e] focus:border-[#e60000] md:rounded-[18px] md:py-3.5 md:pl-14 md:pr-6"
+              />
             </div>
           </div>
         </div>
       </section>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+      <div className="max-w-7xl mx-auto px-4 pb-10 pt-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 items-end gap-3 md:flex md:flex-wrap">
@@ -353,6 +358,22 @@ export default function ShopsListPage() {
             )}
           </section>
         </div>
+      </div>
+
+      <div className="fixed bottom-5 left-4 right-4 z-30 rounded-full border border-stone-200 bg-white py-2 pl-3 pr-3 text-[#25282b] shadow-[0_12px_32px_rgba(37,40,43,0.14)] md:bottom-6 md:left-auto md:right-6 md:w-auto md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+        <Link
+          href="/recommend"
+          className="group flex min-w-0 items-center gap-3 py-1.5 md:rounded-full md:border md:border-[#e60000] md:bg-white md:px-5 md:py-3 md:text-[#25282b] md:shadow-[0_8px_22px_rgba(37,40,43,0.12)] md:transition-colors md:hover:bg-[#e60000] md:hover:text-white"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e60000] text-white md:h-auto md:w-auto md:bg-transparent md:text-[#e60000] md:transition-colors md:group-hover:text-white">
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-extrabold">고르기 어렵다면 추천받기</span>
+            <span className="block truncate text-xs font-medium text-[#7e7e7e] md:hidden">취향으로 라멘집을 좁혀보세요</span>
+          </span>
+          <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-[#e60000] transition-colors md:group-hover:text-white" />
+        </Link>
       </div>
     </div>
   );
