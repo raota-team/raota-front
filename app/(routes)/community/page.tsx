@@ -110,13 +110,15 @@ export default function CommunityPage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <section className="relative min-h-[17rem] md:min-h-[21rem] overflow-hidden">
+      <section className="relative min-h-[9rem] overflow-hidden md:min-h-[16rem]">
         <div className="absolute inset-0">
           <img src="/header-community-anime.png" alt="Community" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[#25282b]/45"></div>
         </div>
-        <div className="relative z-10 mx-auto flex min-h-[17rem] max-w-7xl flex-col justify-center px-6 py-8 text-center text-white md:min-h-[21rem]">
-          <h1 className="vodafone-display mb-4 text-4xl leading-none text-white sm:text-5xl md:text-7xl">RAOTA COMMUNITY</h1>
+        <div className="relative z-10 mx-auto flex min-h-[9rem] max-w-7xl flex-col justify-center px-6 py-5 text-center text-white md:min-h-[16rem] md:py-6">
+          <h1 className="vodafone-display mb-3 text-4xl leading-none text-white sm:text-5xl md:text-6xl">
+            RAOTA COMMUNITY<span className="text-[#e60000]">.</span>
+          </h1>
           <p className="mx-auto max-w-md text-base font-medium leading-relaxed text-white/85 sm:max-w-lg sm:text-lg">라멘 매니아들의 이야기와 꿀팁을 나눠보세요</p>
         </div>
       </section>
@@ -130,7 +132,7 @@ export default function CommunityPage() {
                 글쓰기
               </Link>
               
-              <div className="overflow-hidden rounded-sm border border-stone-200 bg-white">
+              <div className="relative overflow-hidden rounded-sm border border-stone-200 bg-white md:overflow-visible">
                 <button
                   type="button"
                   onClick={() => setIsCategoryOpen((prev) => !prev)}
@@ -144,7 +146,7 @@ export default function CommunityPage() {
                   <ChevronDown className={`w-5 h-5 text-stone-400 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isCategoryOpen && (
-                  <div className="space-y-1 border-t border-stone-100 p-4">
+                  <div className="absolute left-0 right-0 top-full z-30 mt-2 space-y-1 rounded-sm border border-stone-200 bg-white p-4 shadow-[0_12px_32px_rgba(37,40,43,0.12)] md:static md:mt-0 md:rounded-none md:border-0 md:border-t md:border-stone-100 md:p-4 md:shadow-none">
                     {categories.map((cat) => (
                       <button
                         key={cat.id}
