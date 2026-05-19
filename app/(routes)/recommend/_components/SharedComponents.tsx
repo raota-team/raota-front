@@ -35,7 +35,7 @@ export function PromptField({
   placeholder,
   examples,
 }: {
-  label: string;
+  label?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
@@ -43,7 +43,7 @@ export function PromptField({
 }) {
   return (
     <div className="space-y-3">
-      <label className="block text-[12px] font-bold tracking-widest text-[#7e7e7e]">{label}</label>
+      {label && <label className="block text-[12px] font-bold tracking-widest text-[#7e7e7e]">{label}</label>}
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}

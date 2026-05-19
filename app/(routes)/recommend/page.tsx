@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 
 import type { Shop } from "@/app/types";
 import type { ModeId, ShopOption, SubmittedTaste, SubmittedCompare, SubmittedSummary } from "./types";
-import { modes, modePrompts, tasteOptions, fallbackShopOptions, shops, modeCopy, compareFocusExamples, summaryFocusExamples } from "./constants";
+import { modes, modePrompts, tasteOptions, fallbackShopOptions, shops, modeCopy, compareFocusExamples, summaryFocusExamples, tasteFocusExamples } from "./constants";
 
 import { ChoiceGroup } from "./_components/ChoiceGroup";
 import { RecommendEmptyState } from "./_components/RecommendEmptyState";
@@ -41,6 +41,7 @@ export default function RecommendPage() {
   const [selectedSoup, setSelectedSoup] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [selectedPriority, setSelectedPriority] = useState<string | null>(null);
+  const [tasteFocus, setTasteFocus] = useState("");
   
   const [compareFocus, setCompareFocus] = useState("");
   const [summaryFocus, setSummaryFocus] = useState("");
@@ -74,7 +75,8 @@ export default function RecommendPage() {
     Boolean(submittedTaste) &&
     submittedTaste?.soup === selectedSoup &&
     submittedTaste?.mood === selectedMood &&
-    submittedTaste?.priority === selectedPriority;
+    submittedTaste?.priority === selectedPriority &&
+    submittedTaste?.focus === tasteFocus.trim();
   const isCompareSubmitted =
     Boolean(submittedCompare) &&
     submittedCompare?.shopA.id === compareShopA?.id &&
@@ -132,6 +134,7 @@ export default function RecommendPage() {
 
   const handleTastePriorityChange = (value: string | null) => {
     setSelectedPriority(value);
+    if (value) setTasteStep(3);
   };
 
   const handleModeChange = (mode: ModeId) => {
@@ -149,6 +152,7 @@ export default function RecommendPage() {
       setSelectedSoup(null);
       setSelectedMood(null);
       setSelectedPriority(null);
+      setTasteFocus("");
       setSubmittedTaste(null);
       setTasteStep(0);
       return;
@@ -176,7 +180,9 @@ export default function RecommendPage() {
           ? selectedSoup
           : activeStep === 1
             ? selectedMood
-            : selectedPriority
+            : activeStep === 2
+              ? selectedPriority
+              : true // Step 4 (focus) is optional
         : activeMode === "compare"
           ? compareShopA && compareShopB
           : summaryShop;
@@ -192,7 +198,7 @@ export default function RecommendPage() {
     }
 
     if (activeMode === "taste" && selectedSoup && selectedMood && selectedPriority) {
-      setSubmittedTaste({ soup: selectedSoup, mood: selectedMood, priority: selectedPriority });
+      setSubmittedTaste({ soup: selectedSoup, mood: selectedMood, priority: selectedPriority, focus: tasteFocus.trim() });
     }
 
     if (activeMode === "compare" && compareShopA && compareShopB) {
@@ -332,6 +338,11 @@ export default function RecommendPage() {
                       <ChoiceGroup label="우선순위" value={selectedPriority} options={tasteOptions.priority} onChange={handleTastePriorityChange} />
                     </QuestionCard>
                   )}
+                  {tasteStep === 3 && (
+                    <QuestionCard step="04" title="그 외에 더 바라는 점이 있나요?">
+                      <PromptField value={tasteFocus} onChange={setTasteFocus} placeholder="예: 양이 많은 곳, 토핑이 다양한 곳" examples={tasteFocusExamples} />
+                    </QuestionCard>
+                  )}
                 </>
               )}
 
@@ -397,7 +408,9 @@ export default function RecommendPage() {
                         ? !selectedSoup
                         : activeStep === 1
                           ? !selectedMood
-                          : !selectedPriority
+                          : activeStep === 2
+                            ? !selectedPriority
+                            : false // Step 4 (focus) is optional
                       : activeMode === "compare"
                         ? !compareShopA || !compareShopB
                         : !summaryShop
@@ -430,6 +443,7 @@ export default function RecommendPage() {
                   selectedSoup={submittedTaste.soup}
                   selectedMood={submittedTaste.mood}
                   selectedPriority={submittedTaste.priority}
+                  focus={submittedTaste.focus}
                 />
               )}
 
