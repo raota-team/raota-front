@@ -12,6 +12,7 @@ export type SubmittedTaste = {
   soup: string;
   mood: string;
   priority: string;
+  focus: string;
 };
 
 export type SubmittedCompare = {

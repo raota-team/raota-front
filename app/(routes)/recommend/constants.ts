@@ -43,7 +43,7 @@ export const modePrompts: Record<
     intro: "취향을 알려주세요.",
     helper: "지금 먹고 싶은 라멘에 가까운 답을 골라보세요.",
     resultHelper: "입력한 취향 기준으로 잘 맞는 후보를 정리했습니다.",
-    totalSteps: 3,
+    totalSteps: 4,
   },
   compare: {
     label: "비교 설정",
@@ -69,6 +69,7 @@ export const tasteOptions = {
 
 export const compareFocusExamples = ["혼밥하기 좋은 곳", "웨이팅 적은 곳", "국물이 더 진한 곳", "데이트로 갈만한 곳"];
 export const summaryFocusExamples = ["주말 웨이팅", "대표 메뉴 추천", "혼자 가도 괜찮은지", "매운 메뉴 있는지"];
+export const tasteFocusExamples = ["양이 많은 곳", "토핑이 다양한 곳", "매운맛 조절 가능한 곳", "사이드 메뉴가 맛있는 곳"];
 
 export const fallbackShopOptions: ShopOption[] = [
   { id: 1, name: "멘야 하루", region: "서울 마포구" },

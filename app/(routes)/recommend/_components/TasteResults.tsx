@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Sparkles, Star, ArrowRight, Bookmark } from "lucide-react";
 import type { Shop } from "@/app/types";
+import { FocusCard } from "./SharedComponents";
 
 const buildMatchScore = (shop: Shop, index: number) => {
   const ratingScore = Math.round((shop.userRating || shop.editorRating || 4) * 10);
@@ -20,14 +21,24 @@ export function TasteResults({
   selectedSoup,
   selectedMood,
   selectedPriority,
+  focus,
 }: {
   shops: Shop[];
   selectedSoup: string;
   selectedMood: string;
   selectedPriority: string;
+  focus?: string;
 }) {
   return (
-    <div>
+    <div className="space-y-6">
+      {focus && (
+        <FocusCard
+          label="추가 취향 관점"
+          title={focus}
+          body="아래 추천은 선택한 기본 취향과 더불어 해당 요청사항을 우선해서 고려한 결과입니다."
+        />
+      )}
+      
       <div className="space-y-3 sm:hidden">
         {shops.slice(0, 4).map((shop, index) => (
           <ShopCard key={shop.id} shop={shop} index={index} selectedTags={[selectedSoup, selectedMood, selectedPriority]} />
