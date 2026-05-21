@@ -27,15 +27,15 @@ export default function HomeHeroActions() {
     <div className="flex w-full max-w-4xl flex-col items-center gap-5">
       <Link
         href="/recommend"
-        className={`inline-flex items-center justify-center gap-2 rounded-full border border-[#ffe0e0] bg-white text-sm font-bold text-[#25282b] shadow-[0_12px_40px_rgba(230,0,0,0.18)] transition-transform transition-colors hover:-translate-y-0.5 hover:bg-[#fff5f5] active:translate-y-0 ${ctaSizeClass}`}
+        className={`vodafone-button-pill transition-transform hover:-translate-y-0.5 active:translate-y-0 ${ctaSizeClass}`}
       >
         <span className="inline-flex items-center gap-2">
-          <span className="rounded-full bg-[#e60000] px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-white">
+          <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#e60000]">
             BETA
           </span>
           추천받기
         </span>
-        <Sparkles className="h-5 w-5 text-[#e60000]" />
+        <Sparkles className="h-5 w-5 text-white" />
       </Link>
 
       <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -44,14 +44,14 @@ export default function HomeHeroActions() {
           onMouseEnter={prefetchShops}
           onFocus={prefetchShops}
           onTouchStart={prefetchShops}
-          className={`vodafone-button-pill ${ctaSizeClass}`}
+          className={`inline-flex items-center justify-center gap-2 rounded-full border border-white bg-white text-sm font-bold text-[#25282b] transition-transform transition-colors hover:-translate-y-0.5 hover:bg-[#f2f2f2] active:translate-y-0 ${ctaSizeClass}`}
         >
           맛집 탐색하기
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-5 w-5 text-[#25282b]" />
         </Link>
         <Link
           href="/community"
-          className={`inline-flex items-center justify-center gap-2 rounded-full border border-white/70 bg-white/24 text-sm font-bold text-white backdrop-blur-sm transition-colors hover:bg-white/32 active:opacity-90 ${ctaSizeClass}`}
+          className={`inline-flex items-center justify-center gap-2 rounded-full border border-white/70 bg-white/24 text-sm font-bold text-white backdrop-blur-sm transition-transform transition-colors hover:bg-white/32 hover:-translate-y-0.5 active:translate-y-0 ${ctaSizeClass}`}
         >
           커뮤니티
           <Users className="h-5 w-5" />
