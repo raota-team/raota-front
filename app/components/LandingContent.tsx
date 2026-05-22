@@ -1,10 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import HomeHeroActions from './HomeHeroActions';
 import { Do_Hyeon } from 'next/font/google';
-import { Sparkles, Scale, MessageSquare, MessageCircleMore } from 'lucide-react';
+import { Sparkles, Scale, MessageSquare, MessageCircleMore, Camera, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const doHyeon = Do_Hyeon({
   weight: '400',
@@ -13,10 +14,51 @@ const doHyeon = Do_Hyeon({
 
 export default function LandingContent() {
   const [featuresHeaderRef, featuresHeaderVisible] = useScrollReveal();
-  const [featuresGridRef, featuresGridVisible] = useScrollReveal({ threshold: 0.08 });
+  const [featuresGridRef, featuresGridVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.08 });
   const [reviewsHeaderRef, reviewsHeaderVisible] = useScrollReveal();
   const [reviewsGridRef, reviewsGridVisible] = useScrollReveal({ threshold: 0.08 });
   const [ctaRef, ctaVisible] = useScrollReveal({ threshold: 0.2 });
+
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
+
+  const checkScroll = () => {
+    if (featuresGridRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = featuresGridRef.current;
+      setShowLeftArrow(scrollLeft > 10);
+      setShowRightArrow(scrollWidth - scrollLeft - clientWidth > 10);
+    }
+  };
+
+  useEffect(() => {
+    const el = featuresGridRef.current;
+    if (el) {
+      checkScroll();
+      el.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+    }
+    return () => {
+      if (el) {
+        el.removeEventListener('scroll', checkScroll);
+      }
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [featuresGridRef]);
+
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (featuresGridRef.current) {
+      const { clientWidth } = featuresGridRef.current;
+      const scrollAmount = clientWidth * 0.75;
+      const newScrollLeft = direction === 'left'
+        ? featuresGridRef.current.scrollLeft - scrollAmount
+        : featuresGridRef.current.scrollLeft + scrollAmount;
+
+      featuresGridRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   const featureCards = [
     {
@@ -42,6 +84,14 @@ export default function LandingContent() {
       pain: '광고성 글과 길고 복잡한 후기들을 다 읽기 지칠 때',
       title: '핵심만 쏙 뽑아낸 리뷰 요약',
       desc: '실제 방문자들의 칭찬과 솔직한 아쉬운 점을 키워드 중심으로 정리하여, 수십 개의 후기를 읽지 않아도 매장 특징을 단번에 파악해요.',
+    },
+    {
+      href: '/shops',
+      icon: Camera,
+      badge: 'Photo Proof',
+      pain: '내가 먹은 라멘의 감동을 생생하게 기록하고 자랑하고 싶을 때',
+      title: '실시간 메뉴 사진 & 인증',
+      desc: '드신 메뉴를 선택해 직접 찍은 인증샷과 한줄평을 등록해 보세요. 방문한 매장의 생생한 정보를 다른 사람들과 공유하고 기록으로 남길 수 있습니다.',
     },
   ];
 
@@ -126,41 +176,66 @@ export default function LandingContent() {
             </p>
           </div>
 
-          {/* Core Features Grid */}
-          <div
-            ref={featuresGridRef}
-            className="mt-12 flex snap-x snap-mandatory overflow-x-auto gap-4 pb-8 -mx-6 px-6 md:mt-24 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:mx-0 md:gap-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          >
-            {featureCards.map((card, i) => {
-              const Icon = card.icon;
-              return (
-                <a
-                  key={card.badge}
-                  href={card.href}
-                  className={`group flex min-w-[260px] max-w-[320px] snap-center flex-col justify-between rounded-[0px_6px_0px_0px] border border-stone-200 bg-[#f7f7f7] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#e60000] reveal-hidden ${featuresGridVisible ? 'reveal-visible' : ''} reveal-delay-${i + 1} md:min-w-0 md:max-w-none md:p-8`}
-                >
-                  <div>
-                    <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] transition-colors duration-300 group-hover:border-[#e60000] group-hover:bg-[#e60000] group-hover:text-white">
-                      <Icon className="h-6 w-6" />
+          {/* Core Features Slider Container */}
+          <div className="relative group/slider mt-12 md:mt-24">
+            {/* Left Button */}
+            {showLeftArrow && (
+              <button
+                onClick={() => handleScroll('left')}
+                className="absolute left-2 lg:-left-6 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:border-[#e60000] hover:text-[#e60000] active:scale-95 hidden md:flex opacity-90 hover:opacity-100"
+                aria-label="이전 카드 보기"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+            )}
+
+            {/* Right Button */}
+            {showRightArrow && (
+              <button
+                onClick={() => handleScroll('right')}
+                className="absolute right-2 lg:-right-6 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:border-[#e60000] hover:text-[#e60000] active:scale-95 hidden md:flex opacity-90 hover:opacity-100"
+                aria-label="다음 카드 보기"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            )}
+
+            {/* Core Features Scrollable Element */}
+            <div
+              ref={featuresGridRef}
+              className="flex snap-x snap-mandatory overflow-x-auto gap-6 -mx-6 -mt-2 px-6 pt-2 pb-8 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] md:mx-0 md:px-0"
+            >
+              {featureCards.map((card, i) => {
+                const Icon = card.icon;
+                return (
+                  <a
+                    key={card.badge}
+                    href={card.href}
+                    className={`group flex min-w-[280px] sm:min-w-[340px] md:min-w-[360px] max-w-[380px] snap-center flex-col justify-between rounded-[0px_6px_0px_0px] border border-stone-200 bg-[#f7f7f7] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#e60000] reveal-hidden ${featuresGridVisible ? 'reveal-visible' : ''} reveal-delay-${i + 1} md:p-8 shrink-0`}
+                  >
+                    <div>
+                      <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] transition-colors duration-300 group-hover:border-[#e60000] group-hover:bg-[#e60000] group-hover:text-white">
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <div className="mb-4 flex items-center gap-2">
+                        <span className="inline-block rounded-[2px] border border-[#e60000] bg-white px-2 py-0.5 text-[12px] font-bold uppercase tracking-wider text-[#e60000] transition-colors duration-300 group-hover:bg-[#e60000] group-hover:text-white">{card.badge}</span>
+                      </div>
+                      <p className="mb-3 min-h-[2.75rem] break-keep text-sm font-semibold leading-5 text-[#e60000] md:min-h-[3rem]">
+                        {card.pain}
+                      </p>
+                      <h4 className="mb-3 text-xl font-bold text-[#25282b] transition-colors duration-300 group-hover:text-[#e60000] md:text-2xl">{card.title}</h4>
+                      <p className="text-[15px] leading-relaxed text-[#7e7e7e] md:text-base">
+                        {card.desc}
+                      </p>
                     </div>
-                    <div className="mb-4 flex items-center gap-2">
-                      <span className="inline-block rounded-[2px] border border-[#e60000] bg-white px-2 py-0.5 text-[12px] font-bold uppercase tracking-wider text-[#e60000] transition-colors duration-300 group-hover:bg-[#e60000] group-hover:text-white">{card.badge}</span>
+                    <div className="mt-8 flex items-center font-bold text-[#25282b] transition-colors duration-300 group-hover:text-[#e60000]">
+                      <span className="text-sm">바로가기</span>
+                      <svg className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                     </div>
-                    <p className="mb-3 min-h-[2.75rem] break-keep text-sm font-semibold leading-5 text-[#e60000] md:min-h-[3rem]">
-                      {card.pain}
-                    </p>
-                    <h4 className="mb-3 text-xl font-bold text-[#25282b] transition-colors duration-300 group-hover:text-[#e60000] md:text-2xl">{card.title}</h4>
-                    <p className="text-[15px] leading-relaxed text-[#7e7e7e] md:text-base">
-                      {card.desc}
-                    </p>
-                  </div>
-                  <div className="mt-8 flex items-center font-bold text-[#25282b] transition-colors duration-300 group-hover:text-[#e60000]">
-                    <span className="text-sm">이 고민 해결하기</span>
-                    <svg className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                  </div>
-                </a>
-              );
-            })}
+                  </a>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
