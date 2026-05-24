@@ -65,7 +65,7 @@ export default function LandingContent() {
       href: '/recommend?mode=taste',
       icon: Sparkles,
       badge: 'Taste Match',
-      pain: '후기는 넘쳐나는데, 내 입맛에 맞을지 확신이 없을 때',
+      pain: '후기는 많아도, 내 입맛에 맞을지 고민될 때',
       title: '내 취향 저격 라멘 추천',
       desc: '국물의 농도, 면의 식감, 선호하는 토핑부터 그날의 기분까지 섬세하게 반영하여 실패 없는 완벽한 한 그릇을 찾아드려요.',
     },
@@ -73,7 +73,7 @@ export default function LandingContent() {
       href: '/recommend?mode=compare',
       icon: Scale,
       badge: 'Quick Compare',
-      pain: '가고 싶은 매장 두 곳 중 마지막 선택이 망설여질 때',
+      pain: '두 매장 중 하나를 고르기 어려울 때',
       title: '헷갈리는 두 매장 1:1 비교',
       desc: '대표 메뉴와 분위기는 물론 방문자들의 핵심 평가까지 한눈에 대조하여, 지금 상황에 가장 끌리는 곳을 쉽게 결정해 보세요.',
     },
@@ -81,7 +81,7 @@ export default function LandingContent() {
       href: '/recommend?mode=summary',
       icon: MessageSquare,
       badge: 'Review Summary',
-      pain: '광고성 글과 길고 복잡한 후기들을 다 읽기 지칠 때',
+      pain: '긴 후기들을 전부 읽기 지칠 때',
       title: '핵심만 쏙 뽑아낸 리뷰 요약',
       desc: '실제 방문자들의 칭찬과 솔직한 아쉬운 점을 키워드 중심으로 정리하여, 수십 개의 후기를 읽지 않아도 매장 특징을 단번에 파악해요.',
     },
@@ -89,7 +89,7 @@ export default function LandingContent() {
       href: '/shops',
       icon: Camera,
       badge: 'Photo Proof',
-      pain: '내가 먹은 라멘의 감동을 생생하게 기록하고 자랑하고 싶을 때',
+      pain: '내가 먹은 라멘을 기록하고 싶을 때',
       title: '실시간 메뉴 사진 & 인증',
       desc: '드신 메뉴를 선택해 직접 찍은 인증샷과 한줄평을 등록해 보세요. 방문한 매장의 생생한 정보를 다른 사람들과 공유하고 기록으로 남길 수 있습니다.',
     },
@@ -211,7 +211,7 @@ export default function LandingContent() {
                   <a
                     key={card.badge}
                     href={card.href}
-                    className={`group flex min-w-[280px] sm:min-w-[340px] md:min-w-[360px] max-w-[380px] snap-center flex-col justify-between rounded-[0px_6px_0px_0px] border border-stone-200 bg-[#f7f7f7] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#e60000] reveal-hidden ${featuresGridVisible ? 'reveal-visible' : ''} reveal-delay-${i + 1} md:p-8 shrink-0`}
+                    className={`group flex w-[78vw] min-w-[244px] max-w-[320px] snap-center flex-col justify-between rounded-[0px_6px_0px_0px] border border-stone-200 bg-[#f7f7f7] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#e60000] reveal-hidden ${featuresGridVisible ? 'reveal-visible' : ''} reveal-delay-${i + 1} sm:w-[320px] sm:max-w-[340px] md:w-[360px] md:max-w-[380px] md:p-8 shrink-0`}
                   >
                     <div>
                       <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] transition-colors duration-300 group-hover:border-[#e60000] group-hover:bg-[#e60000] group-hover:text-white">
@@ -220,7 +220,7 @@ export default function LandingContent() {
                       <div className="mb-4 flex items-center gap-2">
                         <span className="inline-block rounded-[2px] border border-[#e60000] bg-white px-2 py-0.5 text-[12px] font-bold uppercase tracking-wider text-[#e60000] transition-colors duration-300 group-hover:bg-[#e60000] group-hover:text-white">{card.badge}</span>
                       </div>
-                      <p className="mb-3 min-h-[2.75rem] break-keep text-sm font-semibold leading-5 text-[#e60000] md:min-h-[3rem]">
+                      <p className="mb-3 break-keep text-sm font-semibold leading-5 text-[#e60000]">
                         {card.pain}
                       </p>
                       <h4 className="mb-3 text-xl font-bold text-[#25282b] transition-colors duration-300 group-hover:text-[#e60000] md:text-2xl">{card.title}</h4>
