@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { MouseEvent } from 'react';
 import { LogIn, Menu, X, Home, MessageSquare, User, UtensilsCrossed, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -16,7 +15,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogout }) => {
   const pathname = usePathname();
   const currentPath = pathname;
-  const { currentUser, showToast } = useApp();
+  const { currentUser } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -46,10 +45,6 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
   };
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
-  const handleRecommendClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    showToast('추천받기 페이지는 아직 개발 중입니다.', 'info');
-  };
 
   const isTransparent = isHomePage && !scrolled && !isMobile;
   const navTextColor = isTransparent ? 'text-white/95 hover:text-white font-normal' : 'text-[#25282b] hover:text-[#e60000] font-normal';
@@ -58,7 +53,6 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
   const loginBtnClass = isTransparent 
     ? 'bg-white text-[#25282b] hover:bg-stone-100' 
     : 'bg-[#e60000] text-white hover:opacity-90';
-
   // 마이페이지 경로 결정 (로그인 시 본인 ID 주소, 미로그인 시 로그인 페이지)
   const myPagePath = isLoggedIn && currentUser ? `/user/${currentUser.user_id || currentUser.id}` : '/login';
 
@@ -77,10 +71,15 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
 
               {/* Desktop Navigation */}
               <div className="hidden md:block flex-1">
-                <div className="ml-10 flex items-center justify-end gap-7">
+                <div className="ml-10 flex items-center justify-end gap-6">
                   <Link href="/" className={`text-sm transition-colors ${currentPath === '/' ? activeTextColor : navTextColor}`}>홈</Link>
+                  <Link
+                    href="/recommend"
+                    className={`text-sm transition-colors ${currentPath === '/recommend' ? activeTextColor : navTextColor}`}
+                  >
+                    추천받기
+                  </Link>
                   <Link href="/shops" className={`text-sm transition-colors ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
-                  <Link href="/recommend" onClick={handleRecommendClick} className={`text-sm transition-colors ${currentPath === '/recommend' ? activeTextColor : navTextColor}`}>추천받기</Link>
                   <Link href="/community" className={`text-sm transition-colors ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
                   <Link href={myPagePath} className={`text-sm transition-colors ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
 
@@ -118,11 +117,11 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={closeMobileMenu} />
+        <div className="md:hidden fixed inset-0 z-[60] bg-black/50" onClick={closeMobileMenu} />
       )}
 
       {/* Mobile Slide-out Menu */}
-      <div className={`md:hidden fixed inset-y-0 right-0 z-40 w-full max-w-72 transform bg-white pt-14 pb-safe transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`md:hidden fixed inset-y-0 right-0 z-[70] w-full max-w-72 transform bg-white pt-14 pb-safe transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full">
           <div className="flex-1 py-3">
             <Link
@@ -132,6 +131,14 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
             >
               <Home className="w-5 h-5 mr-3" />
               홈
+            </Link>
+            <Link
+              href="/recommend"
+              onClick={closeMobileMenu}
+              className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/recommend') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
+            >
+              <Sparkles className="w-5 h-5 mr-3" />
+              추천받기
             </Link>
             <Link
               href="/shops"
@@ -148,17 +155,6 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
             >
               <MessageSquare className="w-5 h-5 mr-3" />
               커뮤니티
-            </Link>
-            <Link
-              href="/recommend"
-              onClick={(event) => {
-                handleRecommendClick(event);
-                closeMobileMenu();
-              }}
-              className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/recommend') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
-            >
-              <Sparkles className="w-5 h-5 mr-3" />
-              추천받기
             </Link>
             <Link
               href={myPagePath}

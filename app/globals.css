@@ -94,7 +94,7 @@ body {
 
   html,
   body {
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   .swiper-pagination {
@@ -175,6 +175,24 @@ body {
 .animate-fade-in-up {
   animation: fade-in-up 1s ease-out 0.2s both;
 }
+
+/* Scroll Reveal Animations */
+.reveal-hidden {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
 
 @keyframes loading-bar {
   0% {
