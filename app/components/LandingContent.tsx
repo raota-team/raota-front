@@ -203,7 +203,7 @@ export default function LandingContent() {
             {/* Core Features Scrollable Element */}
             <div
               ref={featuresGridRef}
-              className="flex snap-x snap-mandatory overflow-x-auto gap-6 -mx-6 -mt-2 px-6 pt-2 pb-8 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] md:mx-0 md:px-0"
+              className="flex snap-x snap-mandatory overflow-x-auto gap-6 -mx-6 -mt-4 px-6 pt-4 pb-8 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] md:mx-0 md:px-0"
             >
               {featureCards.map((card, i) => {
                 const Icon = card.icon;
@@ -253,7 +253,7 @@ export default function LandingContent() {
             <div>
               <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.2em] text-[#e60000]">Last Check Before You Go</p>
               <h2 className="max-w-[12ch] break-keep text-3xl font-extrabold leading-tight text-[#25282b] md:max-w-none md:text-5xl">
-                선택 전에 보는 진짜 후기.
+                선택 전에 보는 <span className="whitespace-nowrap">진짜 후기.</span>
               </h2>
             </div>
             <a href="/community" className="inline-flex items-center gap-2 text-sm font-bold text-[#e60000] hover:underline">
@@ -264,7 +264,7 @@ export default function LandingContent() {
 
           <div
             ref={reviewsGridRef}
-            className="flex snap-x snap-mandatory overflow-x-auto gap-4 pb-8 -mx-6 px-6 md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-visible md:px-0 md:mx-0 md:gap-6 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+            className="flex snap-x snap-mandatory overflow-x-auto gap-4 -mx-6 -mt-1 px-6 pt-1 pb-8 md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-visible md:px-0 md:mx-0 md:mt-0 md:gap-6 md:pt-0 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           >
             {reviews.map((review, i) => (
               <div
@@ -315,10 +315,11 @@ export default function LandingContent() {
         </div>
         <div className={`relative z-10 mx-auto max-w-4xl reveal-hidden ${ctaVisible ? 'reveal-visible' : ''}`}>
           <h2 className="mb-6 break-keep text-[clamp(1.75rem,6vw,4rem)] font-extrabold tracking-tight text-white leading-tight">
-            오늘의 한 그릇을 조금 더 쉽게 고를 시간입니다.
+            오늘 먹을 라멘,
+            <span className="block">지금 바로 추천받기</span>
           </h2>
           <p className="mx-auto mb-12 max-w-2xl break-keep text-lg font-medium leading-relaxed text-white/80">
-            취향부터 빠르게 좁혀보고, 라오타들과 나만의 한 그릇을 나눠보세요.
+            취향에 맞는 한 그릇을 빠르게 골라보세요.
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <a href="/login" className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#e60000] px-8 text-base font-bold text-white transition-opacity hover:opacity-90">
