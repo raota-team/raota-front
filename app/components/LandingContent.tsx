@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import HomeHeroActions from './HomeHeroActions';
 import { Do_Hyeon } from 'next/font/google';
-import { Sparkles, Scale, MessageSquare, MessageCircleMore, Camera, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, Scale, MessageSquare, MessageCircleMore, Camera, ChevronLeft, ChevronRight, LogIn, Users, UtensilsCrossed } from 'lucide-react';
 
 const doHyeon = Do_Hyeon({
   weight: '400',
@@ -182,7 +182,7 @@ export default function LandingContent() {
             {showLeftArrow && (
               <button
                 onClick={() => handleScroll('left')}
-                className="absolute left-2 lg:-left-6 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:border-[#e60000] hover:text-[#e60000] active:scale-95 hidden md:flex opacity-90 hover:opacity-100"
+                className="absolute left-2 lg:-left-6 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] transition-all hover:border-[#e60000] hover:text-[#e60000] active:scale-95 hidden md:flex opacity-90 hover:opacity-100"
                 aria-label="이전 카드 보기"
               >
                 <ChevronLeft className="h-6 w-6" />
@@ -193,7 +193,7 @@ export default function LandingContent() {
             {showRightArrow && (
               <button
                 onClick={() => handleScroll('right')}
-                className="absolute right-2 lg:-right-6 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all hover:border-[#e60000] hover:text-[#e60000] active:scale-95 hidden md:flex opacity-90 hover:opacity-100"
+                className="absolute right-2 lg:-right-6 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] transition-all hover:border-[#e60000] hover:text-[#e60000] active:scale-95 hidden md:flex opacity-90 hover:opacity-100"
                 aria-label="다음 카드 보기"
               >
                 <ChevronRight className="h-6 w-6" />
@@ -321,11 +321,17 @@ export default function LandingContent() {
             취향부터 빠르게 좁혀보고, 라오타들과 나만의 한 그릇을 나눠보세요.
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <a href="/recommend" className="inline-flex h-14 items-center justify-center rounded-full bg-[#e60000] px-8 text-base font-bold text-white transition-opacity hover:opacity-90">
-              지금 추천부터 받아보기
+            <a href="/login" className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#e60000] px-8 text-base font-bold text-white transition-opacity hover:opacity-90">
+              시작하기
+              <LogIn className="h-5 w-5" />
             </a>
-            <a href="/login" className="inline-flex h-14 items-center justify-center rounded-full border border-white/30 bg-transparent px-8 text-base font-bold text-white transition-colors hover:bg-white/10">
-              커뮤니티 참여하기
+            <a href="/shops" className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-8 text-base font-bold text-white transition-colors hover:bg-white/20">
+              라멘집 보러가기
+              <UtensilsCrossed className="h-5 w-5" />
+            </a>
+            <a href="/community" className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-white/30 bg-transparent px-8 text-base font-bold text-white transition-colors hover:bg-white/10">
+              커뮤니티 보기
+              <Users className="h-5 w-5" />
             </a>
           </div>
         </div>

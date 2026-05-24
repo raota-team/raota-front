@@ -1,62 +1,81 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
-import { ChevronRight, Sparkles, Users } from 'lucide-react';
-import { getRamenShops } from '@/lib/api/ramen-shops';
+import { LogIn } from 'lucide-react';
 
-const shopsQueryKey = ['ramen-shops', 0, 12, '', '', '', 'NAME'];
+const numberFormatter = new Intl.NumberFormat('ko-KR');
+
+function useCountUp(target: number, duration = 1200, delay = 350) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (shouldReduceMotion) {
+      setValue(target);
+      return;
+    }
+
+    let animationFrame = 0;
+    let startTime = 0;
+
+    const timeout = window.setTimeout(() => {
+      const animate = (timestamp: number) => {
+        if (!startTime) startTime = timestamp;
+
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+        setValue(Math.round(target * easedProgress));
+
+        if (progress < 1) {
+          animationFrame = window.requestAnimationFrame(animate);
+        }
+      };
+
+      animationFrame = window.requestAnimationFrame(animate);
+    }, delay);
+
+    return () => {
+      window.clearTimeout(timeout);
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [delay, duration, target]);
+
+  return numberFormatter.format(value);
+}
 
 export default function HomeHeroActions() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
-  const prefetchShops = () => {
-    router.prefetch('/shops');
-    queryClient.prefetchQuery({
-      queryKey: shopsQueryKey,
-      queryFn: () => getRamenShops({ page: 0, size: 12, sort: 'NAME' }),
-      staleTime: 30 * 1000,
-    });
-  };
-
-  const ctaSizeClass = 'w-56 px-6 py-4';
+  const stats = [
+    { value: useCountUp(150), label: '등록된 라멘집' },
+    { value: useCountUp(4213, 1400, 450), label: '오늘의 한 그릇 추천' },
+  ];
 
   return (
-    <div className="flex w-full max-w-4xl flex-col items-center gap-5">
+    <div className="flex w-full max-w-4xl flex-col items-center gap-7">
+      <div className="grid w-full max-w-xl grid-cols-2 overflow-hidden rounded-[6px] border border-white/25 bg-[#25282b]/72 text-white backdrop-blur-sm">
+        {stats.map((stat) => (
+          <div key={stat.label} className="px-4 py-4 text-center first:border-r first:border-white/20 sm:px-8 sm:py-5">
+            <p className="text-[clamp(1.8rem,7vw,3.25rem)] font-extrabold leading-none tracking-normal tabular-nums">
+              {stat.value}
+            </p>
+            <p className="mt-2 break-keep text-xs font-bold text-white/78 sm:text-sm">
+              {stat.label}
+            </p>
+          </div>
+        ))}
+      </div>
+
       <Link
-        href="/recommend"
-        className={`vodafone-button-pill transition-transform hover:-translate-y-0.5 active:translate-y-0 ${ctaSizeClass}`}
+        href="/login"
+        className="vodafone-button-pill w-56 px-6 py-4 transition-transform hover:-translate-y-0.5 active:translate-y-0"
       >
         <span className="inline-flex items-center gap-2">
-          <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#e60000]">
-            BETA
-          </span>
-          추천받기
+          시작하기
         </span>
-        <Sparkles className="h-5 w-5 text-white" />
+        <LogIn className="h-5 w-5 text-white" />
       </Link>
-
-      <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-        <Link
-          href="/shops"
-          onMouseEnter={prefetchShops}
-          onFocus={prefetchShops}
-          onTouchStart={prefetchShops}
-          className={`inline-flex items-center justify-center gap-2 rounded-full border border-white bg-white text-sm font-bold text-[#25282b] transition-transform transition-colors hover:-translate-y-0.5 hover:bg-[#f2f2f2] active:translate-y-0 ${ctaSizeClass}`}
-        >
-          맛집 탐색하기
-          <ChevronRight className="h-5 w-5 text-[#25282b]" />
-        </Link>
-        <Link
-          href="/community"
-          className={`inline-flex items-center justify-center gap-2 rounded-full border border-white/70 bg-white/24 text-sm font-bold text-white backdrop-blur-sm transition-transform transition-colors hover:bg-white/32 hover:-translate-y-0.5 active:translate-y-0 ${ctaSizeClass}`}
-        >
-          커뮤니티
-          <Users className="h-5 w-5" />
-        </Link>
-      </div>
     </div>
   );
 }
