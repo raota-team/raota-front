@@ -1,221 +1,24 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
-import Link from "next/link";
-import {
-  ArrowRight,
-  BarChart3,
-  ChevronDown,
-  RotateCcw,
-  Loader2,
-  MessageSquareText,
-  Search,
-  Sparkles,
-  Star,
-} from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { ArrowRight, RotateCcw } from "lucide-react";
+import { motion } from "framer-motion";
+
 import type { Shop } from "@/app/types";
-import { getRamenShopOptions } from "@/lib/api/community";
+import type { ModeId, ShopOption, SubmittedTaste, SubmittedCompare, SubmittedSummary } from "./types";
+import { modes, modePrompts, tasteOptions, fallbackShopOptions, shops, modeCopy, compareFocusExamples, summaryFocusExamples, tasteFocusExamples } from "./constants";
 
-type ModeId = "taste" | "compare" | "summary";
-type ShopOption = {
-  id: number;
-  name: string;
-  region: string;
-};
-
-const modes: Array<{
-  id: ModeId;
-  label: string;
-  title: string;
-  icon: typeof Sparkles;
-}> = [
-  {
-    id: "taste",
-    label: "취향 추천",
-    title: "오늘 당기는 라멘 골라드릴게요",
-    icon: Sparkles,
-  },
-  {
-    id: "compare",
-    label: "매장 비교",
-    title: "두 매장 차이만 쏙 보여드릴게요",
-    icon: BarChart3,
-  },
-  {
-    id: "summary",
-    label: "리뷰 요약",
-    title: "가기 전 포인트만 쏙 알려드릴게요",
-    icon: MessageSquareText,
-  },
-];
-
-const tasteOptions = {
-  soup: ["돈코츠", "쇼유", "미소", "시오", "츠케멘", "탄탄멘"],
-  mood: ["혼밥", "데이트", "빠른 식사", "웨이팅 감수"],
-  priority: ["진한 국물", "자가제면", "차슈", "깔끔한 맛"],
-};
-
-const summaryFilters = ["전체", "장점", "주의점", "추천 메뉴"];
-
-const fallbackShopOptions: ShopOption[] = [
-  { id: 1, name: "멘야 하루", region: "서울 마포구" },
-  { id: 2, name: "라멘 아오이", region: "서울 성동구" },
-  { id: 3, name: "코하쿠 라멘", region: "서울 종로구" },
-  { id: 4, name: "시오노미", region: "서울 용산구" },
-];
-
-const shops: Shop[] = [
-  {
-    id: 1,
-    name: "멘야 하루",
-    location: "서울 마포구",
-    address: "서울 마포구",
-    type: "돈코츠",
-    editorRating: 4.7,
-    userRating: 4.6,
-    description: "진한 국물과 차슈 구성이 강점인 후보입니다.",
-    imageUrl: "/hero-home.jpg",
-    menus: [{ name: "특제 돈코츠 라멘", votes: 24 }],
-    menu_list: [],
-    event_menus: [],
-    userPhotos: [],
-    business_hours: {
-      closed_days: "정보 없음",
-      open_time: "정보 없음",
-      close_time: "정보 없음",
-      break_start: null,
-      break_end: null,
-      parking_info: "정보 없음",
-    },
-    stats: { visit_count: 128, bookmark_count: 0 },
-    instagram_url: "",
-    catchTableUrl: "",
-    isBookmarked: false,
-  },
-  {
-    id: 2,
-    name: "라멘 아오이",
-    location: "서울 성동구",
-    address: "서울 성동구",
-    type: "쇼유",
-    editorRating: 4.5,
-    userRating: 4.4,
-    description: "깔끔한 국물과 안정적인 회전율이 장점인 후보입니다.",
-    imageUrl: "/header-recommend.png",
-    menus: [{ name: "아지타마 쇼유 라멘", votes: 19 }],
-    menu_list: [],
-    event_menus: [],
-    userPhotos: [],
-    business_hours: {
-      closed_days: "정보 없음",
-      open_time: "정보 없음",
-      close_time: "정보 없음",
-      break_start: null,
-      break_end: null,
-      parking_info: "정보 없음",
-    },
-    stats: { visit_count: 96, bookmark_count: 0 },
-    instagram_url: "",
-    catchTableUrl: "",
-    isBookmarked: false,
-  },
-  {
-    id: 3,
-    name: "코하쿠 라멘",
-    location: "서울 종로구",
-    address: "서울 종로구",
-    type: "미소",
-    editorRating: 4.4,
-    userRating: 4.3,
-    description: "구수한 미소 베이스와 부드러운 계란 토핑이 잘 맞는 조용한 라멘집입니다.",
-    imageUrl: "/header-shoplist-anime.png",
-    menus: [{ name: "아지타마 미소 라멘", votes: 16 }],
-    menu_list: [],
-    event_menus: [],
-    userPhotos: [],
-    business_hours: {
-      closed_days: "월요일",
-      open_time: "11:30",
-      close_time: "21:00",
-      break_start: "15:00",
-      break_end: "17:00",
-      parking_info: "주차 불가",
-    },
-    stats: { visit_count: 84, bookmark_count: 0 },
-    instagram_url: "",
-    catchTableUrl: "",
-    isBookmarked: false,
-  },
-  {
-    id: 4,
-    name: "시오노미",
-    location: "서울 용산구",
-    address: "서울 용산구",
-    type: "시오",
-    editorRating: 4.3,
-    userRating: 4.2,
-    description: "담백한 시오 국물과 가벼운 식사 흐름이 좋아 첫 방문자에게 부담이 적습니다.",
-    imageUrl: "/header-community-v2.jpg",
-    menus: [{ name: "특제 시오 라멘", votes: 13 }],
-    menu_list: [],
-    event_menus: [],
-    userPhotos: [],
-    business_hours: {
-      closed_days: "정보 없음",
-      open_time: "11:00",
-      close_time: "20:30",
-      break_start: null,
-      break_end: null,
-      parking_info: "인근 공영주차장",
-    },
-    stats: { visit_count: 72, bookmark_count: 0 },
-    instagram_url: "",
-    catchTableUrl: "",
-    isBookmarked: false,
-  },
-];
-
-const modeCopy: Record<ModeId, { action: string; result: string }> = {
-  taste: {
-    action: "AI 추천 생성",
-    result: "선택한 취향을 바탕으로 지금 잘 맞는 라멘집부터 정리했어요.",
-  },
-  compare: {
-    action: "비교 생성",
-    result: "선택한 두 매장을 방문 전에 비교하기 좋게 정리했어요.",
-  },
-  summary: {
-    action: "요약 생성",
-    result: "매장 정보와 리뷰를 바탕으로 꼭 봐야 할 내용만 추렸어요.",
-  },
-};
-
-const formatRating = (rating: number) => (rating > 0 ? rating.toFixed(1) : "-");
-
-const getPrimaryMenu = (shop: Shop) =>
-  shop.menu_list.find((menu) => menu.is_signature)?.name ||
-  shop.menus[0]?.name ||
-  "대표 메뉴 정보 없음";
-
-const buildMatchScore = (shop: Shop, index: number) => {
-  const ratingScore = Math.round((shop.userRating || shop.editorRating || 4) * 10);
-  const visitBonus = Math.min(Math.floor((shop.stats?.visit_count || 0) / 20), 8);
-  return Math.min(96, Math.max(78, ratingScore + visitBonus - index * 3));
-};
-
-const buildUniqueTags = (tags: Array<string | undefined>) =>
-  Array.from(new Set(tags.filter(Boolean))).slice(0, 4) as string[];
-
-const normalizeShopOption = (item: any, index: number): ShopOption => ({
-  id: Number(item?.id ?? item?.restaurant_id ?? item?.ramenShopId ?? index + 1),
-  name: item?.name ?? item?.restaurant_name ?? item?.restaurantName ?? "이름 미정",
-  region: item?.region ?? item?.location ?? item?.address_simple ?? item?.address ?? "지역 정보 없음",
-});
+import { ChoiceGroup } from "./_components/ChoiceGroup";
+import { RecommendEmptyState } from "./_components/RecommendEmptyState";
+import { ShopOptionList } from "./_components/ShopOptionList";
+import { TasteResults } from "./_components/TasteResults";
+import { CompareResults } from "./_components/CompareResults";
+import { SummaryResults } from "./_components/SummaryResults";
+import { QuestionCard, PromptField } from "./_components/SharedComponents";
 
 const buildDisplayShop = (template: Shop, option: ShopOption | null): Shop => {
   if (!option) return template;
-
   return {
     ...template,
     id: option.id,
@@ -226,33 +29,122 @@ const buildDisplayShop = (template: Shop, option: ShopOption | null): Shop => {
 };
 
 export default function RecommendPage() {
+  const contentRef = useRef<HTMLElement | null>(null);
+  const tabsRef = useRef<HTMLElement | null>(null);
+  const tabsInitialTopRef = useRef<number | null>(null);
+  const resultRef = useRef<HTMLDivElement | null>(null);
+  
   const [activeMode, setActiveMode] = useState<ModeId>("taste");
+  const [isTabsPinned, setIsTabsPinned] = useState(false);
+  const [tabsHeight, setTabsHeight] = useState(0);
+  
   const [selectedSoup, setSelectedSoup] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [selectedPriority, setSelectedPriority] = useState<string | null>(null);
-  const [summaryFilter, setSummaryFilter] = useState("전체");
+  const [tasteFocus, setTasteFocus] = useState("");
+  
+  const [compareFocus, setCompareFocus] = useState("");
+  const [summaryFocus, setSummaryFocus] = useState("");
   const [compareShopA, setCompareShopA] = useState<ShopOption | null>(null);
   const [compareShopB, setCompareShopB] = useState<ShopOption | null>(null);
   const [summaryShop, setSummaryShop] = useState<ShopOption | null>(null);
+  
+  const [submittedTaste, setSubmittedTaste] = useState<SubmittedTaste | null>(null);
+  const [submittedCompare, setSubmittedCompare] = useState<SubmittedCompare | null>(null);
+  const [submittedSummary, setSubmittedSummary] = useState<SubmittedSummary | null>(null);
+  
+  const [tasteStep, setTasteStep] = useState(0);
+  const [shakeKey, setShakeKey] = useState(0);
 
-  const activeModeConfig = modes.find((mode) => mode.id === activeMode) ?? modes[0];
-  const ActiveIcon = activeModeConfig.icon;
-  const filteredShops = activeMode === "taste" && selectedSoup
-    ? shops.filter((shop) => shop.type.includes(selectedSoup))
+  const effectiveTaste = submittedTaste;
+  const filteredShops = effectiveTaste?.soup
+    ? shops.filter((shop) => shop.type.includes(effectiveTaste.soup))
     : shops;
   const displayShops = filteredShops.length > 0 ? filteredShops : shops;
+  
   const primaryShop = activeMode === "summary"
-    ? buildDisplayShop(shops[0], summaryShop)
-    : buildDisplayShop(displayShops[0], compareShopA ?? fallbackShopOptions[0]);
-  const secondaryShop = buildDisplayShop(displayShops[1] ?? shops[1], compareShopB ?? fallbackShopOptions[1]);
+    ? buildDisplayShop(shops[0], submittedSummary?.shop ?? null)
+    : buildDisplayShop(displayShops[0], submittedCompare?.shopA ?? fallbackShopOptions[0]);
+  const secondaryShop = buildDisplayShop(displayShops[1] ?? shops[1], submittedCompare?.shopB ?? fallbackShopOptions[1]);
+  
   const isTasteReady = Boolean(selectedSoup && selectedMood && selectedPriority);
   const isCompareReady = Boolean(compareShopA && compareShopB);
   const isSummaryReady = Boolean(summaryShop);
-  const isCurrentModeReady =
-    activeMode === "taste" ? isTasteReady : activeMode === "compare" ? isCompareReady : isSummaryReady;
+  
+  const isTasteSubmitted =
+    Boolean(submittedTaste) &&
+    submittedTaste?.soup === selectedSoup &&
+    submittedTaste?.mood === selectedMood &&
+    submittedTaste?.priority === selectedPriority &&
+    submittedTaste?.focus === tasteFocus.trim();
+  const isCompareSubmitted =
+    Boolean(submittedCompare) &&
+    submittedCompare?.shopA.id === compareShopA?.id &&
+    submittedCompare?.shopB.id === compareShopB?.id;
+  const isSummarySubmitted =
+    Boolean(submittedSummary) &&
+    submittedSummary?.shop.id === summaryShop?.id &&
+    submittedSummary?.focus === summaryFocus.trim();
+    
+  const shouldShowResults =
+    activeMode === "taste" ? isTasteSubmitted : activeMode === "compare" ? isCompareSubmitted : isSummarySubmitted;
+  const activePrompt = modePrompts[activeMode];
+  const activeStep = activeMode === "taste" ? tasteStep : 0;
+
+  useEffect(() => {
+    // Parse URL params for initial mode
+    const params = new URLSearchParams(window.location.search);
+    const modeParam = params.get('mode') as ModeId;
+    if (modeParam && modes.some(m => m.id === modeParam)) {
+      setActiveMode(modeParam);
+    }
+
+    const updateTabsPin = () => {
+      if (!tabsRef.current) return;
+      const headerHeight = window.innerWidth >= 768 ? 64 : 56;
+      if (tabsInitialTopRef.current === null) {
+        tabsInitialTopRef.current = tabsRef.current.getBoundingClientRect().top + window.scrollY;
+      }
+      setTabsHeight(tabsRef.current.offsetHeight);
+      setIsTabsPinned(window.scrollY >= tabsInitialTopRef.current - headerHeight);
+    };
+    const handleResize = () => {
+      tabsInitialTopRef.current = null;
+      updateTabsPin();
+    };
+
+    updateTabsPin();
+    window.addEventListener("scroll", updateTabsPin, { passive: true });
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("scroll", updateTabsPin);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const handleTasteSoupChange = (value: string | null) => {
+    setSelectedSoup(value);
+    if (value) setTasteStep(1);
+  };
+
+  const handleTasteMoodChange = (value: string | null) => {
+    setSelectedMood(value);
+    if (value) setTasteStep(2);
+  };
+
+  const handleTastePriorityChange = (value: string | null) => {
+    setSelectedPriority(value);
+    if (value) setTasteStep(3);
+  };
 
   const handleModeChange = (mode: ModeId) => {
     setActiveMode(mode);
+    window.requestAnimationFrame(() => {
+      if (!contentRef.current) return;
+      const stickyOffset = window.innerWidth >= 1024 ? 128 : window.innerWidth >= 768 ? 128 : 108;
+      const targetTop = contentRef.current.getBoundingClientRect().top + window.scrollY - stickyOffset;
+      window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
+    });
   };
 
   const handleReset = () => {
@@ -260,507 +152,312 @@ export default function RecommendPage() {
       setSelectedSoup(null);
       setSelectedMood(null);
       setSelectedPriority(null);
+      setTasteFocus("");
+      setSubmittedTaste(null);
+      setTasteStep(0);
       return;
     }
-
     if (activeMode === "compare") {
       setCompareShopA(null);
       setCompareShopB(null);
+      setCompareFocus("");
+      setSubmittedCompare(null);
+      return;
+    }
+    setSummaryShop(null);
+    setSummaryFocus("");
+    setSubmittedSummary(null);
+  };
+
+  const handlePreviousStep = () => {
+    setTasteStep((prev) => Math.max(prev - 1, 0));
+  };
+
+  const handleGenerateClick = () => {
+    const isCurrentStepReady =
+      activeMode === "taste"
+        ? activeStep === 0
+          ? selectedSoup
+          : activeStep === 1
+            ? selectedMood
+            : activeStep === 2
+              ? selectedPriority
+              : true // Step 4 (focus) is optional
+        : activeMode === "compare"
+          ? compareShopA && compareShopB
+          : summaryShop;
+
+    if (!isCurrentStepReady) {
+      setShakeKey((prev) => prev + 1);
       return;
     }
 
-    setSummaryShop(null);
-    setSummaryFilter("전체");
-  };
+    if (activeMode === "taste" && activeStep < activePrompt.totalSteps - 1) {
+      setTasteStep((prev) => prev + 1);
+      return;
+    }
 
-  const handleGenerate = () => {
-    return undefined;
+    if (activeMode === "taste" && selectedSoup && selectedMood && selectedPriority) {
+      setSubmittedTaste({ soup: selectedSoup, mood: selectedMood, priority: selectedPriority, focus: tasteFocus.trim() });
+    }
+
+    if (activeMode === "compare" && compareShopA && compareShopB) {
+      setSubmittedCompare({ shopA: compareShopA, shopB: compareShopB, focus: compareFocus.trim() });
+    }
+
+    if (activeMode === "summary" && summaryShop) {
+      setSubmittedSummary({ shop: summaryShop, focus: summaryFocus.trim() });
+    }
+
+    window.requestAnimationFrame(() => {
+      const isDesktop = window.innerWidth >= 1024;
+      const targetElement = isDesktop ? contentRef.current : resultRef.current;
+      
+      if (!targetElement) return;
+      
+      const headerHeight = window.innerWidth >= 768 ? 64 : 56;
+      const currentTabsHeight = tabsRef.current?.offsetHeight || tabsHeight || 58;
+      
+      const fixedOffset = headerHeight + currentTabsHeight + (isDesktop ? 0 : 24);
+        
+      const targetTop = targetElement.getBoundingClientRect().top + window.scrollY - fixedOffset;
+      window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
+    });
   };
 
   return (
     <main className="min-h-screen bg-white">
-      <section className="relative overflow-hidden border-b border-stone-200 bg-[#25282b]">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-[#25282b]">
         <div className="absolute inset-0">
-          <img src="/header-recommend.png" alt="" className="h-full w-full object-cover" />
+          <Image 
+            src="/header-recommend.png" 
+            alt="Recommend background" 
+            fill
+            priority
+            className="object-cover opacity-55" 
+          />
           <div className="absolute inset-0 bg-[#25282b]/45" />
         </div>
-        <div className="relative z-10 mx-auto flex min-h-[17rem] max-w-7xl flex-col justify-center px-4 py-8 text-center text-white sm:px-6 md:min-h-[21rem] lg:px-8">
-          <div>
-            <h1 className="vodafone-display mb-4 text-4xl leading-none text-white sm:text-5xl md:text-7xl">RAMEN RECOMMENDATION</h1>
-            <p className="mx-auto max-w-md text-base font-medium leading-relaxed text-white/85 sm:max-w-lg sm:text-lg">
-              라멘 선택에 필요한 정보를 빠르게 확인하세요
+        <div className="relative z-10 mx-auto flex min-h-[9rem] max-w-7xl flex-col items-center justify-center px-4 py-5 text-center sm:px-6 md:min-h-[16rem] lg:px-8">
+          <div className="max-w-3xl">
+            <h1 className="vodafone-display text-4xl text-white sm:text-5xl md:text-6xl">
+              RECOMMENDATION<span className="text-[#e60000]">.</span>
+            </h1>
+            <p className="mx-auto mt-3 max-w-xl text-base font-medium leading-relaxed text-white/85 sm:text-lg">
+              AI를 통해 추천받고 싶은 방식을 골라보세요.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="border-b border-stone-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-2xl font-black text-[#25282b]">라오타 추천</h2>
-              <span className="inline-flex items-center border border-[#e60000]/20 bg-[#fff4f2] px-2.5 py-1 text-[11px] font-black tracking-[0.12em] text-[#e60000]">
-                시범 운영 중
-              </span>
+      {/* Mode Selection Tabs */}
+      {isTabsPinned && <div aria-hidden="true" style={{ height: tabsHeight }} />}
+      <nav
+        ref={tabsRef}
+        role="tablist"
+        aria-label="추천 모드 선택"
+        className={`z-40 border-b border-stone-200 bg-white ${
+          isTabsPinned ? "fixed left-0 right-0 top-14 md:top-16 shadow-sm" : "relative"
+        }`}
+      >
+        <div className="mx-auto max-w-7xl px-0 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-3 py-1 md:py-0 lg:h-16 relative">
+            {/* CSS-based sliding indicator */}
+            <div 
+              className="absolute bottom-0 h-[2px] w-1/3 transition-transform duration-300 ease-in-out z-10"
+              style={{ transform: `translateX(${modes.findIndex(m => m.id === activeMode) * 100}%)` }}
+            >
+              <div className="mx-4 sm:mx-6 h-full bg-[#e60000]" />
             </div>
-            <div>
-              <p className="mt-1 text-sm font-medium text-[#7e7e7e]">
-                원하는 취향이나 매장을 고르면 바로 보기 좋게 추천해드릴게요.
-              </p>
-            </div>
-          </div>
 
-          <div className="mt-5 grid grid-cols-3 border border-stone-200">
             {modes.map((mode) => {
-              const ModeIcon = mode.icon;
               const isActive = activeMode === mode.id;
-
               return (
                 <button
                   key={mode.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls="recommend-content"
                   onClick={() => handleModeChange(mode.id)}
-                  className={`flex min-h-16 items-center justify-center gap-2 border-r border-stone-200 px-3 py-3 text-sm font-black transition-colors last:border-r-0 ${
-                    isActive ? "bg-[#25282b] text-white" : "bg-white text-[#7e7e7e] hover:text-[#25282b]"
+                  className={`relative flex min-w-0 items-center justify-center gap-2 whitespace-nowrap px-2 py-4 text-xs font-bold transition-colors sm:px-6 sm:text-sm md:py-5 lg:h-16 lg:py-0 ${
+                    isActive ? "text-[#e60000]" : "text-[#25282b] hover:text-[#e60000]"
                   }`}
                 >
-                  <ModeIcon className={`h-4 w-4 ${isActive ? "text-white" : "text-[#e60000]"}`} />
+                  <mode.icon className={`h-4 w-4 transition-colors ${isActive ? "text-[#e60000]" : "text-[#7e7e7e]"}`} />
                   <span className="hidden sm:inline">{mode.label}</span>
-                  <span className="sm:hidden">{mode.label.replace(" ", "")}</span>
+                  <span className="sm:hidden">{mode.mobileLabel}</span>
                 </button>
               );
             })}
           </div>
         </div>
-      </section>
+      </nav>
 
-      <section className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[22rem_minmax(0,1fr)] lg:px-8 lg:py-10">
-        <aside className="border border-stone-200 bg-white lg:self-start">
-          <div className="border-b border-stone-200 px-5 py-5">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#e60000] text-white">
-                <ActiveIcon className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-black leading-tight text-[#25282b] break-keep">{activeModeConfig.title}</h3>
-                <p className="mt-1 text-sm font-medium leading-6 text-[#7e7e7e] break-keep">
-                  {activeMode === "taste" && "좋아하는 국물과 분위기에 맞는 가게부터 보여드릴게요."}
-                  {activeMode === "compare" && "궁금한 두 매장을 한 번에 비교해보세요."}
-                  {activeMode === "summary" && "장점과 추천 메뉴만 빠르게 살펴보세요."}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-5 px-5 py-5">
-            {activeMode === "taste" && (
-              <>
-                <ChoiceGroup label="국물" value={selectedSoup} options={tasteOptions.soup} onChange={setSelectedSoup} />
-                <ChoiceGroup label="상황" value={selectedMood} options={tasteOptions.mood} onChange={setSelectedMood} />
-                <ChoiceGroup label="우선순위" value={selectedPriority} options={tasteOptions.priority} onChange={setSelectedPriority} />
-              </>
-            )}
-
-            {activeMode !== "taste" && (
-              <div className="space-y-4">
-                {activeMode === "compare" && (
-                  <div className="grid gap-3">
-                    <ShopOptionList
-                      label="비교 A"
-                      selectedOption={compareShopA}
-                      onSelect={setCompareShopA}
-                    />
-                    <ShopOptionList
-                      label="비교 B"
-                      selectedOption={compareShopB}
-                      onSelect={setCompareShopB}
-                    />
+      {/* Main Content */}
+      <section ref={contentRef} id="recommend-content" className="mx-auto min-h-[calc(100svh-12rem)] max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:min-h-[48rem] lg:px-8 lg:py-10">
+        <div className="grid gap-6 lg:grid-cols-[21rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+          
+          {/* Sidebar - Selection Controls */}
+          <aside className={`border border-stone-200 bg-white p-5 lg:self-start lg:p-6 ${activeMode !== "compare" ? "lg:sticky lg:top-36" : ""}`}>
+            <div className="border-b border-stone-200 pb-4">
+              <p className="text-xs font-extrabold tracking-[0.18em] text-[#e60000]">{activePrompt.label}</p>
+              <h2 className="mt-2 text-xl font-bold leading-tight text-[#25282b] sm:text-2xl lg:text-xl">{activePrompt.intro}</h2>
+              {activePrompt.totalSteps > 1 && (
+                <>
+                  <div className="mt-3 flex items-center gap-2">
+                    {Array.from({ length: activePrompt.totalSteps }).map((_, index) => (
+                      <span
+                        key={`${activeMode}-step-${index}`}
+                        className={`h-[2px] flex-1 transition-colors duration-300 ${index <= activeStep ? "bg-[#e60000]" : "bg-stone-200"}`}
+                      />
+                    ))}
                   </div>
-                )}
+                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-[#7e7e7e]">
+                    질문 {activeStep + 1} / {activePrompt.totalSteps}
+                  </p>
+                </>
+              )}
+            </div>
 
-                {activeMode === "summary" && (
-                  <ShopOptionList
-                    label="요약 대상"
-                    selectedOption={summaryShop}
-                    onSelect={setSummaryShop}
-                  />
-                )}
-              </div>
-            )}
+            <div className="mt-4 space-y-4">
+              {activeMode === "taste" && (
+                <>
+                  {tasteStep === 0 && (
+                    <QuestionCard step="01" title="지금 어떤 국물이 당기나요?">
+                      <ChoiceGroup label="국물" value={selectedSoup} options={tasteOptions.soup} onChange={handleTasteSoupChange} />
+                    </QuestionCard>
+                  )}
+                  {tasteStep === 1 && (
+                    <QuestionCard step="02" title="오늘은 어떤 분위기로 먹고 싶나요?">
+                      <ChoiceGroup label="상황" value={selectedMood} options={tasteOptions.mood} onChange={handleTasteMoodChange} />
+                    </QuestionCard>
+                  )}
+                  {tasteStep === 2 && (
+                    <QuestionCard step="03" title="가장 중요하게 보는 포인트는 무엇인가요?">
+                      <ChoiceGroup label="우선순위" value={selectedPriority} options={tasteOptions.priority} onChange={handleTastePriorityChange} />
+                    </QuestionCard>
+                  )}
+                  {tasteStep === 3 && (
+                    <QuestionCard step="04" title="그 외에 더 바라는 점이 있나요?">
+                      <PromptField value={tasteFocus} onChange={setTasteFocus} placeholder="예: 양이 많은 곳, 토핑이 다양한 곳" examples={tasteFocusExamples} />
+                    </QuestionCard>
+                  )}
+                </>
+              )}
 
-            {activeMode === "summary" && (
-              <ChoiceGroup label="요약 관점" value={summaryFilter} options={summaryFilters} onChange={setSummaryFilter} />
-            )}
+              {activeMode !== "taste" && (
+                <div className="space-y-6">
+                  {activeMode === "compare" && (
+                    <QuestionCard title="비교할 매장을 선택해주세요.">
+                      <div className="space-y-6">
+                        <ShopOptionList label="비교 A" selectedOption={compareShopA} onSelect={setCompareShopA} />
+                        <div className="flex items-center justify-center">
+                          <div className="h-px flex-1 bg-[#f2f2f2]" />
+                          <span className="px-3 text-[10px] font-bold text-[#bebebe]">비교</span>
+                          <div className="h-px flex-1 bg-[#f2f2f2]" />
+                        </div>
+                        <ShopOptionList label="비교 B" selectedOption={compareShopB} onSelect={setCompareShopB} />
+                        <PromptField label="추가로 비교하고 싶은 점" value={compareFocus} onChange={setCompareFocus} placeholder="예: 웨이팅 적은 곳, 혼밥하기 좋은 곳" examples={compareFocusExamples} />
+                      </div>
+                    </QuestionCard>
+                  )}
 
-            <div className="grid gap-2 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={handleReset}
-                className="flex w-full items-center justify-center gap-2 border border-stone-200 bg-white px-5 py-4 text-sm font-black text-[#25282b] transition-colors hover:border-[#25282b]"
-              >
-                초기화
-                <RotateCcw className="h-4 w-4" />
-              </button>
-              <button
-                onClick={handleGenerate}
-                disabled={!isCurrentModeReady}
-                className={`flex w-full items-center justify-center gap-2 px-5 py-4 text-sm font-black text-white transition-opacity ${
-                  isCurrentModeReady ? "bg-[#e60000] hover:opacity-90" : "cursor-not-allowed bg-stone-300"
+                  {activeMode === "summary" && (
+                    <QuestionCard title="요약할 매장과 궁금한 점을 알려주세요.">
+                      <div className="space-y-6">
+                        <ShopOptionList label="요약 대상" selectedOption={summaryShop} onSelect={setSummaryShop} />
+                        <PromptField label="특히 알고 싶은 점" value={summaryFocus} onChange={setSummaryFocus} placeholder="예: 주말 웨이팅, 대표 메뉴 추천" examples={summaryFocusExamples} />
+                      </div>
+                    </QuestionCard>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 grid gap-2 sm:grid-cols-2">
+              {shouldShowResults ? (
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="inline-flex items-center justify-center gap-2 rounded-[2px] border border-[#333333] bg-white px-[10px] py-[12px] text-[14.4px] font-bold text-[#333333] transition-colors hover:bg-stone-50"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  초기화
+                </button>
+              ) : activeStep > 0 ? (
+                <button
+                  type="button"
+                  onClick={handlePreviousStep}
+                  className="inline-flex items-center justify-center gap-2 rounded-[2px] border border-[#333333] bg-white px-[10px] py-[12px] text-[14.4px] font-bold text-[#333333] transition-colors hover:bg-stone-50"
+                >
+                  이전 질문
+                </button>
+              ) : (
+                <div className="hidden sm:block" />
+              )}
+              <motion.button
+                key={shakeKey}
+                animate={shakeKey > 0 ? { x: [-5, 5, -5, 5, 0] } : {}}
+                transition={{ duration: 0.4 }}
+                onClick={handleGenerateClick}
+                className={`vodafone-button-pill w-full ${
+                  (
+                    activeMode === "taste"
+                      ? activeStep === 0
+                        ? !selectedSoup
+                        : activeStep === 1
+                          ? !selectedMood
+                          : activeStep === 2
+                            ? !selectedPriority
+                            : false // Step 4 (focus) is optional
+                      : activeMode === "compare"
+                        ? !compareShopA || !compareShopB
+                        : !summaryShop
+                  )
+                    ? "bg-[#bebebe] opacity-80"
+                    : "hover:opacity-90"
                 }`}
               >
-                {modeCopy[activeMode].action}
+                {activeStep < activePrompt.totalSteps - 1 ? "다음 단계" : modeCopy[activeMode].action}
                 <ArrowRight className="h-4 w-4" />
-              </button>
+              </motion.button>
+            </div>
+          </aside>
+
+          {/* Results Area */}
+          <div ref={resultRef} className="scroll-mt-32">
+            <div className="mb-6 border-b border-stone-200 pb-4">
+              <h2 className="vodafone-display text-3xl text-[#25282b] sm:text-4xl">
+                추천 결과<span className="text-[#e60000]">.</span>
+              </h2>
+              <p className="mt-2 text-sm font-medium leading-6 text-[#7e7e7e]">{activePrompt.resultHelper}</p>
+            </div>
+
+            <div className="min-h-[34rem] lg:min-h-[40rem]">
+              {!shouldShowResults && <RecommendEmptyState mode={activeMode} />}
+
+              {activeMode === "taste" && shouldShowResults && submittedTaste && (
+                <TasteResults
+                  shops={displayShops}
+                  selectedSoup={submittedTaste.soup}
+                  selectedMood={submittedTaste.mood}
+                  selectedPriority={submittedTaste.priority}
+                  focus={submittedTaste.focus}
+                />
+              )}
+
+              {activeMode === "compare" && shouldShowResults && submittedCompare && (
+                <CompareResults primaryShop={primaryShop} secondaryShop={secondaryShop} focus={submittedCompare.focus} />
+              )}
+
+              {activeMode === "summary" && shouldShowResults && submittedSummary && (
+                <SummaryResults shop={primaryShop} focus={submittedSummary.focus} />
+              )}
             </div>
           </div>
-        </aside>
-
-        <div className="min-w-0">
-          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-sm font-black text-[#e60000]">RESULT</p>
-            </div>
-          </div>
-
-          {!isCurrentModeReady && <RecommendEmptyState mode={activeMode} />}
-
-          {activeMode === "taste" && isTasteReady && (
-            <TasteResults
-              shops={displayShops}
-              selectedSoup={selectedSoup!}
-              selectedMood={selectedMood!}
-              selectedPriority={selectedPriority!}
-            />
-          )}
-
-          {activeMode === "compare" && isCompareReady && <CompareResults primaryShop={primaryShop} secondaryShop={secondaryShop} />}
-
-          {activeMode === "summary" && isSummaryReady && <SummaryResults shop={primaryShop} filter={summaryFilter} />}
         </div>
       </section>
     </main>
-  );
-}
-
-function ChoiceGroup({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string | null;
-  options: string[];
-  onChange: (value: string | null) => void;
-}) {
-  return (
-    <div>
-      <div className="mb-2 text-xs font-black text-stone-400">{label}</div>
-      <div className="grid grid-cols-2 gap-2">
-        {options.map((option) => {
-          const isSelected = value === option;
-          return (
-            <button
-              key={option}
-              onClick={() => onChange(isSelected ? null : option)}
-              className={`min-h-10 border px-3 py-2 text-sm font-bold transition-colors ${
-                isSelected
-                  ? "border-[#25282b] bg-[#25282b] text-white"
-                  : "border-stone-200 bg-white text-[#7e7e7e] hover:border-[#e60000] hover:text-[#25282b]"
-              }`}
-            >
-              {option}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-const getEmptyStateCopy = (mode: ModeId) => {
-  if (mode === "taste") {
-    return {
-      resultTitle: "국물, 상황, 우선순위를 고르면 추천을 시작할게요.",
-      eyebrow: "취향 추천 준비 중",
-      title: "원하는 라멘 취향을 먼저 골라보세요",
-      description: "국물, 식사 분위기, 우선순위를 선택하면 잘 맞는 가게부터 정리해드릴게요.",
-    };
-  }
-
-  if (mode === "compare") {
-    return {
-      resultTitle: "비교할 두 매장을 고르면 차이를 정리해드릴게요.",
-      eyebrow: "매장 비교 준비 중",
-      title: "비교할 매장 두 곳을 골라주세요",
-      description: "궁금한 매장을 각각 선택하면 메뉴, 평점, 방문 포인트를 한 번에 비교해볼 수 있어요.",
-    };
-  }
-
-  return {
-    resultTitle: "요약할 매장을 고르면 핵심만 추려드릴게요.",
-    eyebrow: "리뷰 요약 준비 중",
-    title: "먼저 살펴볼 매장을 골라주세요",
-    description: "매장을 선택하면 장점, 추천 메뉴, 방문 전에 볼 포인트를 빠르게 정리해드릴게요.",
-  };
-};
-
-function RecommendEmptyState({ mode }: { mode: ModeId }) {
-  const copy = getEmptyStateCopy(mode);
-
-  return (
-    <div className="overflow-hidden border border-stone-200 bg-[radial-gradient(circle_at_top_left,rgba(255,244,242,0.95),rgba(255,255,255,1)_55%)] p-6 sm:p-8">
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <span className="inline-flex items-center rounded-full border border-[#e60000]/15 bg-white px-3 py-1 text-xs font-black tracking-[0.08em] text-[#e60000]">
-            {copy.eyebrow}
-          </span>
-          <h4 className="mt-3 text-2xl font-black leading-tight text-[#25282b] break-keep">{copy.title}</h4>
-          <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-[#606060] break-keep">{copy.description}</p>
-        </div>
-        <RamenEmptyIllustration mode={mode} />
-      </div>
-    </div>
-  );
-}
-
-function RamenEmptyIllustration({ mode }: { mode: ModeId }) {
-  const accentClass =
-    mode === "taste"
-      ? "bg-[#fff1e8]"
-      : mode === "compare"
-        ? "bg-[#eef4ff]"
-        : "bg-[#f5efe7]";
-
-  const ringClass =
-    mode === "taste"
-      ? "ring-[#e60000]/8"
-      : mode === "compare"
-        ? "ring-[#4f7cff]/8"
-        : "ring-[#8b5e3c]/8";
-
-  return (
-    <div className={`relative flex h-40 w-full max-w-[13rem] shrink-0 items-center justify-center self-end rounded-[2rem] ${accentClass}`}>
-      <span className="absolute top-6 left-[3.9rem] h-8 w-3 rounded-full bg-white/70 blur-[1px] animate-steam-1" />
-      <span className="absolute top-3 left-[5.9rem] h-10 w-3 rounded-full bg-white/80 blur-[1px] animate-steam-2" />
-      <span className="absolute top-6 right-[3.9rem] h-8 w-3 rounded-full bg-white/70 blur-[1px] animate-steam-3" />
-      <div className="animate-noodle-float">
-        <div className={`flex h-28 w-28 items-center justify-center rounded-full bg-white shadow-[0_18px_36px_rgba(37,40,43,0.08)] ring-1 ${ringClass}`}>
-          <img
-            src="/ramen-bowl-icon.svg"
-            alt="라멘 그릇 아이콘"
-            className="h-16 w-16 object-contain opacity-90"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ShopOptionList({
-  label,
-  selectedOption,
-  onSelect,
-}: {
-  label: string;
-  selectedOption: ShopOption | null;
-  onSelect: (option: ShopOption) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const deferredSearchQuery = useDeferredValue(searchQuery);
-
-  const shopOptionsQuery = useQuery({
-    queryKey: ["recommend-shop-options", label, deferredSearchQuery],
-    queryFn: () => getRamenShopOptions(deferredSearchQuery.trim(), 0, "NAME"),
-    enabled: isOpen,
-    staleTime: 60 * 1000,
-  });
-  const options = useMemo(() => {
-    const items = shopOptionsQuery.data?.data?.items;
-    if (!Array.isArray(items) || items.length === 0) return fallbackShopOptions;
-    return items.map(normalizeShopOption);
-  }, [shopOptionsQuery.data]);
-
-  const handleSelect = (option: ShopOption) => {
-    onSelect(option);
-    setIsOpen(false);
-  };
-
-  return (
-    <div className="relative">
-      <span className="mb-2 block text-xs font-black text-stone-400">{label}</span>
-      <button
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex w-full items-center justify-between gap-3 border px-4 py-3 text-left transition-colors ${
-          isOpen ? "border-[#e60000]" : "border-stone-200 hover:border-[#e60000]"
-        }`}
-      >
-        <span className="min-w-0">
-          <span className={`block truncate text-sm font-black ${selectedOption ? "text-[#25282b]" : "text-stone-400"}`}>
-            {selectedOption ? selectedOption.name : "매장을 선택해주세요"}
-          </span>
-          {selectedOption && (
-            <span className="mt-0.5 block truncate text-xs font-medium text-stone-400">{selectedOption.region}</span>
-          )}
-        </span>
-        <ChevronDown className={`h-4 w-4 shrink-0 text-stone-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
-      </button>
-
-      {isOpen && (
-        <div className="absolute left-0 right-0 z-30 mt-2 overflow-hidden border border-stone-200 bg-white shadow-[0_12px_32px_rgba(37,40,43,0.12)]">
-          <div className="border-b border-stone-100 bg-stone-50 p-3">
-            <div className="flex items-center border border-stone-200 bg-white px-3 py-2 focus-within:border-[#e60000]">
-              <Search className="mr-2 h-4 w-4 text-stone-400" />
-              <input
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="가게 이름을 입력하세요"
-                className="min-w-0 flex-1 bg-transparent text-sm font-bold text-[#25282b] outline-none placeholder:text-stone-400"
-                autoFocus
-              />
-              {shopOptionsQuery.isFetching && <Loader2 className="ml-2 h-4 w-4 animate-spin text-stone-400" />}
-            </div>
-          </div>
-
-          <div className="max-h-48 overflow-y-auto">
-            {options.map((option) => {
-              const isSelected = selectedOption?.id === option.id;
-              return (
-                <button
-                  key={`${label}-${option.id}`}
-                  type="button"
-                  onClick={() => handleSelect(option)}
-                  className={`block w-full border-b border-stone-100 px-4 py-3 text-left text-sm transition-colors last:border-b-0 ${
-                    isSelected ? "bg-red-50 text-[#e60000]" : "text-[#25282b] hover:bg-stone-50"
-                  }`}
-                >
-                  <span className="block truncate font-black">{option.name}</span>
-                  <span className="mt-0.5 block truncate text-xs font-medium text-stone-400">{option.region}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TasteResults({
-  shops,
-  selectedSoup,
-  selectedMood,
-  selectedPriority,
-}: {
-  shops: Shop[];
-  selectedSoup: string;
-  selectedMood: string;
-  selectedPriority: string;
-}) {
-  return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {shops.slice(0, 4).map((shop, index) => (
-        <article key={shop.id} className="overflow-hidden border border-stone-200 bg-white">
-          <div className="aspect-[16/9] bg-stone-100">
-            <img src={shop.imageUrl} alt="" className="h-full w-full object-cover" />
-          </div>
-          <div className="p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <p className="text-sm font-black text-[#e60000]">MATCH {buildMatchScore(shop, index)}%</p>
-                <h4 className="mt-1 truncate text-xl font-black text-[#25282b]">{shop.name}</h4>
-                <p className="mt-1 truncate text-sm font-bold text-[#7e7e7e]">{shop.location}</p>
-              </div>
-              <div className="flex items-center gap-1 text-sm font-black text-[#25282b]">
-                <Star className="h-4 w-4 fill-[#e60000] text-[#e60000]" />
-                {formatRating(shop.userRating || shop.editorRating)}
-              </div>
-            </div>
-            <p className="mt-4 line-clamp-2 min-h-12 text-sm font-medium leading-6 text-[#606060]">{shop.description}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {buildUniqueTags([selectedSoup, selectedMood, selectedPriority, shop.type]).map((tag) => (
-                <span key={`${shop.id}-${tag}`} className="border border-stone-200 px-2.5 py-1 text-xs font-bold text-[#25282b]">
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <Link
-              href={`/shop/${shop.id}`}
-              className="mt-5 inline-flex items-center gap-2 text-sm font-black text-[#e60000] transition-opacity hover:opacity-75"
-            >
-              매장 상세 보기
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </article>
-      ))}
-    </div>
-  );
-}
-
-function CompareResults({ primaryShop, secondaryShop }: { primaryShop: Shop; secondaryShop: Shop }) {
-  const rows = [
-    ["스타일", primaryShop.type, secondaryShop.type],
-    ["대표 메뉴", getPrimaryMenu(primaryShop), getPrimaryMenu(secondaryShop)],
-    ["평점", formatRating(primaryShop.userRating || primaryShop.editorRating), formatRating(secondaryShop.userRating || secondaryShop.editorRating)],
-    ["방문 지표", `${primaryShop.stats?.visit_count ?? 0}회`, `${secondaryShop.stats?.visit_count ?? 0}회`],
-    ["방문 포인트", primaryShop.description, secondaryShop.description],
-  ];
-
-  return (
-    <div className="overflow-x-auto border border-stone-200 bg-white">
-      <div className="min-w-[42rem]">
-        <div className="grid grid-cols-[0.72fr_1fr_1fr] bg-[#25282b] text-sm font-black text-white">
-          <div className="p-4">항목</div>
-          <div className="p-4">{primaryShop.name}</div>
-          <div className="p-4">{secondaryShop.name}</div>
-        </div>
-        {rows.map(([label, first, second]) => (
-          <div key={label} className="grid grid-cols-[0.72fr_1fr_1fr] border-t border-stone-100 text-sm">
-            <div className="bg-stone-50 p-4 font-black text-[#25282b]">{label}</div>
-            <div className="p-4 font-medium leading-6 text-[#606060]">{first}</div>
-            <div className="p-4 font-medium leading-6 text-[#606060]">{second}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SummaryResults({ shop, filter }: { shop: Shop; filter: string }) {
-  const items = [
-    { title: "장점", value: shop.description },
-    { title: "추천 메뉴", value: getPrimaryMenu(shop) },
-    { title: "방문 기준", value: `${shop.type} 계열을 찾고 있고 ${formatRating(shop.userRating || shop.editorRating)}점대 후보를 우선 볼 때 적합합니다.` },
-    { title: "체크 포인트", value: `${shop.location} 위치와 영업시간을 상세 페이지에서 확인한 뒤 방문하는 흐름이 좋습니다.` },
-  ];
-  const filteredItems = filter === "전체" ? items : items.filter((item) => item.title === filter || (filter === "주의점" && item.title === "체크 포인트"));
-
-  return (
-    <div className="border border-stone-200 bg-white">
-      <div className="border-b border-stone-200 p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-sm font-black text-[#e60000]">{shop.type}</p>
-            <h4 className="mt-1 text-2xl font-black text-[#25282b]">{shop.name}</h4>
-            <p className="mt-1 text-sm font-bold text-[#7e7e7e]">{shop.location}</p>
-          </div>
-          <Link href={`/shop/${shop.id}`} className="inline-flex items-center gap-2 bg-[#25282b] px-4 py-3 text-sm font-black text-white">
-            상세 보기
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </div>
-
-      <div className="grid gap-px bg-stone-200 md:grid-cols-2">
-        {filteredItems.map((item) => (
-          <article key={item.title} className="bg-white p-5">
-            <h5 className="font-black text-[#25282b]">{item.title}</h5>
-            <p className="mt-2 text-sm font-medium leading-6 text-[#606060]">{item.value}</p>
-          </article>
-        ))}
-      </div>
-    </div>
   );
 }
