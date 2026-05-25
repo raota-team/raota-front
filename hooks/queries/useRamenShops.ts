@@ -17,7 +17,7 @@ export const useRamenShops = (params: RamenShopsParams) =>
       params.district ?? "",
       params.keyword ?? "",
       params.tag ?? "",
-      params.sort ?? "LATEST",
+      params.sort ?? "POPULAR",
     ],
     queryFn: () => getRamenShops(params),
     placeholderData: (previousData) => previousData,
