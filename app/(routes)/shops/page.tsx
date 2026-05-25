@@ -10,11 +10,11 @@ const PAGE_SIZE = 12;
 const ALL_FILTER = "전체";
 const ALL_TYPE_FILTER = "전체";
 const SORT_OPTIONS = [
-  { value: "LATEST", label: "최신순" },
-  { value: "NAME", label: "이름순" },
   { value: "POPULAR", label: "인기순" },
+  { value: "NAME", label: "이름순" },
   { value: "VISITS", label: "방문순" },
 ] as const;
+const DEFAULT_SORT = "POPULAR";
 const REGIONS = [
   ALL_FILTER,
   "서울",
@@ -76,7 +76,7 @@ export default function ShopsListPage() {
   const [activeRegion, setActiveRegion] = useState(ALL_FILTER);
   const [activeDistrict, setActiveDistrict] = useState(ALL_FILTER);
   const [activeType, setActiveType] = useState(ALL_TYPE_FILTER);
-  const [sortBy, setSortBy] = useState<(typeof SORT_OPTIONS)[number]["value"]>("LATEST");
+  const [sortBy, setSortBy] = useState<(typeof SORT_OPTIONS)[number]["value"]>(DEFAULT_SORT);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [pageWindowStart, setPageWindowStart] = useState(0);
@@ -248,26 +248,26 @@ export default function ShopsListPage() {
                     <X className="h-3 w-3" />
                   </button>
                 )}
-                {sortBy !== "LATEST" && (
+                {sortBy !== DEFAULT_SORT && (
                   <button
-                    onClick={() => setSortBy("LATEST")}
+                    onClick={() => setSortBy(DEFAULT_SORT)}
                     className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
                   >
                     {SORT_OPTIONS.find((option) => option.value === sortBy)?.label ?? "정렬"}
                     <X className="h-3 w-3" />
                   </button>
                 )}
-                {activeRegion === ALL_FILTER && activeDistrict === ALL_FILTER && activeType === ALL_TYPE_FILTER && sortBy === "LATEST" && (
+                {activeRegion === ALL_FILTER && activeDistrict === ALL_FILTER && activeType === ALL_TYPE_FILTER && sortBy === DEFAULT_SORT && (
                   <p className="shrink-0 text-sm text-stone-400">아직 선택된 필터 조건이 없습니다.</p>
                 )}
               </div>
-              {(activeRegion !== ALL_FILTER || activeDistrict !== ALL_FILTER || activeType !== ALL_TYPE_FILTER || sortBy !== "LATEST") && (
+              {(activeRegion !== ALL_FILTER || activeDistrict !== ALL_FILTER || activeType !== ALL_TYPE_FILTER || sortBy !== DEFAULT_SORT) && (
                 <button
                   onClick={() => {
                     setActiveRegion(ALL_FILTER);
                     setActiveDistrict(ALL_FILTER);
                     setActiveType(ALL_TYPE_FILTER);
-                    setSortBy("LATEST");
+                    setSortBy(DEFAULT_SORT);
                   }}
                   className="shrink-0 whitespace-nowrap text-[11px] font-black uppercase tracking-[0.12em] text-stone-400 transition-colors hover:text-[#e60000]"
                 >
