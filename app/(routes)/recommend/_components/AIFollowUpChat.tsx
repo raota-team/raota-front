@@ -12,11 +12,13 @@ export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesPanelRef = useRef<HTMLDivElement>(null);
   const initialMount = useRef(true);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const panel = messagesPanelRef.current;
+    if (!panel) return;
+    panel.scrollTo({ top: panel.scrollHeight, behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
   };
 
   return (
-    <div className="mt-8 border border-stone-200 bg-white">
+    <motion.div layout className="mt-8 border border-stone-200 bg-white">
       <div className="flex items-center gap-2 border-b border-stone-200 bg-stone-50 p-4">
         <Sparkles className="h-4 w-4 text-[#e60000]" />
         <h3 className="text-sm font-bold text-[#25282b]">
@@ -63,7 +65,11 @@ export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
         </h3>
       </div>
 
-      <div className="max-h-60 overflow-y-auto p-4 flex flex-col gap-4 bg-[#f7f7f7]">
+      <motion.div
+        layout
+        ref={messagesPanelRef}
+        className="flex max-h-60 min-h-[7rem] flex-col gap-4 overflow-y-auto bg-[#f7f7f7] p-4 scroll-smooth"
+      >
         {messages.length === 0 && (
           <div className="text-center text-sm text-[#7e7e7e] py-4">
             추천 결과에 대해 궁금한 점을 질문해보세요.
@@ -76,6 +82,7 @@ export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
           {messages.map((msg) => (
             <motion.div
               key={msg.id}
+              layout
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -93,6 +100,7 @@ export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
           ))}
           {isTyping && (
             <motion.div
+              layout
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -106,8 +114,7 @@ export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
             </motion.div>
           )}
         </AnimatePresence>
-        <div ref={messagesEndRef} />
-      </div>
+      </motion.div>
 
       <div className="p-3 border-t border-stone-200 bg-white">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
@@ -128,6 +135,6 @@ export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
           </button>
         </form>
       </div>
-    </div>
+    </motion.div>
   );
 }

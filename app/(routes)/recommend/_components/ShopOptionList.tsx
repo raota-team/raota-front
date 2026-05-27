@@ -16,10 +16,12 @@ export function ShopOptionList({
   label,
   selectedOption,
   onSelect,
+  disabledOptionIds = [],
 }: {
   label: string;
   selectedOption: ShopOption | null;
   onSelect: (option: ShopOption) => void;
+  disabledOptionIds?: number[];
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,7 +41,10 @@ export function ShopOptionList({
     return items.map(normalizeShopOption);
   }, [shopOptionsQuery.data]);
 
+  const disabledOptionIdSet = useMemo(() => new Set(disabledOptionIds), [disabledOptionIds]);
+
   const handleSelect = (option: ShopOption) => {
+    if (disabledOptionIdSet.has(option.id) && selectedOption?.id !== option.id) return;
     onSelect(option);
     setIsOpen(false);
   };
@@ -99,19 +104,28 @@ export function ShopOptionList({
             <div className="max-h-60 overflow-y-auto overscroll-contain" role="listbox">
               {options.map((option) => {
                 const isSelected = selectedOption?.id === option.id;
+                const isDisabled = disabledOptionIdSet.has(option.id) && !isSelected;
                 return (
                   <button
                     key={`${label}-${option.id}`}
                     type="button"
                     role="option"
                     aria-selected={isSelected}
+                    aria-disabled={isDisabled}
+                    disabled={isDisabled}
                     onClick={() => handleSelect(option)}
                     className={`block w-full px-4 py-4 text-left transition-colors ${
-                      isSelected ? "bg-red-50 text-[#e60000]" : "text-[#25282b] hover:bg-stone-50"
+                      isDisabled
+                        ? "cursor-not-allowed bg-stone-50 text-[#bebebe]"
+                        : isSelected
+                          ? "bg-red-50 text-[#e60000]"
+                          : "text-[#25282b] hover:bg-stone-50"
                     }`}
                   >
                     <span className="block truncate font-bold">{option.name}</span>
-                    <span className="mt-0.5 block truncate text-xs font-medium text-[#7e7e7e]">{option.region}</span>
+                    <span className={`mt-0.5 block truncate text-xs font-medium ${isDisabled ? "text-[#bebebe]" : "text-[#7e7e7e]"}`}>
+                      {isDisabled ? "이미 선택한 매장" : option.region}
+                    </span>
                   </button>
                 );
               })}
