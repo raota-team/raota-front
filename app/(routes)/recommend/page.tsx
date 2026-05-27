@@ -147,6 +147,20 @@ export default function RecommendPage() {
     });
   };
 
+  const handleCompareShopASelect = (option: ShopOption) => {
+    setCompareShopA(option);
+    if (compareShopB?.id === option.id) {
+      setCompareShopB(null);
+    }
+  };
+
+  const handleCompareShopBSelect = (option: ShopOption) => {
+    setCompareShopB(option);
+    if (compareShopA?.id === option.id) {
+      setCompareShopA(null);
+    }
+  };
+
   const handleReset = () => {
     if (activeMode === "taste") {
       setSelectedSoup(null);
@@ -299,7 +313,7 @@ export default function RecommendPage() {
         <div className="grid gap-6 lg:grid-cols-[21rem_minmax(0,1fr)] lg:items-start lg:gap-6">
           
           {/* Sidebar - Selection Controls */}
-          <aside className={`border border-stone-200 bg-white p-5 lg:self-start lg:p-6 ${activeMode !== "compare" ? "lg:sticky lg:top-36" : ""}`}>
+          <aside className="border border-stone-200 bg-white p-5 lg:sticky lg:top-36 lg:self-start lg:p-6">
             <div className="border-b border-stone-200 pb-4">
               <p className="text-xs font-extrabold tracking-[0.18em] text-[#e60000]">{activePrompt.label}</p>
               <h2 className="mt-2 text-xl font-bold leading-tight text-[#25282b] sm:text-2xl lg:text-xl">{activePrompt.intro}</h2>
@@ -351,13 +365,23 @@ export default function RecommendPage() {
                   {activeMode === "compare" && (
                     <QuestionCard title="비교할 매장을 선택해주세요.">
                       <div className="space-y-6">
-                        <ShopOptionList label="비교 A" selectedOption={compareShopA} onSelect={setCompareShopA} />
+                        <ShopOptionList
+                          label="비교 A"
+                          selectedOption={compareShopA}
+                          onSelect={handleCompareShopASelect}
+                          disabledOptionIds={compareShopB ? [compareShopB.id] : []}
+                        />
                         <div className="flex items-center justify-center">
                           <div className="h-px flex-1 bg-[#f2f2f2]" />
                           <span className="px-3 text-[10px] font-bold text-[#bebebe]">비교</span>
                           <div className="h-px flex-1 bg-[#f2f2f2]" />
                         </div>
-                        <ShopOptionList label="비교 B" selectedOption={compareShopB} onSelect={setCompareShopB} />
+                        <ShopOptionList
+                          label="비교 B"
+                          selectedOption={compareShopB}
+                          onSelect={handleCompareShopBSelect}
+                          disabledOptionIds={compareShopA ? [compareShopA.id] : []}
+                        />
                         <PromptField label="추가로 비교하고 싶은 점" value={compareFocus} onChange={setCompareFocus} placeholder="예: 웨이팅 적은 곳, 혼밥하기 좋은 곳" examples={compareFocusExamples} />
                       </div>
                     </QuestionCard>
