@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LogIn } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 const numberFormatter = new Intl.NumberFormat('ko-KR');
 
@@ -47,6 +48,8 @@ function useCountUp(target: number, duration = 1200, delay = 350) {
 }
 
 export default function HomeHeroActions() {
+  const { isLoggedIn, isAuthChecking } = useApp();
+  const startHref = isLoggedIn ? '/shops' : '/login';
   const stats = [
     { value: useCountUp(150), label: '등록된 라멘집' },
     { value: useCountUp(4213, 1400, 450), label: '오늘의 한 그릇 추천' },
@@ -68,7 +71,11 @@ export default function HomeHeroActions() {
       </div>
 
       <Link
-        href="/login"
+        href={isAuthChecking ? '#' : startHref}
+        aria-disabled={isAuthChecking}
+        onClick={(event) => {
+          if (isAuthChecking) event.preventDefault();
+        }}
         className="vodafone-button-pill w-56 px-6 py-4 transition-transform hover:-translate-y-0.5 active:translate-y-0"
       >
         <span className="inline-flex items-center gap-2">

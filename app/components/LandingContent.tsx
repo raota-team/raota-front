@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import HomeHeroActions from './HomeHeroActions';
 import { Do_Hyeon } from 'next/font/google';
-import { Sparkles, Scale, MessageSquare, MessageCircleMore, Camera, ChevronLeft, ChevronRight, LogIn, Users, UtensilsCrossed } from 'lucide-react';
+import { Sparkles, Scale, MessageSquare, MessageCircleMore, Camera, ChevronLeft, ChevronRight, Users, UtensilsCrossed } from 'lucide-react';
 
 const doHyeon = Do_Hyeon({
   weight: '400',
@@ -322,10 +322,6 @@ export default function LandingContent() {
             취향에 맞는 한 그릇을 빠르게 골라보세요.
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <a href="/login" className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#e60000] px-8 text-base font-bold text-white transition-opacity hover:opacity-90">
-              시작하기
-              <LogIn className="h-5 w-5" />
-            </a>
             <a href="/shops" className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-8 text-base font-bold text-white transition-colors hover:bg-white/20">
               라멘집 보러가기
               <UtensilsCrossed className="h-5 w-5" />
