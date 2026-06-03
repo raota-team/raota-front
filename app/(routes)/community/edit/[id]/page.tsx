@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Image as ImageIcon, X, Store, ChevronDown, Search, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, X, Store, ChevronDown, Loader2 } from 'lucide-react';
 import { useRamenShops } from '@/hooks/queries/useRamenShops';
 import RichTextEditor from '@/app/components/RichTextEditor';
 import { useApp } from '@/app/context/AppContext';
@@ -93,6 +93,23 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
     return await uploadFileToStorage(ticket, compressedFile);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('이미지 크기는 10MB 이하여야 합니다.', 'error');
+      return;
+    }
+
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImagePreview(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) {
@@ -136,14 +153,14 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
   return (
     <div className="max-w-2xl mx-auto pb-12 px-4 sm:px-0">
       <div className="mb-6 flex items-center justify-between">
-        <button onClick={() => router.back()} className="flex items-center text-stone-500 hover:text-red-500 transition-colors text-sm font-bold uppercase tracking-wider">
+        <button onClick={() => router.back()} className="flex items-center text-sm font-bold uppercase tracking-wider text-[#7e7e7e] transition-colors hover:text-[#e60000]">
           <ArrowLeft className="w-4 h-4 mr-2" /> 취소
         </button>
-        <h1 className="text-xl font-black text-stone-900">글 수정하기</h1>
+        <h1 className="text-xl font-black text-[#25282b]">글 수정하기</h1>
         <div className="w-16"></div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm">
+      <form onSubmit={handleSubmit} className="overflow-hidden rounded-sm border border-stone-200 bg-white">
         <div className="p-6 border-b border-stone-100">
           <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">카테고리</label>
           <div className="flex flex-wrap gap-2">
@@ -152,7 +169,7 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
                 key={cat.id} 
                 type="button" 
                 onClick={() => setCategory(cat.id)} 
-                className={`px-4 py-2.5 rounded-lg border-2 text-sm font-semibold transition-all flex items-center gap-1.5 ${category === cat.id ? 'bg-stone-900 border-stone-900 text-white' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+                className={`flex items-center gap-1.5 rounded-sm border px-4 py-2.5 text-sm font-bold transition-colors ${category === cat.id ? 'border-[#e60000] bg-[#e60000] text-white' : 'border-stone-200 bg-white text-stone-600 hover:border-[#e60000]'}`}
               >
                 <span>{cat.icon}</span>
                 {cat.name}
@@ -165,21 +182,21 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
           <div className="p-6 border-b border-stone-100">
             <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">라멘집 선택</label>
             <div className="relative" ref={dropdownRef}>
-              <button type="button" onClick={() => setIsShopDropdownOpen(!isShopDropdownOpen)} className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg text-sm font-medium text-stone-700 hover:border-stone-300 transition-colors">
+              <button type="button" onClick={() => setIsShopDropdownOpen(!isShopDropdownOpen)} className="flex w-full items-center justify-between gap-2 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000]">
                 <div className="flex items-center gap-2">
-                  <Store className="w-4 h-4 text-stone-400" />
+                  <Store className={`w-4 h-4 ${selectedShop ? 'text-[#e60000]' : 'text-stone-400'}`} />
                   <span>{selectedShop ? selectedShop.name : '라멘집을 선택하세요'}</span>
                 </div>
                 <ChevronDown className="w-4 h-4 text-stone-400" />
               </button>
               {isShopDropdownOpen && (
-                <div className="absolute left-0 right-0 mt-2 bg-white border border-stone-200 rounded-lg shadow-xl z-20 overflow-hidden flex flex-col max-h-64">
+                <div className="absolute left-0 right-0 z-20 mt-2 flex max-h-64 flex-col overflow-hidden rounded-sm border border-stone-200 bg-white">
                    <div className="p-2 border-b border-stone-100 bg-stone-50">
-                    <input type="text" placeholder="라멘집 검색..." value={shopSearchQuery} onChange={(e) => setShopSearchQuery(e.target.value)} className="w-full px-3 py-1.5 text-xs border border-stone-200 rounded-md outline-none" autoFocus />
+                    <input type="text" placeholder="라멘집 검색..." value={shopSearchQuery} onChange={(e) => setShopSearchQuery(e.target.value)} className="w-full rounded-sm border border-stone-200 px-3 py-1.5 text-xs outline-none focus:border-[#e60000]" autoFocus />
                   </div>
                   <div className="overflow-y-auto">
                     {shops?.filter(shop => !shopSearchQuery || shop.name.includes(shopSearchQuery)).map(shop => (
-                      <button key={shop.id} type="button" onClick={() => { setSelectedShopId(shop.id); setIsShopDropdownOpen(false); }} className="w-full px-4 py-3 text-left text-sm hover:bg-stone-50 border-t border-stone-100">
+                      <button key={shop.id} type="button" onClick={() => { setSelectedShopId(shop.id); setIsShopDropdownOpen(false); }} className={`w-full border-t border-stone-100 px-4 py-3 text-left text-sm hover:bg-stone-50 ${selectedShopId === shop.id ? 'font-bold text-[#e60000]' : 'text-stone-700'}`}>
                         <div className="font-medium">{shop.name}</div>
                       </button>
                     ))}
@@ -192,7 +209,7 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
 
         <div className="p-6 border-b border-stone-100">
           <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">제목</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full px-4 py-3 border border-stone-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-lg font-bold" />
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full rounded-sm border border-stone-200 px-4 py-3 text-lg font-bold text-[#25282b] outline-none focus:border-[#e60000]" />
         </div>
 
         <div className="p-6 border-b border-stone-100">
@@ -200,8 +217,34 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
           <RichTextEditor content={content} onChange={setContent} onImageUpload={handleEditorImageUpload} />
         </div>
 
+        <div className="p-6 border-b border-stone-100">
+          <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">대표 이미지 (선택)</label>
+          {imagePreview ? (
+            <div className="relative inline-block mt-2">
+              <img src={imagePreview} alt="Preview" className="h-48 max-w-full rounded-md border border-stone-200 object-cover" />
+              <button
+                type="button"
+                onClick={() => {
+                  setImagePreview(null);
+                  setSelectedFile(null);
+                  setExistingImageUrl(null);
+                }}
+                className="absolute -right-2 -top-2 rounded-full bg-[#25282b] p-1 text-white transition-opacity hover:opacity-90"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <label className="group mt-2 flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-sm border border-dashed border-stone-300 transition-colors hover:border-[#e60000]">
+              <ImageIcon className="mb-2 h-8 w-8 text-stone-400 transition-colors group-hover:text-[#e60000]" />
+              <span className="text-sm text-stone-500">클릭하여 이미지 업로드</span>
+              <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+            </label>
+          )}
+        </div>
+
         <div className="p-6 bg-stone-50">
-          <button type="submit" disabled={isSubmitting} className="w-full py-4 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg flex items-center justify-center space-x-2 disabled:opacity-50">
+          <button type="submit" disabled={isSubmitting} className="flex w-full items-center justify-center space-x-2 rounded-sm bg-[#e60000] py-4 font-bold text-white transition-opacity hover:opacity-90 active:opacity-90 disabled:opacity-50">
             {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>수정 완료</span>}
           </button>
         </div>
