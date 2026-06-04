@@ -113,11 +113,11 @@ export function AIFollowUpChat({
   };
 
   return (
-    <motion.div layout className="mt-8 border border-stone-200 bg-white">
-      <div className="flex items-center gap-2 border-b border-stone-200 bg-stone-50 p-4">
-        <Sparkles className="h-4 w-4 text-[#e60000]" />
-        <h3 className="text-sm font-bold text-[#25282b]">
-          AI에게 더 물어보기 <span className="text-[#7e7e7e] font-medium ml-1">({contextLabel})</span>
+    <motion.div layout className="mt-8 min-w-0 border border-stone-200 bg-white">
+      <div className="flex min-w-0 items-center gap-2 border-b border-stone-200 bg-stone-50 p-4">
+        <Sparkles className="h-4 w-4 shrink-0 text-[#e60000]" />
+        <h3 className="min-w-0 break-words text-sm font-bold text-[#25282b]">
+          AI에게 더 물어보기 <span className="ml-1 font-medium text-[#7e7e7e]">({contextLabel})</span>
         </h3>
       </div>
 
@@ -144,7 +144,7 @@ export function AIFollowUpChat({
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] rounded-[6px] px-4 py-2.5 text-sm leading-relaxed ${msg.role === "user"
+                className={`max-w-[85%] break-words rounded-[6px] px-4 py-2.5 text-sm leading-relaxed ${msg.role === "user"
                   ? "bg-[#25282b] text-white"
                   : "bg-white border border-stone-200 text-[#25282b]"
                   }`}
@@ -172,13 +172,13 @@ export function AIFollowUpChat({
       </motion.div>
 
       <div className="p-3 border-t border-stone-200 bg-white">
-        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+        <form onSubmit={handleSubmit} className="flex min-w-0 items-center gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="궁금한 점을 자유롭게 입력해보세요."
-            className="flex-1 rounded-[2px] border border-[#333333] bg-white px-[10px] py-[12px] text-[16px] font-normal text-[#333333] outline-none transition-colors focus:border-[#e60000]"
+            className="min-w-0 flex-1 rounded-[2px] border border-[#333333] bg-white px-[10px] py-[12px] text-[16px] font-normal text-[#333333] outline-none transition-colors focus:border-[#e60000]"
             disabled={isTyping}
           />
           <button

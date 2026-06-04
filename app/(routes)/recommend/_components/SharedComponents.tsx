@@ -69,9 +69,9 @@ export function PromptField({
 
 export function FocusCard({ label, title, body }: { label: string; title: string; body: string }) {
   return (
-    <div className="border border-stone-200 bg-[#f7f7f7] p-5 sm:p-6">
+    <div className="min-w-0 border border-stone-200 bg-[#f7f7f7] p-5 sm:p-6">
       <p className="text-[12px] font-extrabold tracking-[0.18em] text-[#e60000]">{label}</p>
-      <h5 className="mt-2 text-xl font-extrabold text-[#25282b]">{title}</h5>
+      <h5 className="mt-2 break-words text-xl font-extrabold text-[#25282b]">{title}</h5>
       <p className="mt-2 text-sm font-medium leading-relaxed text-[#7e7e7e] sm:text-base">
         {body}
       </p>
@@ -87,8 +87,8 @@ export function CompareShopCard({ shop, label, accent }: { shop: Shop; label: st
   "대표 메뉴 정보 없음";
 
   return (
-    <article className="bg-white p-4 sm:p-6 flex flex-col h-full">
-      <div className="flex items-center justify-between">
+    <article className="flex h-full min-w-0 flex-col bg-white p-4 sm:p-6">
+      <div className="flex min-w-0 items-center justify-between">
         <span className="flex h-8 w-8 items-center justify-center rounded-sm text-sm font-black text-white" style={{ backgroundColor: accent }}>
           {label}
         </span>
@@ -116,11 +116,11 @@ export function CompareShopCard({ shop, label, accent }: { shop: Shop; label: st
         <Image src={shop.imageUrl} alt={shop.name} fill className="object-cover" sizes="(max-width: 1024px) 50vw, 33vw" />
       </div>
       <div className="mt-4 space-y-2 sm:mt-5 sm:space-y-3 flex-1">
-        <div className="flex items-center gap-3 text-sm font-medium text-[#7e7e7e]">
+        <div className="flex min-w-0 items-center gap-3 text-sm font-medium text-[#7e7e7e]">
           <UtensilsCrossed className="h-4 w-4 text-[#e60000]" />
           <span className="truncate">{primaryMenu}</span>
         </div>
-        <div className="flex items-center gap-3 text-sm font-medium text-[#7e7e7e]">
+        <div className="flex min-w-0 items-center gap-3 text-sm font-medium text-[#7e7e7e]">
           <MapPin className="h-4 w-4 text-[#e60000]" />
           <span className="truncate">{shop.location}</span>
         </div>

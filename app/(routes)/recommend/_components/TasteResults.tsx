@@ -60,14 +60,14 @@ function ShopCard({ shop, index, selectedTags }: { shop: TasteShop; index: numbe
   };
 
   return (
-    <Link href={`/shop/${shop.id}`} className="group relative flex min-h-32 overflow-hidden rounded-[6px] bg-white border border-stone-200">
-      <div className="relative min-h-32 w-32 shrink-0 overflow-hidden rounded-[6px]">
+    <Link href={`/shop/${shop.id}`} className="group relative flex min-h-32 w-full min-w-0 overflow-hidden rounded-[6px] bg-white border border-stone-200">
+      <div className="relative min-h-32 w-28 shrink-0 overflow-hidden rounded-[6px]">
         <Image src={shop.imageUrl} alt={shop.name} fill className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" sizes="128px" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
         <div className="min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex min-w-0 items-center gap-2">
               <span className="inline-block rounded-sm border border-[#e60000] px-2 py-0.5 text-[10px] font-semibold text-[#25282b] shrink-0">
                 {shop.type}
               </span>

@@ -1,6 +1,5 @@
 "use client";
 
-import Loading from "@/app/loading";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowRight, RotateCcw } from "lucide-react";
@@ -208,6 +207,22 @@ export default function RecommendPage() {
     setTasteStep((prev) => Math.max(prev - 1, 0));
   };
 
+  const scrollToRecommendResult = () => {
+    window.requestAnimationFrame(() => {
+      const isDesktop = window.innerWidth >= 1024;
+      const targetElement = isDesktop ? contentRef.current : resultRef.current;
+
+      if (!targetElement) return;
+
+      const headerHeight = window.innerWidth >= 768 ? 64 : 56;
+      const currentTabsHeight = tabsRef.current?.offsetHeight || tabsHeight || 58;
+      const fixedOffset = headerHeight + currentTabsHeight + (isDesktop ? 0 : 24);
+      const targetTop = targetElement.getBoundingClientRect().top + window.scrollY - fixedOffset;
+
+      window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
+    });
+  };
+
   const handleGenerateClick = async () => {
     const isCurrentStepReady =
       activeMode === "taste"
@@ -239,11 +254,13 @@ export default function RecommendPage() {
         priority: selectedPriority,
         focus: tasteFocus.trim(),
       });
+      scrollToRecommendResult();
     }
 
     if (activeMode === "compare" && compareShopA && compareShopB) {
       try {
         setIsCompareLoading(true);
+        scrollToRecommendResult();
 
         const result: any = await compareShops({
           shopAId: compareShopA.id,
@@ -275,6 +292,7 @@ export default function RecommendPage() {
     if (activeMode === "summary" && summaryShop) {
       try {
         setIsSummaryLoading(true);
+        scrollToRecommendResult();
 
         const result = await getReviewSummary({
           shopId: summaryShop.id,
@@ -298,21 +316,6 @@ export default function RecommendPage() {
         setIsSummaryLoading(false);
       }
     }
-
-    window.requestAnimationFrame(() => {
-      const isDesktop = window.innerWidth >= 1024;
-      const targetElement = isDesktop ? contentRef.current : resultRef.current;
-
-      if (!targetElement) return;
-
-      const headerHeight = window.innerWidth >= 768 ? 64 : 56;
-      const currentTabsHeight = tabsRef.current?.offsetHeight || tabsHeight || 58;
-
-      const fixedOffset = headerHeight + currentTabsHeight + (isDesktop ? 0 : 24);
-
-      const targetTop = targetElement.getBoundingClientRect().top + window.scrollY - fixedOffset;
-      window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
-    });
   };
 
   return (
@@ -384,7 +387,7 @@ export default function RecommendPage() {
 
       {/* Main Content */}
       <section ref={contentRef} id="recommend-content" className="mx-auto min-h-[calc(100svh-12rem)] max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:min-h-[48rem] lg:px-8 lg:py-10">
-        <div className="grid gap-6 lg:grid-cols-[21rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-[21rem_minmax(0,1fr)] lg:items-start lg:gap-6">
 
           {/* Sidebar - Selection Controls */}
           <aside className="border border-stone-200 bg-white p-5 lg:sticky lg:top-36 lg:self-start lg:p-6">
@@ -523,7 +526,7 @@ export default function RecommendPage() {
           </aside>
 
           {/* Results Area */}
-          <div ref={resultRef} className="scroll-mt-32">
+          <div ref={resultRef} className="min-w-0 scroll-mt-32">
             <div className="mb-6 border-b border-stone-200 pb-4">
               <h2 className="vodafone-display text-3xl text-[#25282b] sm:text-4xl">
                 추천 결과<span className="text-[#e60000]">.</span>
@@ -531,10 +534,10 @@ export default function RecommendPage() {
               <p className="mt-2 text-sm font-medium leading-6 text-[#7e7e7e]">{activePrompt.resultHelper}</p>
             </div>
 
-            <div className="min-h-[34rem] lg:min-h-[40rem]">
+            <div className="min-h-[34rem] min-w-0 lg:min-h-[40rem]">
               {(activeMode === "compare" && isCompareLoading) ||
                 (activeMode === "summary" && isSummaryLoading) ? (
-                <Loading />
+                <RecommendResultLoading />
               ) : (
                 <>
                   {!shouldShowResults && <RecommendEmptyState mode={activeMode} />}
@@ -572,5 +575,43 @@ export default function RecommendPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+function RecommendResultLoading() {
+  return (
+    <div className="flex min-h-[24rem] flex-col items-center justify-center border border-stone-200 bg-stone-50 px-6 py-12 text-center">
+      <div className="relative mb-6">
+        <div className="absolute inset-0 rounded-full bg-[#e60000]/10 blur-xl" />
+        <img src="/logo.png" alt="RAOTA Loading" className="relative h-14 w-14 animate-bounce-slow object-contain" />
+      </div>
+      <h3 className="text-lg font-black text-[#25282b]">
+        추천 결과를 정리하고 있어요<span className="text-[#e60000]">.</span>
+      </h3>
+      <div className="mt-4 h-1 w-40 overflow-hidden rounded-full bg-stone-200">
+        <div className="h-full origin-left animate-loading-bar rounded-full bg-[#e60000]" />
+      </div>
+      <p className="mt-4 text-xs font-black uppercase tracking-[0.18em] text-stone-400">
+        Reading reviews
+      </p>
+
+      <style jsx>{`
+        @keyframes loading-bar {
+          0% { transform: scaleX(0); }
+          50% { transform: scaleX(0.75); }
+          100% { transform: scaleX(1); opacity: 0; }
+        }
+        .animate-loading-bar {
+          animation: loading-bar 2s infinite ease-in-out;
+        }
+        .animate-bounce-slow {
+          animation: bounce 2s infinite ease-in-out;
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+      `}</style>
+    </div>
   );
 }

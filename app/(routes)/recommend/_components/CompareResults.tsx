@@ -157,7 +157,7 @@ export function CompareResults({
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="min-w-0 space-y-6 sm:space-y-8">
       {focus && (
         <FocusCard
           label="추가 비교 관점"
@@ -167,14 +167,14 @@ export function CompareResults({
       )}
 
       {/* Visual Comparison */}
-      <div className="grid gap-px overflow-hidden border border-stone-200 bg-stone-200 lg:grid-cols-2">
+      <div className="grid min-w-0 gap-px overflow-hidden border border-stone-200 bg-stone-200 lg:grid-cols-2">
         <CompareShopCard shop={primaryShop} label="A" accent="#e60000" />
         <CompareShopCard shop={secondaryShop} label="B" accent="#25282b" />
       </div>
 
       {/* Radar Chart Section */}
-      <div className="border border-stone-200 bg-white p-5 lg:p-8">
-        <div className="grid gap-6 lg:grid-cols-[1fr_18rem] lg:items-center">
+      <div className="min-w-0 border border-stone-200 bg-white p-5 lg:p-8">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-[1fr_18rem] lg:items-center">
           <div className="flex justify-center">
             <svg viewBox="0 0 160 160" className="h-52 w-52 sm:h-72 sm:w-72 lg:h-80 lg:w-80" aria-label="매장 비교 레이더 차트">
               {[24, 42, 60, 78, 96].map((radius) => {
@@ -205,7 +205,7 @@ export function CompareResults({
             </svg>
           </div>
 
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <div className="space-y-4">
               <h5 className="text-xs font-extrabold tracking-[0.2em] text-[#e60000]">비교 지표</h5>
               <div className="space-y-3">
@@ -226,9 +226,9 @@ export function CompareResults({
         <h5 className="text-sm font-extrabold tracking-[0.15em] text-[#25282b]">상세 비교</h5>
         <div className="grid gap-4 sm:grid-cols-2">
           {compareNarratives.map((item) => (
-            <article key={item.title} className="border border-stone-200 bg-white p-5">
+            <article key={item.title} className="min-w-0 border border-stone-200 bg-white p-5">
               <p className="text-[12px] font-extrabold uppercase tracking-widest text-[#e60000]">{item.title}</p>
-              <p className="mt-3 text-sm font-medium leading-relaxed text-[#25282b]">{item.body}</p>
+              <p className="mt-3 break-words text-sm font-medium leading-relaxed text-[#25282b]">{item.body}</p>
             </article>
           ))}
         </div>

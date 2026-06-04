@@ -82,6 +82,17 @@ const buildReviewSamples = (shop: Shop) => [
   },
 ];
 
+const isReadableReviewName = (value?: string) => {
+  const name = value?.trim();
+  if (!name) return false;
+  if (/^\d+$/.test(name)) return false;
+  if (/^[0-9a-f-]{12,}$/i.test(name)) return false;
+  return name.length <= 18;
+};
+
+const getReviewDisplayName = (name: string | undefined, index: number) =>
+  isReadableReviewName(name) ? name!.trim() : `대표 리뷰 ${index + 1}`;
+
 export function SummaryResults({
   shop,
   focus,
@@ -152,20 +163,20 @@ export function SummaryResults({
     <div className="space-y-6 sm:space-y-8">
       {/* Header Info */}
       <div className="relative overflow-hidden bg-[#25282b] p-6 text-white lg:p-10">
-        <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div>
+        <div className="relative z-10 flex min-w-0 flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
             <div className="mb-4 inline-flex rounded-sm border border-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white/80">
               {shop.type}
             </div>
-            <h4 className="text-3xl font-extrabold tracking-tight sm:text-5xl">{shop.name}</h4>
-            <div className="mt-4 flex items-center gap-4 text-[#7e7e7e]">
-              <div className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4" />
-                <span className="text-sm font-bold">{shop.location}</span>
+            <h4 className="break-words text-3xl font-extrabold tracking-tight sm:text-5xl">{shop.name}</h4>
+            <div className="mt-4 flex min-w-0 items-center gap-4 text-[#7e7e7e]">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <MapPin className="h-4 w-4 shrink-0" />
+                <span className="min-w-0 break-words text-sm font-bold">{shop.location}</span>
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex gap-2">
               <button
                 onClick={() => setIsBookmarked(!isBookmarked)}
@@ -186,7 +197,7 @@ export function SummaryResults({
             </div>
             <Link
               href={`/shop/${shop.id}`}
-              className="vodafone-button-pill whitespace-nowrap shrink-0"
+              className="vodafone-button-pill w-full justify-center whitespace-nowrap sm:w-auto sm:shrink-0"
             >
               매장 상세 정보
               <ArrowRight className="h-4 w-4 shrink-0" />
@@ -211,12 +222,12 @@ export function SummaryResults({
         {items.map((item) => {
           const Icon = item.icon;
           return (
-            <article key={item.title} className={`flex gap-4 border border-stone-200 bg-white p-5 sm:gap-6 sm:p-6`}>
+            <article key={item.title} className="flex min-w-0 gap-4 border border-stone-200 bg-white p-5 sm:gap-6 sm:p-6">
               <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${item.iconWrap}`}>
                 <Icon className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <h5 className="text-xl font-extrabold text-[#25282b]">{item.title}</h5>
+                <h5 className="break-words text-xl font-extrabold text-[#25282b]">{item.title}</h5>
                 <p className="mt-3 text-sm font-medium leading-relaxed text-[#7e7e7e] sm:text-base">
                   {item.body}
                 </p>
@@ -233,27 +244,32 @@ export function SummaryResults({
           <span className="text-xs font-bold text-[#bebebe]">대표 리뷰 3개</span>
         </div>
         <div className="grid gap-4">
-          {sampleReviews.map((review) => (
-            <article key={review.name} className="border border-stone-200 bg-white p-5">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f2f2f2] text-xs font-bold text-[#25282b]">
-                    {review.name.slice(0, 1)}
+          {sampleReviews.map((review, index) => {
+            const displayName = getReviewDisplayName(review.name, index);
+            const rating = Math.max(0, Math.min(5, Number(review.rating) || 0));
+
+            return (
+              <article key={`${displayName}-${index}`} className="min-w-0 border border-stone-200 bg-white p-5">
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f2f2f2] text-xs font-bold text-[#25282b]">
+                      {displayName.slice(0, 1)}
+                    </div>
+                    <span className="min-w-0 truncate font-bold text-[#25282b]">{displayName}</span>
                   </div>
-                  <span className="font-bold text-[#25282b]">{review.name}</span>
+                  <div className="flex shrink-0 gap-0.5">
+                    {Array.from({ length: 5 }).map((_, starIndex) => (
+                      <Star
+                        key={starIndex}
+                        className={`h-3 w-3 ${starIndex < rating ? "fill-[#e60000] text-[#e60000]" : "fill-stone-200 text-stone-200"}`}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, index) => (
-                    <Star
-                      key={index}
-                      className={`h-3 w-3 ${index < review.rating ? "fill-[#e60000] text-[#e60000]" : "fill-stone-200 text-stone-200"}`}
-                    />
-                  ))}
-                </div>
-              </div>
-              <p className="mt-4 text-sm font-medium leading-relaxed text-[#7e7e7e]">{review.text}</p>
-            </article>
-          ))}
+                <p className="mt-4 break-words text-sm font-medium leading-relaxed text-[#7e7e7e]">{review.text}</p>
+              </article>
+            );
+          })}
         </div>
       </div>
 
