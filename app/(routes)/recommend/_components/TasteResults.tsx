@@ -8,16 +8,6 @@ type TasteShop = Shop & {
 };
 import { FocusCard } from "./SharedComponents";
 
-const buildMatchScore = (shop: TasteShop, index: number) => {
-  if (typeof shop.matchScore === "number") {
-    return shop.matchScore;
-  }
-
-  const ratingScore = Math.round((shop.userRating || shop.editorRating || 4) * 10);
-  const visitBonus = Math.min(Math.floor((shop.stats?.visit_count || 0) / 20), 8);
-  return Math.min(96, Math.max(78, ratingScore + visitBonus - index * 3));
-};
-
 const buildUniqueTags = (tags: Array<string | undefined>) =>
   Array.from(new Set(tags.filter(Boolean))).slice(0, 4) as string[];
 
@@ -73,9 +63,6 @@ function ShopCard({ shop, index, selectedTags }: { shop: TasteShop; index: numbe
     <Link href={`/shop/${shop.id}`} className="group relative flex min-h-32 overflow-hidden rounded-[6px] bg-white border border-stone-200">
       <div className="relative min-h-32 w-32 shrink-0 overflow-hidden rounded-[6px]">
         <Image src={shop.imageUrl} alt={shop.name} fill className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" sizes="128px" />
-        <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-sm bg-[#e60000] px-2 py-0.5 text-[10px] font-bold text-white z-10">
-          {buildMatchScore(shop, index)}%
-        </div>
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
         <div className="min-w-0">
@@ -119,10 +106,6 @@ function ShopCardDesktop({ shop, index, selectedTags }: { shop: TasteShop; index
     <article className="group overflow-hidden bg-white relative transition-colors">
       <div className="relative aspect-[16/9] overflow-hidden rounded-[6px]">
         <Image src={shop.imageUrl} alt={shop.name} fill sizes="(max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
-        <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded-sm bg-[#e60000] px-2.5 py-1 text-[10px] font-bold text-white uppercase tracking-wider z-10">
-          <Sparkles className="h-3 w-3" />
-          적합도 {buildMatchScore(shop, index)}%
-        </div>
         <button onClick={handleBookmark} className="absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#25282b] shadow-sm transition-colors hover:text-[#e60000] hover:bg-white backdrop-blur-sm">
           <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-[#e60000] text-[#e60000]" : ""}`} />
         </button>

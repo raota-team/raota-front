@@ -19,7 +19,7 @@ import { TasteResults } from "./_components/TasteResults";
 import { CompareResults } from "./_components/CompareResults";
 import { SummaryResults } from "./_components/SummaryResults";
 import { QuestionCard, PromptField } from "./_components/SharedComponents";
-import { compareShops, getReviewSummary, getTasteRecommendations } from "@/lib/api/recommend"; //추가
+import { compareShops, getReviewSummary} from "@/lib/api/recommend"; //추가
 
 
 const buildDisplayShop = (template: Shop, option: ShopOption | null): Shop => {
@@ -233,36 +233,12 @@ export default function RecommendPage() {
     }
 
     if (activeMode === "taste" && selectedSoup && selectedMood && selectedPriority) {
-      try {
-        console.log("취향 요청 데이터", {
-          soup: selectedSoup,
-          mood: selectedMood,
-          priority: selectedPriority,
-        });
-        const result = await getTasteRecommendations({
-          soup: selectedSoup,
-          mood: selectedMood,
-          priority: selectedPriority,
-        });
-
-        console.log("취향 API 결과:", result);
-
-        setSubmittedTaste({
-          soup: selectedSoup,
-          mood: selectedMood,
-          priority: selectedPriority,
-          focus: tasteFocus.trim(),
-        });
-      } catch (error) {
-        console.error("취향 API 실패:", error);
-
-        setSubmittedTaste({
-          soup: selectedSoup,
-          mood: selectedMood,
-          priority: selectedPriority,
-          focus: tasteFocus.trim(),
-        });
-      }
+      setSubmittedTaste({
+        soup: selectedSoup,
+        mood: selectedMood,
+        priority: selectedPriority,
+        focus: tasteFocus.trim(),
+      });
     }
 
     if (activeMode === "compare" && compareShopA && compareShopB) {
@@ -275,7 +251,6 @@ export default function RecommendPage() {
           focus: compareFocus.trim() || "기본 비교",
         });
 
-        console.log("비교 API 결과:", result);
         setCompareResult(result.data);
 
         setSubmittedCompare({
@@ -306,7 +281,6 @@ export default function RecommendPage() {
           focus: summaryFocus.trim() || "기본 요약",
         });
 
-        console.log("요약 API 결과:", result);
         setSummaryResult(result);
 
         setSubmittedSummary({
