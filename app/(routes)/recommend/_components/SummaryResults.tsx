@@ -7,6 +7,28 @@ import { AIFollowUpChat } from "./AIFollowUpChat";
 import { getKakaoMapSearchUrl, shareResult } from "../utils";
 import type { Shop } from "@/app/types";
 
+type SummaryApiData = {
+  shopInfo: {
+    id: number;
+    name: string;
+    type: string;
+    location: string;
+    imageUrl: string;
+    isBookmarked: boolean;
+  };
+  reviewCount: number;
+  summary: {
+    pros: { title: string; body: string };
+    cons: { title: string; body: string };
+    recommendedMenu: { title: string; body: string };
+  };
+  sampleReviews: {
+    name: string;
+    rating: number;
+    text: string;
+  }[];
+};
+
 const getPrimaryMenu = (shop: Shop) =>
   shop.menu_list.find((menu) => menu.is_signature)?.name ||
   shop.menus[0]?.name ||
@@ -60,21 +82,71 @@ const buildReviewSamples = (shop: Shop) => [
   },
 ];
 
-export function SummaryResults({ shop, focus }: { shop: Shop; focus: string }) {
+export function SummaryResults({
+  shop,
+  focus,
+  summaryData,
+}: {
+  shop: Shop;
+  focus: string;
+  summaryData?: SummaryApiData;
+}) {
   const [isBookmarked, setIsBookmarked] = useState(shop.isBookmarked);
-  
-  const items = buildSummaryItems(shop);
+
+  const items = summaryData
+    ? [
+      {
+        key: "장점",
+        title: summaryData.summary.pros.title,
+        accent: "border-l-[#e60000]",
+        iconWrap: "bg-[#fff1f1] text-[#e60000]",
+        icon: ThumbsUp,
+        body: summaryData.summary.pros.body,
+      },
+      {
+        key: "단점",
+        title: summaryData.summary.cons.title,
+        accent: "border-l-[#25282b]",
+        iconWrap: "bg-[#25282b] text-white",
+        icon: ThumbsDown,
+        body: summaryData.summary.cons.body,
+      },
+      {
+        key: "추천메뉴",
+        title: summaryData.summary.recommendedMenu.title,
+        accent: "border-l-[#e60000]",
+        iconWrap: "bg-[#e60000] text-white",
+        icon: Star,
+        body: summaryData.summary.recommendedMenu.body,
+      },
+    ]
+    : buildSummaryItems(shop);
+
   const perspectiveTitle = focus || "기본 요약";
   const perspectiveCopy = focus
     ? "요청한 질문을 중심으로 리뷰의 장점, 주의점, 추천 메뉴를 함께 해석합니다."
     : "처음 보는 사람도 빠르게 판단할 수 있도록 핵심 리뷰 흐름을 요약합니다.";
-  const sampleReviews = buildReviewSamples(shop);
-  const reviewCount = Math.max(84, (shop.stats?.visit_count ?? 0) + 75);
+  const sampleReviews = summaryData?.sampleReviews ?? buildReviewSamples(shop);
+  const reviewCount =
+    summaryData?.reviewCount ??
+    Math.max(84, (shop.stats?.visit_count ?? 0) + 75);
 
   const handleShare = () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
     shareResult(`라오타 AI 리뷰 요약 - ${shop.name}`, `${shop.name} 매장의 리뷰 요약 결과입니다.`, url);
   };
+
+  const displayShop = summaryData?.shopInfo
+    ? {
+      ...shop,
+      id: summaryData.shopInfo.id,
+      name: summaryData.shopInfo.name,
+      type: summaryData.shopInfo.type,
+      location: summaryData.shopInfo.location,
+      imageUrl: summaryData.shopInfo.imageUrl,
+      isBookmarked: summaryData.shopInfo.isBookmarked,
+    }
+    : shop;
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -91,11 +163,11 @@ export function SummaryResults({ shop, focus }: { shop: Shop; focus: string }) {
                 <MapPin className="h-4 w-4" />
                 <span className="text-sm font-bold">{shop.location}</span>
               </div>
-            </div>          
+            </div>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={() => setIsBookmarked(!isBookmarked)}
                 className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 hover:text-[#e60000]"
                 aria-label="북마크"
@@ -112,8 +184,8 @@ export function SummaryResults({ shop, focus }: { shop: Shop; focus: string }) {
                 <Map className="h-5 w-5" />
               </a>
             </div>
-            <Link 
-              href={`/shop/${shop.id}`} 
+            <Link
+              href={`/shop/${shop.id}`}
               className="vodafone-button-pill whitespace-nowrap shrink-0"
             >
               매장 상세 정보
@@ -185,7 +257,11 @@ export function SummaryResults({ shop, focus }: { shop: Shop; focus: string }) {
         </div>
       </div>
 
-      <AIFollowUpChat contextLabel={shop.name} />
+      <AIFollowUpChat
+        contextLabel={shop.name}
+        shopIds={[shop.id]}
+        contextType="summary"
+      />
 
       <button
         onClick={handleShare}

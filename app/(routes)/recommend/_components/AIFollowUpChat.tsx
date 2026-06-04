@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { sendFollowUpChat } from "@/lib/api/recommend";
 import { Send, Loader2, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -8,7 +9,15 @@ type Message = {
   content: string;
 };
 
-export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
+export function AIFollowUpChat({
+  contextLabel,
+  shopIds,
+  contextType = "summary",
+}: {
+  contextLabel: string;
+  shopIds: number[];
+  contextType?: "summary" | "compare";
+}) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -29,7 +38,7 @@ export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
@@ -38,22 +47,69 @@ export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
     setInput("");
     setIsTyping(true);
 
-    // Mock AI Response
-    setTimeout(() => {
-      const mockResponses = [
-        "해당 매장은 주차 공간이 따로 마련되어 있지 않습니다. 근처 공영 주차장을 이용하시는 것을 추천해 드려요.",
-        "네, 매운 맛을 조절할 수 있는 옵션이 있습니다. 보통맛부터 아주 매운맛까지 선택 가능해요.",
-        "주말 점심 시간대에는 평균 20~30분 정도의 웨이팅이 발생합니다. 오픈런을 추천드려요.",
-        "혼밥하기 아주 좋은 분위기입니다. 다찌(바) 좌석이 잘 되어 있어서 편하게 식사하실 수 있습니다.",
-      ];
-      const randomResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
-      
+    try {
+      const validShopIds = shopIds.filter(
+        (id): id is number => typeof id === "number" && !Number.isNaN(id)
+      );
+
+      console.log("채팅 요청 shopIds:", validShopIds);
+
+      if (validShopIds.length === 0) {
+        throw new Error("채팅 요청에 사용할 매장 ID가 없습니다.");
+      }
+      const result = await sendFollowUpChat({
+
+        contextType,
+        shopIds: validShopIds,
+        messages: [
+          {
+            role: "user",
+            content: userMessage.content,
+          },
+        ],
+      });
+
       setMessages((prev) => [
         ...prev,
-        { id: (Date.now() + 1).toString(), role: "ai", content: randomResponse },
+        {
+          id: (Date.now() + 1).toString(),
+          role: "ai",
+          content:
+            result?.data?.message?.content ??
+            "답변을 생성하지 못했습니다.",
+        },
       ]);
+    } catch (error) {
+      console.error("채팅 API 실패:", error);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "ai",
+          content:
+            "현재 AI 답변을 불러올 수 없습니다.",
+        },
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
+    // // Mock AI Response
+    // setTimeout(() => {
+    //   const mockResponses = [
+    //     "해당 매장은 주차 공간이 따로 마련되어 있지 않습니다. 근처 공영 주차장을 이용하시는 것을 추천해 드려요.",
+    //     "네, 매운 맛을 조절할 수 있는 옵션이 있습니다. 보통맛부터 아주 매운맛까지 선택 가능해요.",
+    //     "주말 점심 시간대에는 평균 20~30분 정도의 웨이팅이 발생합니다. 오픈런을 추천드려요.",
+    //     "혼밥하기 아주 좋은 분위기입니다. 다찌(바) 좌석이 잘 되어 있어서 편하게 식사하실 수 있습니다.",
+    //   ];
+    //   const randomResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+
+    //   setMessages((prev) => [
+    //     ...prev,
+    //     { id: (Date.now() + 1).toString(), role: "ai", content: randomResponse },
+    //   ]);
+    //   setIsTyping(false);
+    // }, 1500);
   };
 
   return (
@@ -77,7 +133,7 @@ export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
             (예: "여기 혼밥하기 좋아?", "매운 메뉴도 있어?")
           </div>
         )}
-        
+
         <AnimatePresence initial={false}>
           {messages.map((msg) => (
             <motion.div
@@ -88,11 +144,10 @@ export function AIFollowUpChat({ contextLabel }: { contextLabel: string }) {
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] rounded-[6px] px-4 py-2.5 text-sm leading-relaxed ${
-                  msg.role === "user"
-                    ? "bg-[#25282b] text-white"
-                    : "bg-white border border-stone-200 text-[#25282b]"
-                }`}
+                className={`max-w-[85%] rounded-[6px] px-4 py-2.5 text-sm leading-relaxed ${msg.role === "user"
+                  ? "bg-[#25282b] text-white"
+                  : "bg-white border border-stone-200 text-[#25282b]"
+                  }`}
               >
                 {msg.content}
               </div>

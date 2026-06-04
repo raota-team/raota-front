@@ -1,5 +1,6 @@
 "use client";
 
+import Loading from "@/app/loading";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowRight, RotateCcw } from "lucide-react";
@@ -7,7 +8,9 @@ import { motion } from "framer-motion";
 
 import type { Shop } from "@/app/types";
 import type { ModeId, ShopOption, SubmittedTaste, SubmittedCompare, SubmittedSummary } from "./types";
-import { modes, modePrompts, tasteOptions, fallbackShopOptions, shops, modeCopy, compareFocusExamples, summaryFocusExamples, tasteFocusExamples } from "./constants";
+import { modes, modePrompts, tasteOptions, fallbackShopOptions, modeCopy, compareFocusExamples, summaryFocusExamples, tasteFocusExamples } from "./constants";
+import { useQuery } from "@tanstack/react-query"; //내가추가
+import { getRamenShops } from "@/lib/api/ramen-shops"; //내가 추가
 
 import { ChoiceGroup } from "./_components/ChoiceGroup";
 import { RecommendEmptyState } from "./_components/RecommendEmptyState";
@@ -16,6 +19,8 @@ import { TasteResults } from "./_components/TasteResults";
 import { CompareResults } from "./_components/CompareResults";
 import { SummaryResults } from "./_components/SummaryResults";
 import { QuestionCard, PromptField } from "./_components/SharedComponents";
+import { compareShops, getReviewSummary, getTasteRecommendations } from "@/lib/api/recommend"; //추가
+
 
 const buildDisplayShop = (template: Shop, option: ShopOption | null): Shop => {
   if (!option) return template;
@@ -33,44 +38,59 @@ export default function RecommendPage() {
   const tabsRef = useRef<HTMLElement | null>(null);
   const tabsInitialTopRef = useRef<number | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
-  
+
   const [activeMode, setActiveMode] = useState<ModeId>("taste");
   const [isTabsPinned, setIsTabsPinned] = useState(false);
   const [tabsHeight, setTabsHeight] = useState(0);
-  
+
   const [selectedSoup, setSelectedSoup] = useState<string | null>(null);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [selectedPriority, setSelectedPriority] = useState<string | null>(null);
   const [tasteFocus, setTasteFocus] = useState("");
-  
+
   const [compareFocus, setCompareFocus] = useState("");
   const [summaryFocus, setSummaryFocus] = useState("");
   const [compareShopA, setCompareShopA] = useState<ShopOption | null>(null);
   const [compareShopB, setCompareShopB] = useState<ShopOption | null>(null);
   const [summaryShop, setSummaryShop] = useState<ShopOption | null>(null);
-  
+
   const [submittedTaste, setSubmittedTaste] = useState<SubmittedTaste | null>(null);
   const [submittedCompare, setSubmittedCompare] = useState<SubmittedCompare | null>(null);
   const [submittedSummary, setSubmittedSummary] = useState<SubmittedSummary | null>(null);
-  
+
   const [tasteStep, setTasteStep] = useState(0);
   const [shakeKey, setShakeKey] = useState(0);
+  const [compareResult, setCompareResult] = useState<any>(null); //추가
+  const [isCompareLoading, setIsCompareLoading] = useState(false); //추가
+  const [summaryResult, setSummaryResult] = useState<any>(null); //추가
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false); //추가
+  const { data: ramenShopsData } = useQuery({ queryKey: ["recommend-ramen-shops"], queryFn: () => getRamenShops({ page: 0, size: 100, sort: "NAME" }), });
+
+  const shops = ramenShopsData?.shops ?? [];
 
   const effectiveTaste = submittedTaste;
   const filteredShops = effectiveTaste?.soup
     ? shops.filter((shop) => shop.type.includes(effectiveTaste.soup))
     : shops;
   const displayShops = filteredShops.length > 0 ? filteredShops : shops;
-  
+
+  //여기서부터
+  const fallbackPrimaryShop = shops[0];
+  const fallbackSecondaryShop = shops[1] ?? shops[0];
+
   const primaryShop = activeMode === "summary"
-    ? buildDisplayShop(shops[0], submittedSummary?.shop ?? null)
-    : buildDisplayShop(displayShops[0], submittedCompare?.shopA ?? fallbackShopOptions[0]);
-  const secondaryShop = buildDisplayShop(displayShops[1] ?? shops[1], submittedCompare?.shopB ?? fallbackShopOptions[1]);
-  
+    ? fallbackPrimaryShop && buildDisplayShop(fallbackPrimaryShop, submittedSummary?.shop ?? null)
+    : fallbackPrimaryShop && buildDisplayShop(displayShops[0] ?? fallbackPrimaryShop, submittedCompare?.shopA ?? fallbackShopOptions[0]);
+
+  const secondaryShop =
+    fallbackSecondaryShop &&
+    buildDisplayShop(displayShops[1] ?? fallbackSecondaryShop, submittedCompare?.shopB ?? fallbackShopOptions[1]);
+  // 여기까지 수정함
+
   const isTasteReady = Boolean(selectedSoup && selectedMood && selectedPriority);
   const isCompareReady = Boolean(compareShopA && compareShopB);
   const isSummaryReady = Boolean(summaryShop);
-  
+
   const isTasteSubmitted =
     Boolean(submittedTaste) &&
     submittedTaste?.soup === selectedSoup &&
@@ -85,7 +105,7 @@ export default function RecommendPage() {
     Boolean(submittedSummary) &&
     submittedSummary?.shop.id === summaryShop?.id &&
     submittedSummary?.focus === summaryFocus.trim();
-    
+
   const shouldShowResults =
     activeMode === "taste" ? isTasteSubmitted : activeMode === "compare" ? isCompareSubmitted : isSummarySubmitted;
   const activePrompt = modePrompts[activeMode];
@@ -176,6 +196,7 @@ export default function RecommendPage() {
       setCompareShopB(null);
       setCompareFocus("");
       setSubmittedCompare(null);
+      setCompareResult(null); // 추가
       return;
     }
     setSummaryShop(null);
@@ -187,7 +208,7 @@ export default function RecommendPage() {
     setTasteStep((prev) => Math.max(prev - 1, 0));
   };
 
-  const handleGenerateClick = () => {
+  const handleGenerateClick = async () => {
     const isCurrentStepReady =
       activeMode === "taste"
         ? activeStep === 0
@@ -212,28 +233,109 @@ export default function RecommendPage() {
     }
 
     if (activeMode === "taste" && selectedSoup && selectedMood && selectedPriority) {
-      setSubmittedTaste({ soup: selectedSoup, mood: selectedMood, priority: selectedPriority, focus: tasteFocus.trim() });
+      try {
+        console.log("취향 요청 데이터", {
+          soup: selectedSoup,
+          mood: selectedMood,
+          priority: selectedPriority,
+        });
+        const result = await getTasteRecommendations({
+          soup: selectedSoup,
+          mood: selectedMood,
+          priority: selectedPriority,
+        });
+
+        console.log("취향 API 결과:", result);
+
+        setSubmittedTaste({
+          soup: selectedSoup,
+          mood: selectedMood,
+          priority: selectedPriority,
+          focus: tasteFocus.trim(),
+        });
+      } catch (error) {
+        console.error("취향 API 실패:", error);
+
+        setSubmittedTaste({
+          soup: selectedSoup,
+          mood: selectedMood,
+          priority: selectedPriority,
+          focus: tasteFocus.trim(),
+        });
+      }
     }
 
     if (activeMode === "compare" && compareShopA && compareShopB) {
-      setSubmittedCompare({ shopA: compareShopA, shopB: compareShopB, focus: compareFocus.trim() });
+      try {
+        setIsCompareLoading(true);
+
+        const result: any = await compareShops({
+          shopAId: compareShopA.id,
+          shopBId: compareShopB.id,
+          focus: compareFocus.trim() || "기본 비교",
+        });
+
+        console.log("비교 API 결과:", result);
+        setCompareResult(result.data);
+
+        setSubmittedCompare({
+          shopA: compareShopA,
+          shopB: compareShopB,
+          focus: compareFocus.trim(),
+        });
+      } catch (error) {
+        console.error("비교 API 실패:", error);
+
+        // API 실패해도 기존 임시 비교 결과 화면은 보여주기
+        setSubmittedCompare({
+          shopA: compareShopA,
+          shopB: compareShopB,
+          focus: compareFocus.trim(),
+        });
+      } finally {
+        setIsCompareLoading(false);
+      }
     }
 
     if (activeMode === "summary" && summaryShop) {
-      setSubmittedSummary({ shop: summaryShop, focus: summaryFocus.trim() });
+      try {
+        setIsSummaryLoading(true);
+
+        const result = await getReviewSummary({
+          shopId: summaryShop.id,
+          focus: summaryFocus.trim() || "기본 요약",
+        });
+
+        console.log("요약 API 결과:", result);
+        setSummaryResult(result);
+
+        setSubmittedSummary({
+          shop: summaryShop,
+          focus: summaryFocus.trim(),
+        });
+      } catch (error) {
+        console.error("요약 API 실패:", error);
+
+        setSubmittedSummary({
+          shop: summaryShop,
+          focus: summaryFocus.trim(),
+        });
+      } finally {
+        setIsSummaryLoading(false);
+      }
     }
 
     window.requestAnimationFrame(() => {
       const isDesktop = window.innerWidth >= 1024;
       const targetElement = isDesktop ? contentRef.current : resultRef.current;
-      
+
       if (!targetElement) return;
-      
+
       const headerHeight = window.innerWidth >= 768 ? 64 : 56;
       const currentTabsHeight = tabsRef.current?.offsetHeight || tabsHeight || 58;
-      
+
       const fixedOffset = headerHeight + currentTabsHeight + (isDesktop ? 0 : 24);
-        
+
       const targetTop = targetElement.getBoundingClientRect().top + window.scrollY - fixedOffset;
       window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
     });
@@ -244,12 +346,12 @@ export default function RecommendPage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-[#25282b]">
         <div className="absolute inset-0">
-          <Image 
-            src="/header-recommend.png" 
-            alt="Recommend background" 
+          <Image
+            src="/header-recommend.png"
+            alt="Recommend background"
             fill
             priority
-            className="object-cover opacity-55" 
+            className="object-cover opacity-55"
           />
           <div className="absolute inset-0 bg-[#25282b]/45" />
         </div>
@@ -271,14 +373,13 @@ export default function RecommendPage() {
         ref={tabsRef}
         role="tablist"
         aria-label="추천 모드 선택"
-        className={`z-40 border-b border-stone-200 bg-white ${
-          isTabsPinned ? "fixed left-0 right-0 top-14 md:top-16 shadow-sm" : "relative"
-        }`}
+        className={`z-40 border-b border-stone-200 bg-white ${isTabsPinned ? "fixed left-0 right-0 top-14 md:top-16 shadow-sm" : "relative"
+          }`}
       >
         <div className="mx-auto max-w-7xl px-0 sm:px-6 lg:px-8">
           <div className="grid grid-cols-3 py-1 md:py-0 lg:h-16 relative">
             {/* CSS-based sliding indicator */}
-            <div 
+            <div
               className="absolute bottom-0 h-[2px] w-1/3 transition-transform duration-300 ease-in-out z-10"
               style={{ transform: `translateX(${modes.findIndex(m => m.id === activeMode) * 100}%)` }}
             >
@@ -294,9 +395,8 @@ export default function RecommendPage() {
                   aria-selected={isActive}
                   aria-controls="recommend-content"
                   onClick={() => handleModeChange(mode.id)}
-                  className={`relative flex min-w-0 items-center justify-center gap-2 whitespace-nowrap px-2 py-4 text-xs font-bold transition-colors sm:px-6 sm:text-sm md:py-5 lg:h-16 lg:py-0 ${
-                    isActive ? "text-[#e60000]" : "text-[#25282b] hover:text-[#e60000]"
-                  }`}
+                  className={`relative flex min-w-0 items-center justify-center gap-2 whitespace-nowrap px-2 py-4 text-xs font-bold transition-colors sm:px-6 sm:text-sm md:py-5 lg:h-16 lg:py-0 ${isActive ? "text-[#e60000]" : "text-[#25282b] hover:text-[#e60000]"
+                    }`}
                 >
                   <mode.icon className={`h-4 w-4 transition-colors ${isActive ? "text-[#e60000]" : "text-[#7e7e7e]"}`} />
                   <span className="hidden sm:inline">{mode.label}</span>
@@ -311,7 +411,7 @@ export default function RecommendPage() {
       {/* Main Content */}
       <section ref={contentRef} id="recommend-content" className="mx-auto min-h-[calc(100svh-12rem)] max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:min-h-[48rem] lg:px-8 lg:py-10">
         <div className="grid gap-6 lg:grid-cols-[21rem_minmax(0,1fr)] lg:items-start lg:gap-6">
-          
+
           {/* Sidebar - Selection Controls */}
           <aside className="border border-stone-200 bg-white p-5 lg:sticky lg:top-36 lg:self-start lg:p-6">
             <div className="border-b border-stone-200 pb-4">
@@ -425,23 +525,22 @@ export default function RecommendPage() {
                 animate={shakeKey > 0 ? { x: [-5, 5, -5, 5, 0] } : {}}
                 transition={{ duration: 0.4 }}
                 onClick={handleGenerateClick}
-                className={`vodafone-button-pill w-full ${
-                  (
-                    activeMode === "taste"
-                      ? activeStep === 0
-                        ? !selectedSoup
-                        : activeStep === 1
-                          ? !selectedMood
-                          : activeStep === 2
-                            ? !selectedPriority
-                            : false // Step 4 (focus) is optional
-                      : activeMode === "compare"
-                        ? !compareShopA || !compareShopB
-                        : !summaryShop
-                  )
-                    ? "bg-[#bebebe] opacity-80"
-                    : "hover:opacity-90"
-                }`}
+                className={`vodafone-button-pill w-full ${(
+                  activeMode === "taste"
+                    ? activeStep === 0
+                      ? !selectedSoup
+                      : activeStep === 1
+                        ? !selectedMood
+                        : activeStep === 2
+                          ? !selectedPriority
+                          : false // Step 4 (focus) is optional
+                    : activeMode === "compare"
+                      ? !compareShopA || !compareShopB
+                      : !summaryShop
+                )
+                  ? "bg-[#bebebe] opacity-80"
+                  : "hover:opacity-90"
+                  }`}
               >
                 {activeStep < activePrompt.totalSteps - 1 ? "다음 단계" : modeCopy[activeMode].action}
                 <ArrowRight className="h-4 w-4" />
@@ -459,24 +558,40 @@ export default function RecommendPage() {
             </div>
 
             <div className="min-h-[34rem] lg:min-h-[40rem]">
-              {!shouldShowResults && <RecommendEmptyState mode={activeMode} />}
+              {(activeMode === "compare" && isCompareLoading) ||
+                (activeMode === "summary" && isSummaryLoading) ? (
+                <Loading />
+              ) : (
+                <>
+                  {!shouldShowResults && <RecommendEmptyState mode={activeMode} />}
 
-              {activeMode === "taste" && shouldShowResults && submittedTaste && (
-                <TasteResults
-                  shops={displayShops}
-                  selectedSoup={submittedTaste.soup}
-                  selectedMood={submittedTaste.mood}
-                  selectedPriority={submittedTaste.priority}
-                  focus={submittedTaste.focus}
-                />
-              )}
+                  {activeMode === "taste" && shouldShowResults && submittedTaste && (
+                    <TasteResults
+                      shops={displayShops}
+                      selectedSoup={submittedTaste.soup}
+                      selectedMood={submittedTaste.mood}
+                      selectedPriority={submittedTaste.priority}
+                      focus={submittedTaste.focus}
+                    />
+                  )}
 
-              {activeMode === "compare" && shouldShowResults && submittedCompare && (
-                <CompareResults primaryShop={primaryShop} secondaryShop={secondaryShop} focus={submittedCompare.focus} />
-              )}
+                  {activeMode === "compare" && shouldShowResults && submittedCompare && primaryShop && secondaryShop && (
+                    <CompareResults
+                      primaryShop={primaryShop}
+                      secondaryShop={secondaryShop}
+                      focus={submittedCompare.focus}
+                      compareData={compareResult}
+                    />
+                  )}
 
-              {activeMode === "summary" && shouldShowResults && submittedSummary && (
-                <SummaryResults shop={primaryShop} focus={submittedSummary.focus} />
+                  {activeMode === "summary" && shouldShowResults && submittedSummary && primaryShop && (
+                    <SummaryResults
+                      shop={primaryShop}
+                      focus={submittedSummary.focus}
+                      summaryData={summaryResult?.data}
+                    />
+                  )}
+                </>
               )}
             </div>
           </div>

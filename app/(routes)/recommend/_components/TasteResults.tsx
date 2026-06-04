@@ -3,9 +3,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { Sparkles, Star, ArrowRight, Bookmark } from "lucide-react";
 import type { Shop } from "@/app/types";
+type TasteShop = Shop & {
+  matchScore?: number;
+};
 import { FocusCard } from "./SharedComponents";
 
-const buildMatchScore = (shop: Shop, index: number) => {
+const buildMatchScore = (shop: TasteShop, index: number) => {
+  if (typeof shop.matchScore === "number") {
+    return shop.matchScore;
+  }
+
   const ratingScore = Math.round((shop.userRating || shop.editorRating || 4) * 10);
   const visitBonus = Math.min(Math.floor((shop.stats?.visit_count || 0) / 20), 8);
   return Math.min(96, Math.max(78, ratingScore + visitBonus - index * 3));
@@ -23,7 +30,7 @@ export function TasteResults({
   selectedPriority,
   focus,
 }: {
-  shops: Shop[];
+  shops: TasteShop[];
   selectedSoup: string;
   selectedMood: string;
   selectedPriority: string;
@@ -54,7 +61,7 @@ export function TasteResults({
   );
 }
 
-function ShopCard({ shop, index, selectedTags }: { shop: Shop; index: number; selectedTags: string[] }) {
+function ShopCard({ shop, index, selectedTags }: { shop: TasteShop; index: number; selectedTags: string[] }) {
   const [isBookmarked, setIsBookmarked] = useState(shop.isBookmarked);
 
   const handleBookmark = (e: React.MouseEvent) => {
@@ -100,7 +107,7 @@ function ShopCard({ shop, index, selectedTags }: { shop: Shop; index: number; se
   );
 }
 
-function ShopCardDesktop({ shop, index, selectedTags }: { shop: Shop; index: number; selectedTags: string[] }) {
+function ShopCardDesktop({ shop, index, selectedTags }: { shop: TasteShop; index: number; selectedTags: string[] }) {
   const [isBookmarked, setIsBookmarked] = useState(shop.isBookmarked);
 
   const handleBookmark = (e: React.MouseEvent) => {

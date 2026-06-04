@@ -6,6 +6,39 @@ import { shareResult } from "../utils";
 import { Share2 } from "lucide-react";
 import type { Shop } from "@/app/types";
 
+type CompareApiData = {
+  shopA: {
+    id: number;
+    name: string;
+    scores: {
+      soup: number;
+      noodle: number;
+      topping: number;
+      mood: number;
+      access: number;
+      revisit: number;
+    };
+    totalIndex: number;
+  };
+  shopB: {
+    id: number;
+    name: string;
+    scores: {
+      soup: number;
+      noodle: number;
+      topping: number;
+      mood: number;
+      access: number;
+      revisit: number;
+    };
+    totalIndex: number;
+  };
+  narratives: {
+    title: string;
+    body: string;
+  }[];
+};
+
 const getPrimaryMenu = (shop: Shop) =>
   shop.menu_list.find((menu) => menu.is_signature)?.name ||
   shop.menus[0]?.name ||
@@ -67,15 +100,44 @@ export function CompareResults({
   primaryShop,
   secondaryShop,
   focus,
+  compareData,
 }: {
   primaryShop: Shop;
   secondaryShop: Shop;
   focus: string;
+  compareData?: CompareApiData;
 }) {
-  const primaryScores = buildCompareScores(primaryShop);
-  const secondaryScores = buildCompareScores(secondaryShop);
-  const compareNarratives = buildCompareNarratives(primaryShop, secondaryShop);
-  
+
+  const primaryScores = compareData
+    ? [
+      compareData.shopA.scores.soup,
+      compareData.shopA.scores.noodle,
+      compareData.shopA.scores.topping,
+      compareData.shopA.scores.mood,
+      compareData.shopA.scores.access,
+      compareData.shopA.scores.revisit,
+    ]
+    : buildCompareScores(primaryShop);
+
+  const secondaryScores = compareData
+    ? [
+      compareData.shopB.scores.soup,
+      compareData.shopB.scores.noodle,
+      compareData.shopB.scores.topping,
+      compareData.shopB.scores.mood,
+      compareData.shopB.scores.access,
+      compareData.shopB.scores.revisit,
+    ]
+    : buildCompareScores(secondaryShop);
+
+  const compareNarratives = compareData?.narratives ?? buildCompareNarratives(primaryShop, secondaryShop);
+
+  const primaryTotalIndex =
+    compareData?.shopA.totalIndex ?? primaryScores.reduce((a, b) => a + b, 0) / 6;
+
+  const secondaryTotalIndex =
+    compareData?.shopB.totalIndex ?? secondaryScores.reduce((a, b) => a + b, 0) / 6;
+
   const primaryPolygon = primaryScores
     .map((value, index) => {
       const point = polarPoint(index, compareAxes.length, value * 0.52);
@@ -147,11 +209,11 @@ export function CompareResults({
             <div className="space-y-4">
               <h5 className="text-xs font-extrabold tracking-[0.2em] text-[#e60000]">비교 지표</h5>
               <div className="space-y-3">
-                <CompareIndexRow name={primaryShop.name} color="#e60000" score={primaryScores.reduce((a, b) => a + b, 0) / 6} />
-                <CompareIndexRow name={secondaryShop.name} color="#25282b" score={secondaryScores.reduce((a, b) => a + b, 0) / 6} />
+                <CompareIndexRow name={compareData?.shopA.name ?? primaryShop.name} color="#e60000" score={primaryTotalIndex} />
+                <CompareIndexRow name={compareData?.shopB.name ?? secondaryShop.name} color="#25282b" score={secondaryTotalIndex} />
               </div>
             </div>
-            
+
             <p className="text-sm font-medium leading-relaxed text-[#7e7e7e]">
               커뮤니티 반응과 방문 흐름을 기준으로 비교한 요약 지표입니다.
             </p>
@@ -172,7 +234,14 @@ export function CompareResults({
         </div>
       </div>
 
-      <AIFollowUpChat contextLabel={`${primaryShop.name} vs ${secondaryShop.name}`} />
+      <AIFollowUpChat
+        contextLabel={`${primaryShop.name} vs ${secondaryShop.name}`}
+        shopIds={[
+          compareData?.shopA.id ?? primaryShop.id,
+          compareData?.shopB.id ?? secondaryShop.id,
+        ]}
+        contextType="compare"
+      />
 
       <button
         onClick={handleShare}
