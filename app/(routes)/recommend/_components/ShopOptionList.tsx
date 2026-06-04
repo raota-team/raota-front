@@ -2,7 +2,6 @@ import React, { useDeferredValue, useMemo, useState, useEffect, useRef } from "r
 import { ChevronDown, Search, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getRamenShopOptions } from "@/lib/api/community";
-import { fallbackShopOptions } from "../constants";
 import type { ShopOption } from "../types";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -37,9 +36,10 @@ export function ShopOptionList({
   
   const options = useMemo(() => {
     const items = shopOptionsQuery.data?.data?.items;
-    if (!Array.isArray(items) || items.length === 0) return fallbackShopOptions;
+    if (!Array.isArray(items) || items.length === 0) return [];
     return items.map(normalizeShopOption);
   }, [shopOptionsQuery.data]);
+  const showInitialLoading = shopOptionsQuery.isFetching && options.length === 0;
 
   const disabledOptionIdSet = useMemo(() => new Set(disabledOptionIds), [disabledOptionIds]);
 
@@ -102,7 +102,17 @@ export function ShopOptionList({
             </div>
 
             <div className="max-h-60 overflow-y-auto overscroll-contain" role="listbox">
-              {options.map((option) => {
+              {showInitialLoading ? (
+                <div className="flex items-center gap-2 px-4 py-5 text-sm font-bold text-[#7e7e7e]">
+                  <Loader2 className="h-4 w-4 animate-spin text-[#bebebe]" />
+                  라멘집 목록을 불러오는 중
+                </div>
+              ) : options.length === 0 ? (
+                <div className="px-4 py-5 text-sm font-bold text-[#7e7e7e]">
+                  검색 결과가 없습니다.
+                </div>
+              ) : (
+                options.map((option) => {
                 const isSelected = selectedOption?.id === option.id;
                 const isDisabled = disabledOptionIdSet.has(option.id) && !isSelected;
                 return (
@@ -128,7 +138,8 @@ export function ShopOptionList({
                     </span>
                   </button>
                 );
-              })}
+                })
+              )}
             </div>
           </motion.div>
         )}
