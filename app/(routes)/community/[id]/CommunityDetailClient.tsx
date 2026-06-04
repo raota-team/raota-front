@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, use, useEffect, useMemo } from 'react';
+import { useState, use, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Heart, Share2, MessageCircle, Send, Store, Loader2, Trash2, Edit3, CornerDownRight, X } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Send, Store, Loader2, Trash2, Edit3, CornerDownRight, X, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getCommunityPostDetail, 
@@ -13,9 +13,13 @@ import {
   updateComment,
   togglePostLike,
   deleteCommunityPost,
+  getCommunityPosts,
+  type CommunityPostCard,
 } from '@/lib/api/community';
 import { useApp } from '@/app/context/AppContext';
 import Loading from '@/app/loading';
+
+const hotPostCardClass = "flex h-24 w-[13.5rem] flex-shrink-0 snap-start gap-2.5 rounded-sm border border-stone-200 bg-white p-3 transition-colors hover:border-[#e60000] sm:h-28 sm:w-[17rem] sm:gap-3 md:w-[calc((100%-1.5rem)/3)] md:max-w-none";
 
 export default function CommunityDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -28,6 +32,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
   const [replyTo, setReplyTo] = useState<{ id: number; name: string } | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editContent, setEditingContent] = useState('');
+  const hotPostsRef = useRef<HTMLDivElement>(null);
 
   // 1. 게시글 상세 조회
   const { data: postData, isLoading: isPostLoading, isError: isPostError } = useQuery({
@@ -43,8 +48,23 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
     enabled: !isNaN(postId),
   });
 
+  const { data: hotPostsData } = useQuery({
+    queryKey: ['community-hot-posts'],
+    queryFn: () => getCommunityPosts({ page: 0, size: 20 }),
+    staleTime: 60 * 1000,
+  });
+
   const post = postData?.data;
   const comments = commentsData?.data?.items || [];
+  const hotPosts = useMemo(() => {
+    const items: CommunityPostCard[] = hotPostsData?.data?.items || [];
+    const sortedPosts = [...items]
+      .filter((item) => item.postId !== postId)
+      .sort((a, b) => (b.likeCount + b.commentCount * 2) - (a.likeCount + a.commentCount * 2))
+      .slice(0, 8);
+
+    return sortedPosts;
+  }, [hotPostsData, postId]);
 
   // 작성자 판단 로직
   const isAuthor = useMemo(() => {
@@ -152,6 +172,14 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
   const handleUpdateComment = (id: number) => {
     if (!editContent.trim()) return;
     updateCommentMutation.mutate({ id, content: editContent.trim() });
+  };
+
+  const scrollHotPosts = (direction: 'prev' | 'next') => {
+    const scrollAmount = hotPostsRef.current?.clientWidth || 320;
+    hotPostsRef.current?.scrollBy({
+      left: direction === 'next' ? scrollAmount : -scrollAmount,
+      behavior: 'smooth',
+    });
   };
 
   const getCategoryLabel = (category: string) => {
@@ -386,6 +414,60 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
           목록으로 돌아가기
         </button>
       </div>
+
+      {hotPosts.length > 0 && (
+        <section className="mt-8 min-w-0 border-t border-stone-200 py-4 md:mt-10 md:py-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#25282b]">
+              <Flame className="h-4 w-4 text-[#e60000]" />
+              지금 핫한 게시물
+            </h2>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => scrollHotPosts('prev')}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+                aria-label="이전 핫한 게시물"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollHotPosts('next')}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+                aria-label="다음 핫한 게시물"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          <div
+            ref={hotPostsRef}
+            className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0"
+          >
+            {hotPosts.map((hotPost) => (
+              <Link key={hotPost.postId} href={`/community/${hotPost.postId}`} className={hotPostCardClass}>
+                {hotPost.imageUrl && (
+                  <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-sm bg-stone-100 sm:h-16 sm:w-16">
+                    <img src={hotPost.imageUrl} alt={hotPost.title} loading="lazy" className="h-full w-full object-cover" />
+                  </div>
+                )}
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="mb-1 flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-stone-400">
+                    <span className="text-[#e60000]">{getCategoryLabel(hotPost.category)}</span>
+                    <span>{new Date(hotPost.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <p className="line-clamp-2 text-[13px] font-black leading-4 text-[#25282b] sm:text-sm sm:leading-5">{hotPost.title}</p>
+                  <div className="mt-auto flex items-center gap-3 text-[11px] font-bold text-stone-400 sm:text-xs">
+                    <span className="flex items-center gap-1"><Heart className="h-3.5 w-3.5" /> {hotPost.likeCount}</span>
+                    <span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" /> {hotPost.commentCount}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
