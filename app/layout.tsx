@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { AppProvider } from "./context/AppContext";
 import ClientLayout from "./components/ClientLayout";
 import QueryProvider from "./providers/QueryProvider";
@@ -13,6 +14,7 @@ const SITE_TITLE = "라오타 - 라멘에 진심인 사람들";
 const SITE_DESCRIPTION =
   "라오타(RAOTA)는 라멘에 진심인 사람들이 모여 국내 라멘 맛집, 일본라멘 스타일, 솔직한 후기와 라멘 지도를 기록하는 라멘 커뮤니티입니다.";
 const SITE_URL = "https://raota.net";
+const GTM_ID = "GTM-WRH3QH6K";
 const SITE_KEYWORDS = [
   "raota",
   "RAOTA",
@@ -122,12 +124,29 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        <Script id="google-tag-manager" strategy="beforeInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','${GTM_ID}');
+          `}
+        </Script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
       <body>
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         <QueryProvider>
           <AppProvider>
             <ClientLayout>{children}</ClientLayout>
