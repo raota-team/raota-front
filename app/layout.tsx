@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { AppProvider } from "./context/AppContext";
 import ClientLayout from "./components/ClientLayout";
-import MixpanelInitializer from "./components/MixpanelInitializer";
 import QueryProvider from "./providers/QueryProvider";
 import "./globals.css";
 import "swiper/css";
@@ -132,7 +131,6 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <MixpanelInitializer />
         <noscript>
           <iframe
             src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
