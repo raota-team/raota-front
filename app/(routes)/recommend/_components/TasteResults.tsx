@@ -1,17 +1,21 @@
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Sparkles, Star, ArrowRight, Bookmark } from "lucide-react";
-import type { Shop } from "@/app/types";
-type TasteShop = Shop & {
-  matchScore?: number;
+type TasteShop = {
+  id: number;
+  name: string;
+  type: string;
+  location: string;
+  description: string;
+  imageUrl: string;
+  isBookmarked?: boolean;
 };
 import { FocusCard } from "./SharedComponents";
 
 const buildUniqueTags = (tags: Array<string | undefined>) =>
   Array.from(new Set(tags.filter(Boolean))).slice(0, 4) as string[];
 
-const formatRating = (rating: number) => (rating > 0 ? rating.toFixed(1) : "-");
+const getShopImage = (imageUrl?: string) => imageUrl || "/header-recommend.png";
 
 export function TasteResults({
   shops,
@@ -53,6 +57,7 @@ export function TasteResults({
 
 function ShopCard({ shop, index, selectedTags }: { shop: TasteShop; index: number; selectedTags: string[] }) {
   const [isBookmarked, setIsBookmarked] = useState(shop.isBookmarked);
+  const tags = buildUniqueTags(selectedTags);
 
   const handleBookmark = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent Link navigation
@@ -62,7 +67,7 @@ function ShopCard({ shop, index, selectedTags }: { shop: TasteShop; index: numbe
   return (
     <Link href={`/shop/${shop.id}`} className="group relative flex min-h-32 w-full min-w-0 overflow-hidden rounded-[6px] bg-white border border-stone-200">
       <div className="relative min-h-32 w-28 shrink-0 overflow-hidden rounded-[6px]">
-        <Image src={shop.imageUrl} alt={shop.name} fill className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" sizes="128px" />
+        <img src={getShopImage(shop.imageUrl)} alt={shop.name} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
         <div className="min-w-0">
@@ -82,13 +87,15 @@ function ShopCard({ shop, index, selectedTags }: { shop: TasteShop; index: numbe
           </h4>
           <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[#7e7e7e]">{shop.description}</p>
         </div>
-        <div className="mt-3 flex flex-wrap gap-1.5 border-t border-stone-200 pt-2">
-          {buildUniqueTags(selectedTags).map((tag) => (
-            <span key={`${shop.id}-${tag}`} className="rounded-full border border-stone-200 px-2 py-0.5 text-[10px] font-bold text-[#25282b]">
+        {tags.length > 0 && (
+          <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-stone-200 pt-2">
+            {tags.map((tag) => (
+            <span key={`${shop.id}-${tag}`} className="max-w-24 truncate rounded-full border border-stone-200 px-2 py-0.5 text-[10px] font-bold text-[#25282b]">
               {tag}
             </span>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </Link>
   );
@@ -96,6 +103,7 @@ function ShopCard({ shop, index, selectedTags }: { shop: TasteShop; index: numbe
 
 function ShopCardDesktop({ shop, index, selectedTags }: { shop: TasteShop; index: number; selectedTags: string[] }) {
   const [isBookmarked, setIsBookmarked] = useState(shop.isBookmarked);
+  const tags = buildUniqueTags(selectedTags);
 
   const handleBookmark = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent Link navigation
@@ -105,7 +113,7 @@ function ShopCardDesktop({ shop, index, selectedTags }: { shop: TasteShop; index
   return (
     <article className="group overflow-hidden bg-white relative transition-colors">
       <div className="relative aspect-[16/9] overflow-hidden rounded-[6px]">
-        <Image src={shop.imageUrl} alt={shop.name} fill sizes="(max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
+        <img src={getShopImage(shop.imageUrl)} alt={shop.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
         <button onClick={handleBookmark} className="absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#25282b] shadow-sm transition-colors hover:text-[#e60000] hover:bg-white backdrop-blur-sm">
           <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-[#e60000] text-[#e60000]" : ""}`} />
         </button>
@@ -126,13 +134,15 @@ function ShopCardDesktop({ shop, index, selectedTags }: { shop: TasteShop; index
         <p className="mt-4 line-clamp-2 text-sm font-medium leading-relaxed text-[#7e7e7e]">
           {shop.description}
         </p>
-        <div className="mt-6 flex flex-wrap gap-2">
-          {buildUniqueTags(selectedTags).map((tag) => (
-            <span key={`${shop.id}-${tag}`} className="rounded-full border border-stone-200 px-3 py-1 text-[12px] font-bold text-[#25282b]">
+        {tags.length > 0 && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {tags.map((tag) => (
+            <span key={`${shop.id}-${tag}`} className="max-w-36 truncate rounded-full border border-stone-200 px-3 py-1 text-[12px] font-bold text-[#25282b]">
               {tag}
             </span>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
         <Link href={`/shop/${shop.id}`} className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#e60000] group/link before:absolute before:inset-0">
           매장 상세 보기
           <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1" />

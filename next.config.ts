@@ -29,6 +29,14 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'objectstorage.ap-chuncheon-1.oraclecloud.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.compat.objectstorage.ap-chuncheon-1.oraclecloud.com',
+      },
+      {
+        protocol: 'https',
         hostname: 'k.kakaocdn.net',
       },
       {

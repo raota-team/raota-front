@@ -79,8 +79,24 @@ export const getTasteRecommendations = async (data: {
   soup: string;
   mood: string;
   priority: string;
+  freeText?: string;
 }) => {
-  return apiClient<any>("/recommendations/taste", {
+  return apiClient<{
+    status: string;
+    message: string;
+    data: {
+      recommendedShops: {
+        id: number;
+        name: string;
+        type: string;
+        location: string;
+        description: string;
+        imageUrl: string;
+        matchScore: number;
+        isBookmarked: boolean;
+      }[];
+    };
+  }>("/recommendations/taste", {
     method: "POST",
     body: data,
   });

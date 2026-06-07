@@ -18,7 +18,7 @@ import { TasteResults } from "./_components/TasteResults";
 import { CompareResults } from "./_components/CompareResults";
 import { SummaryResults } from "./_components/SummaryResults";
 import { QuestionCard, PromptField } from "./_components/SharedComponents";
-import { compareShops, getReviewSummary} from "@/lib/api/recommend"; //추가
+import { compareShops, getReviewSummary, getTasteRecommendations } from "@/lib/api/recommend"; //추가
 
 
 const buildDisplayShop = (template: Shop, option: ShopOption | null): Shop => {
@@ -59,6 +59,9 @@ export default function RecommendPage() {
 
   const [tasteStep, setTasteStep] = useState(0);
   const [shakeKey, setShakeKey] = useState(0);
+  const [tasteResult, setTasteResult] = useState<any>(null); //추가
+  const [isTasteLoading, setIsTasteLoading] = useState(false); //추가
+  const [tasteErrorMessage, setTasteErrorMessage] = useState<string | null>(null);
   const [compareResult, setCompareResult] = useState<any>(null); //추가
   const [isCompareLoading, setIsCompareLoading] = useState(false); //추가
   const [summaryResult, setSummaryResult] = useState<any>(null); //추가
@@ -72,6 +75,7 @@ export default function RecommendPage() {
     ? shops.filter((shop) => shop.type.includes(effectiveTaste.soup))
     : shops;
   const displayShops = filteredShops.length > 0 ? filteredShops : shops;
+  const tasteDisplayShops = tasteResult?.recommendedShops?.length ? tasteResult.recommendedShops : displayShops;
 
   //여기서부터
   const fallbackPrimaryShop = shops[0];
@@ -187,6 +191,8 @@ export default function RecommendPage() {
       setSelectedPriority(null);
       setTasteFocus("");
       setSubmittedTaste(null);
+      setTasteResult(null);
+      setTasteErrorMessage(null);
       setTasteStep(0);
       return;
     }
@@ -248,18 +254,46 @@ export default function RecommendPage() {
     }
 
     if (activeMode === "taste" && selectedSoup && selectedMood && selectedPriority) {
-      setSubmittedTaste({
-        soup: selectedSoup,
-        mood: selectedMood,
-        priority: selectedPriority,
-        focus: tasteFocus.trim(),
-      });
-      scrollToRecommendResult();
+      try {
+        setIsTasteLoading(true);
+        setTasteResult(null);
+        setTasteErrorMessage(null);
+        scrollToRecommendResult();
+
+        const result = await getTasteRecommendations({
+          soup: selectedSoup,
+          mood: selectedMood,
+          priority: selectedPriority,
+          freeText: tasteFocus.trim() || "기본 추천",
+        });
+
+        setTasteResult(result.data);
+
+        setSubmittedTaste({
+          soup: selectedSoup,
+          mood: selectedMood,
+          priority: selectedPriority,
+          focus: tasteFocus.trim(),
+        });
+      } catch {
+        setTasteResult(null);
+        setTasteErrorMessage("AI 추천 서버 응답이 잠시 불안정해서, 현재 매장 데이터 기준 임시 추천을 보여드려요.");
+
+        setSubmittedTaste({
+          soup: selectedSoup,
+          mood: selectedMood,
+          priority: selectedPriority,
+          focus: tasteFocus.trim(),
+        });
+      } finally {
+        setIsTasteLoading(false);
+      }
     }
 
     if (activeMode === "compare" && compareShopA && compareShopB) {
       try {
         setIsCompareLoading(true);
+        setCompareResult(null);
         scrollToRecommendResult();
 
         const result: any = await compareShops({
@@ -268,7 +302,12 @@ export default function RecommendPage() {
           focus: compareFocus.trim() || "기본 비교",
         });
 
-        setCompareResult(result.data);
+        const nextCompareData = result.data;
+        const responseMatchesSelection =
+          Number(nextCompareData?.shopA?.id) === Number(compareShopA.id) &&
+          Number(nextCompareData?.shopB?.id) === Number(compareShopB.id);
+
+        setCompareResult(responseMatchesSelection ? nextCompareData : null);
 
         setSubmittedCompare({
           shopA: compareShopA,
@@ -277,6 +316,7 @@ export default function RecommendPage() {
         });
       } catch (error) {
         console.error("비교 API 실패:", error);
+        setCompareResult(null);
 
         // API 실패해도 기존 임시 비교 결과 화면은 보여주기
         setSubmittedCompare({
@@ -292,6 +332,7 @@ export default function RecommendPage() {
     if (activeMode === "summary" && summaryShop) {
       try {
         setIsSummaryLoading(true);
+        setSummaryResult(null);
         scrollToRecommendResult();
 
         const result = await getReviewSummary({
@@ -307,6 +348,7 @@ export default function RecommendPage() {
         });
       } catch (error) {
         console.error("요약 API 실패:", error);
+        setSummaryResult(null);
 
         setSubmittedSummary({
           shop: summaryShop,
@@ -535,21 +577,29 @@ export default function RecommendPage() {
             </div>
 
             <div className="min-h-[34rem] min-w-0 lg:min-h-[40rem]">
-              {(activeMode === "compare" && isCompareLoading) ||
+              {(activeMode === "taste" && isTasteLoading) ||
+                (activeMode === "compare" && isCompareLoading) ||
                 (activeMode === "summary" && isSummaryLoading) ? (
-                <RecommendResultLoading />
+                <RecommendResultLoading mode={activeMode} />
               ) : (
                 <>
                   {!shouldShowResults && <RecommendEmptyState mode={activeMode} />}
 
                   {activeMode === "taste" && shouldShowResults && submittedTaste && (
-                    <TasteResults
-                      shops={displayShops}
-                      selectedSoup={submittedTaste.soup}
-                      selectedMood={submittedTaste.mood}
-                      selectedPriority={submittedTaste.priority}
-                      focus={submittedTaste.focus}
-                    />
+                    <div className="space-y-4">
+                      {tasteErrorMessage && (
+                        <div className="border border-[#e60000]/20 bg-[#e60000]/5 px-4 py-3 text-sm font-bold text-[#25282b]">
+                          {tasteErrorMessage}
+                        </div>
+                      )}
+                      <TasteResults
+                        shops={tasteDisplayShops}
+                        selectedSoup={submittedTaste.soup}
+                        selectedMood={submittedTaste.mood}
+                        selectedPriority={submittedTaste.priority}
+                        focus={submittedTaste.focus}
+                      />
+                    </div>
                   )}
 
                   {activeMode === "compare" && shouldShowResults && submittedCompare && primaryShop && secondaryShop && (
@@ -578,7 +628,12 @@ export default function RecommendPage() {
   );
 }
 
-function RecommendResultLoading() {
+function RecommendResultLoading({ mode }: { mode: ModeId }) {
+  const loadingCopy =
+    mode === "taste"
+      ? { title: "AI가 취향에 맞는 라멘을 찾고 있어요", label: "Matching taste" }
+      : { title: "추천 결과를 정리하고 있어요", label: "Reading reviews" };
+
   return (
     <div className="flex min-h-[24rem] flex-col items-center justify-center border border-stone-200 bg-stone-50 px-6 py-12 text-center">
       <div className="relative mb-6">
@@ -586,13 +641,13 @@ function RecommendResultLoading() {
         <img src="/logo.png" alt="RAOTA Loading" className="relative h-14 w-14 animate-bounce-slow object-contain" />
       </div>
       <h3 className="text-lg font-black text-[#25282b]">
-        추천 결과를 정리하고 있어요<span className="text-[#e60000]">.</span>
+        {loadingCopy.title}<span className="text-[#e60000]">.</span>
       </h3>
       <div className="mt-4 h-1 w-40 overflow-hidden rounded-full bg-stone-200">
         <div className="h-full origin-left animate-loading-bar rounded-full bg-[#e60000]" />
       </div>
       <p className="mt-4 text-xs font-black uppercase tracking-[0.18em] text-stone-400">
-        Reading reviews
+        {loadingCopy.label}
       </p>
 
       <style jsx>{`
