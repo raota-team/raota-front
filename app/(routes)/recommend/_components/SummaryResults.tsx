@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, MapPin, ThumbsUp, ThumbsDown, Star, Bookmark, Map, Share2 } from "lucide-react";
+import { ArrowRight, MapPin, ThumbsUp, ThumbsDown, Star, Bookmark, Map, Share2, type LucideIcon } from "lucide-react";
 import { FocusCard } from "./SharedComponents";
 import { AIFollowUpChat } from "./AIFollowUpChat";
 import { getKakaoMapSearchUrl, shareResult } from "../utils";
 import type { Shop } from "@/app/types";
 
 type SummaryApiData = {
-  shopInfo: {
+  shopInfo?: {
     id: number;
     name: string;
     type: string;
@@ -16,17 +16,112 @@ type SummaryApiData = {
     imageUrl: string;
     isBookmarked: boolean;
   };
-  reviewCount: number;
-  summary: {
-    pros: { title: string; body: string };
-    cons: { title: string; body: string };
-    recommendedMenu: { title: string; body: string };
+  reviewCount?: number;
+  summary?: SummaryValue;
+  sampleReviews?: unknown[];
+  reviews?: unknown[];
+  reviewExamples?: unknown[];
+  exampleReviews?: unknown[];
+  sample_reviews?: unknown[];
+  summaries?: unknown[];
+  sections?: unknown[];
+  items?: unknown[];
+};
+
+type SummaryValue =
+  | SummaryRecord
+  | unknown[];
+
+type SummaryRecord = {
+  pros?: unknown;
+  cons?: unknown;
+  recommendedMenu?: unknown;
+  recommended_menu?: unknown;
+  recommendation?: unknown;
+  items?: unknown[];
+  sections?: unknown[];
+  summaries?: unknown[];
+  [key: string]: unknown;
+};
+
+type SummaryItem = {
+  key: string;
+  title: string;
+  accent: string;
+  iconWrap: string;
+  icon: LucideIcon;
+  body: string;
+};
+
+type NormalizedSummaryItem = {
+  key: string;
+  title: string;
+  body: string;
+};
+
+type ReviewSample = {
+  name: string;
+  rating: number;
+  text: string;
+};
+
+type ShopInfo = {
+  id: number;
+  name: string;
+  type: string;
+  location: string;
+  imageUrl: string;
+  isBookmarked: boolean;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+const isShopInfo = (value: unknown): value is ShopInfo => {
+  if (!isRecord(value)) return false;
+
+  return (
+    typeof value.id === "number" &&
+    typeof value.name === "string" &&
+    typeof value.type === "string" &&
+    typeof value.location === "string" &&
+    typeof value.imageUrl === "string" &&
+    typeof value.isBookmarked === "boolean"
+  );
+};
+
+const getArray = (value: unknown): unknown[] | null =>
+  Array.isArray(value) ? value : null;
+
+const getRecordArray = (value: unknown, key: string): unknown[] | null => {
+  if (!isRecord(value)) return null;
+  return getArray(value[key]);
+};
+
+const getSummaryKey = (item: unknown, fallback: number) => {
+  if (!isRecord(item)) return String(fallback);
+
+  const key = item.key ?? item.type;
+  return typeof key === "string" || typeof key === "number"
+    ? String(key)
+    : String(fallback);
+};
+
+const getSummaryRecord = (value: SummaryValue | undefined): SummaryRecord | null =>
+  isRecord(value) ? value : null;
+
+const getDisplayShop = (shop: Shop, shopInfo: unknown): Shop => {
+  if (!isShopInfo(shopInfo)) return shop;
+
+  return {
+    ...shop,
+    id: shopInfo.id,
+    name: shopInfo.name,
+    type: shopInfo.type,
+    location: shopInfo.location,
+    imageUrl: shopInfo.imageUrl,
+    isBookmarked: shopInfo.isBookmarked,
   };
-  sampleReviews: {
-    name: string;
-    rating: number;
-    text: string;
-  }[];
 };
 
 const getPrimaryMenu = (shop: Shop) =>
@@ -34,7 +129,7 @@ const getPrimaryMenu = (shop: Shop) =>
   shop.menus[0]?.name ||
   "대표 메뉴 정보 없음";
 
-const buildSummaryItems = (shop: Shop) => [
+const buildSummaryItems = (shop: Shop): SummaryItem[] => [
   {
     key: "장점",
     title: "장점",
@@ -64,7 +159,7 @@ const buildSummaryItems = (shop: Shop) => [
   },
 ];
 
-const buildReviewSamples = (shop: Shop) => [
+const buildReviewSamples = (shop: Shop): ReviewSample[] => [
   {
     name: "라멘러버92",
     rating: 5,
@@ -81,6 +176,128 @@ const buildReviewSamples = (shop: Shop) => [
     text: `${shop.description} 전체적으로 첫 방문자도 방향을 잡기 쉬운 가게라는 인상이 강합니다.`,
   },
 ];
+
+const SUMMARY_LABELS: Record<string, string> = {
+  pros: "장점",
+  cons: "주의점",
+  recommendedMenu: "추천 메뉴",
+  recommended_menu: "추천 메뉴",
+  recommendation: "추천 메뉴",
+};
+
+const getTextValue = (value: unknown, keys: string[]) => {
+  if (!isRecord(value)) return "";
+
+  for (const key of keys) {
+    const text = value[key];
+    if (typeof text === "string" && text.trim()) return text.trim();
+  }
+  return "";
+};
+
+const normalizeSummaryItem = (
+  value: unknown,
+  key: string,
+  index: number,
+): NormalizedSummaryItem | null => {
+  if (!value) return null;
+  if (typeof value === "string") {
+    return {
+      key,
+      title: SUMMARY_LABELS[key] ?? `요약 ${index + 1}`,
+      body: value,
+    };
+  }
+
+  const body = getTextValue(value, ["body", "content", "text", "description", "summary"]);
+  if (!body) return null;
+
+  return {
+    key,
+    title: getTextValue(value, ["title", "label", "name"]) || SUMMARY_LABELS[key] || `요약 ${index + 1}`,
+    body,
+  };
+};
+
+const getSummaryItems = (summaryData: SummaryApiData | undefined, shop: Shop): SummaryItem[] => {
+  if (!summaryData) return buildSummaryItems(shop);
+
+  const summaryValue = summaryData.summary;
+  const summaryRecord = getSummaryRecord(summaryValue);
+  const arraySource =
+    getArray(summaryValue) ||
+    getRecordArray(summaryRecord, "items") ||
+    getRecordArray(summaryRecord, "sections") ||
+    getRecordArray(summaryRecord, "summaries") ||
+    getArray(summaryData.summaries) ||
+    getArray(summaryData.sections) ||
+    getArray(summaryData.items) ||
+    null;
+
+  const normalized = arraySource
+    ? arraySource
+      .map((item, index) => normalizeSummaryItem(item, getSummaryKey(item, index), index))
+      .filter((item): item is NormalizedSummaryItem => Boolean(item))
+    : [
+      normalizeSummaryItem(summaryRecord?.pros, "pros", 0),
+      normalizeSummaryItem(summaryRecord?.cons, "cons", 1),
+      normalizeSummaryItem(
+        summaryRecord?.recommendedMenu ?? summaryRecord?.recommended_menu ?? summaryRecord?.recommendation,
+        "recommendedMenu",
+        2,
+      ),
+      ...Object.entries(summaryRecord ?? {})
+        .filter(([key]) => !["pros", "cons", "recommendedMenu", "recommended_menu", "recommendation"].includes(key))
+        .map(([key, value], index) => normalizeSummaryItem(value, key, index + 3)),
+    ].filter((item): item is NormalizedSummaryItem => Boolean(item));
+
+  if (normalized.length === 0) return buildSummaryItems(shop);
+
+  const iconMap = [ThumbsUp, ThumbsDown, Star];
+  return normalized.map((item, index) => ({
+    key: item.key,
+    title: item.title,
+    accent: index % 2 === 1 ? "border-l-[#25282b]" : "border-l-[#e60000]",
+    iconWrap: index % 2 === 1 ? "bg-[#25282b] text-white" : index === 2 ? "bg-[#e60000] text-white" : "bg-[#fff1f1] text-[#e60000]",
+    icon: iconMap[index] ?? Star,
+    body: item.body,
+  }));
+};
+
+const normalizeReviewSample = (value: unknown): ReviewSample | null => {
+  if (!value) return null;
+  const text = typeof value === "string"
+    ? value
+    : getTextValue(value, ["text", "body", "content", "review", "summary"]);
+
+  if (!text) return null;
+
+  return {
+    name: typeof value === "string"
+      ? ""
+      : getTextValue(value, ["name", "title", "author", "nickname", "reviewerName", "authorName", "userName"]),
+    rating: typeof value === "string" || !isRecord(value)
+      ? 0
+      : Number(value.rating ?? value.score ?? value.stars ?? 0),
+    text,
+  };
+};
+
+const getReviewSamples = (summaryData: SummaryApiData | undefined, shop: Shop): ReviewSample[] => {
+  const source =
+    (Array.isArray(summaryData?.sampleReviews) && summaryData.sampleReviews) ||
+    (Array.isArray(summaryData?.reviews) && summaryData.reviews) ||
+    (Array.isArray(summaryData?.reviewExamples) && summaryData.reviewExamples) ||
+    (Array.isArray(summaryData?.exampleReviews) && summaryData.exampleReviews) ||
+    (Array.isArray(summaryData?.sample_reviews) && summaryData.sample_reviews) ||
+    [];
+
+  const normalized = source
+    .map(normalizeReviewSample)
+    .filter((review): review is ReviewSample => Boolean(review));
+
+  return normalized.length > 0 ? normalized : buildReviewSamples(shop);
+};
 
 const isReadableReviewName = (value?: string) => {
   const name = value?.trim();
@@ -103,61 +320,22 @@ export function SummaryResults({
   summaryData?: SummaryApiData;
 }) {
   const [isBookmarked, setIsBookmarked] = useState(shop.isBookmarked);
-
-  const items = summaryData
-    ? [
-      {
-        key: "장점",
-        title: summaryData.summary.pros.title,
-        accent: "border-l-[#e60000]",
-        iconWrap: "bg-[#fff1f1] text-[#e60000]",
-        icon: ThumbsUp,
-        body: summaryData.summary.pros.body,
-      },
-      {
-        key: "단점",
-        title: summaryData.summary.cons.title,
-        accent: "border-l-[#25282b]",
-        iconWrap: "bg-[#25282b] text-white",
-        icon: ThumbsDown,
-        body: summaryData.summary.cons.body,
-      },
-      {
-        key: "추천메뉴",
-        title: summaryData.summary.recommendedMenu.title,
-        accent: "border-l-[#e60000]",
-        iconWrap: "bg-[#e60000] text-white",
-        icon: Star,
-        body: summaryData.summary.recommendedMenu.body,
-      },
-    ]
-    : buildSummaryItems(shop);
+  const displayShop = getDisplayShop(shop, summaryData?.shopInfo);
 
   const perspectiveTitle = focus || "기본 요약";
   const perspectiveCopy = focus
     ? "요청한 질문을 중심으로 리뷰의 장점, 주의점, 추천 메뉴를 함께 해석합니다."
     : "처음 보는 사람도 빠르게 판단할 수 있도록 핵심 리뷰 흐름을 요약합니다.";
-  const sampleReviews = summaryData?.sampleReviews ?? buildReviewSamples(shop);
+  const sampleReviews = getReviewSamples(summaryData, shop);
+  const items = getSummaryItems(summaryData, shop);
   const reviewCount =
     summaryData?.reviewCount ??
     Math.max(84, (shop.stats?.visit_count ?? 0) + 75);
 
   const handleShare = () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
-    shareResult(`라오타 AI 리뷰 요약 - ${shop.name}`, `${shop.name} 매장의 리뷰 요약 결과입니다.`, url);
+    shareResult(`라오타 AI 리뷰 요약 - ${displayShop.name}`, `${displayShop.name} 매장의 리뷰 요약 결과입니다.`, url);
   };
-
-  const displayShop = summaryData?.shopInfo
-    ? {
-      ...shop,
-      id: summaryData.shopInfo.id,
-      name: summaryData.shopInfo.name,
-      type: summaryData.shopInfo.type,
-      location: summaryData.shopInfo.location,
-      imageUrl: summaryData.shopInfo.imageUrl,
-      isBookmarked: summaryData.shopInfo.isBookmarked,
-    }
-    : shop;
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -166,13 +344,13 @@ export function SummaryResults({
         <div className="relative z-10 flex min-w-0 flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <div className="mb-4 inline-flex rounded-sm border border-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white/80">
-              {shop.type}
+              {displayShop.type}
             </div>
-            <h4 className="break-words text-3xl font-extrabold tracking-tight sm:text-5xl">{shop.name}</h4>
+            <h4 className="break-words text-3xl font-extrabold tracking-tight sm:text-5xl">{displayShop.name}</h4>
             <div className="mt-4 flex min-w-0 items-center gap-4 text-[#7e7e7e]">
               <div className="flex min-w-0 items-center gap-1.5">
                 <MapPin className="h-4 w-4 shrink-0" />
-                <span className="min-w-0 break-words text-sm font-bold">{shop.location}</span>
+                <span className="min-w-0 break-words text-sm font-bold">{displayShop.location}</span>
               </div>
             </div>
           </div>
@@ -186,7 +364,7 @@ export function SummaryResults({
                 <Bookmark className={`h-5 w-5 ${isBookmarked ? "fill-[#e60000] text-[#e60000]" : ""}`} />
               </button>
               <a
-                href={getKakaoMapSearchUrl(`${shop.location} ${shop.name}`)}
+                href={getKakaoMapSearchUrl(`${displayShop.location} ${displayShop.name}`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
@@ -196,7 +374,7 @@ export function SummaryResults({
               </a>
             </div>
             <Link
-              href={`/shop/${shop.id}`}
+              href={`/shop/${displayShop.id}`}
               className="vodafone-button-pill w-full justify-center whitespace-nowrap sm:w-auto sm:shrink-0"
             >
               매장 상세 정보
@@ -204,7 +382,7 @@ export function SummaryResults({
             </Link>
           </div>
         </div>
-        <Image src={shop.imageUrl} alt={shop.name} fill className="absolute inset-0 object-cover opacity-10" />
+        <Image src={displayShop.imageUrl} alt={displayShop.name} fill className="absolute inset-0 object-cover opacity-10" />
       </div>
 
       {/* Analysis Banner */}
@@ -241,7 +419,7 @@ export function SummaryResults({
       <div className="space-y-4 sm:space-y-6">
         <div className="flex items-baseline justify-between">
           <h5 className="text-sm font-extrabold tracking-[0.15em] text-[#25282b]">리뷰 예시</h5>
-          <span className="text-xs font-bold text-[#bebebe]">대표 리뷰 3개</span>
+          <span className="text-xs font-bold text-[#bebebe]">대표 리뷰 {sampleReviews.length}개</span>
         </div>
         <div className="grid gap-4">
           {sampleReviews.map((review, index) => {
@@ -274,8 +452,8 @@ export function SummaryResults({
       </div>
 
       <AIFollowUpChat
-        contextLabel={shop.name}
-        shopIds={[shop.id]}
+        contextLabel={displayShop.name}
+        shopIds={[displayShop.id]}
         contextType="summary"
       />
 
