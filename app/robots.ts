@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/mypage', '/register', '/auth/'], // 개인정보나 인증 관련 페이지는 제외
     },
-    sitemap: 'https://raota.net/sitemap.xml',
+    sitemap: 'https://www.raota.net/sitemap.xml',
   };
 }

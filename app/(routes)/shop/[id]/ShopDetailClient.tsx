@@ -30,7 +30,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
 
 interface ShopDetailClientProps {
-  params: Promise<{ id: string }>;
+  initialShop?: Shop;
 }
 
 const formatInfoValue = (value?: string | number | null) => {
@@ -49,7 +49,7 @@ const formatBreakTime = (hours: Shop["business_hours"]) => {
   return `${hours.break_start} - ${hours.break_end}`;
 };
 
-export default function ShopDetailClient({ params }: ShopDetailClientProps) {
+export default function ShopDetailClient({ initialShop }: ShopDetailClientProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { showToast, showConfirm, isLoggedIn } = useApp();
@@ -58,10 +58,10 @@ export default function ShopDetailClient({ params }: ShopDetailClientProps) {
   const useParamsData = useParams();
   const shopId = Number(useParamsData?.id);
   
-  const { data, isLoading, isError } = useRamenShopDetail(shopId);
+  const { data, isLoading, isError } = useRamenShopDetail(shopId, initialShop);
   
-  const [shopDetail, setShopDetail] = useState<Shop | null>(null);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [shopDetail, setShopDetail] = useState<Shop | null>(initialShop ?? null);
+  const [isBookmarked, setIsBookmarked] = useState(Boolean(initialShop?.isBookmarked));
   const [voteData, setVoteStatus] = useState<any>(null);
   const [shopPhotos, setShopPhotos] = useState<UserPhoto[]>([]);
 

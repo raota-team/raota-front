@@ -13,7 +13,7 @@ const SITE_NAME = "라오타 RAOTA";
 const SITE_TITLE = "라오타 - 라멘에 진심인 사람들";
 const SITE_DESCRIPTION =
   "라오타(RAOTA)는 라멘에 진심인 사람들이 모여 국내 라멘 맛집, 일본라멘 스타일, 솔직한 후기와 라멘 지도를 기록하는 라멘 커뮤니티입니다.";
-const SITE_URL = "https://raota.net";
+const SITE_URL = "https://www.raota.net";
 const GTM_ID = "GTM-WRH3QH6K";
 const SITE_KEYWORDS = [
   "raota",
@@ -25,8 +25,10 @@ const SITE_KEYWORDS = [
   "라멘맛집",
   "라멘 지도",
   "라멘지도",
+  "라멘 추천",
   "라멘 커뮤니티",
   "라멘 후기",
+  "라멘 맛집 추천",
   "돈코츠라멘",
   "쇼유라멘",
   "츠케멘",
