@@ -192,7 +192,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
       <button 
         onClick={() => router.push("/shops")} 
-        className="group mb-8 flex items-center text-[#7e7e7e] transition-colors hover:text-[#e60000]"
+        className="group mb-8 flex items-center text-stone-600 transition-colors hover:text-[#e60000]"
         aria-label="라멘 가게 목록으로 돌아가기"
       >
         <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
@@ -207,7 +207,9 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               alt={shop.name} 
               fill
               priority
-              sizes="(min-width: 1024px) 832px, calc(100vw - 32px)"
+              fetchPriority="high"
+              quality={65}
+              sizes="(min-width: 1280px) 768px, (min-width: 1024px) 66vw, calc(100vw - 32px)"
               className="object-cover saturate-105"
             />
             <span className="absolute right-4 top-4 inline-flex items-center rounded-sm border border-stone-200 bg-white px-3 py-1.5 text-xs font-black text-[#25282b] shadow-lg shadow-black/10 md:right-5 md:top-5 md:text-sm">
@@ -218,7 +220,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
           <div className="mb-10 border-b border-stone-200 bg-white py-5 md:mb-12 md:py-7">
             <div className="mb-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
               <h1 className="vodafone-display min-w-0 max-w-full break-words text-4xl leading-none text-[#25282b] [overflow-wrap:anywhere] sm:text-5xl md:text-6xl">{shop.name}</h1>
-              <button onClick={handleBookmarkToggle} className={`flex w-fit items-center gap-2 rounded-sm border px-4 py-2 text-sm font-bold transition-colors ${isBookmarked ? "border-[#e60000] bg-[#e60000] text-white" : "border-stone-200 bg-white text-stone-500 hover:border-[#e60000]"}`}>
+              <button onClick={handleBookmarkToggle} className={`flex w-fit items-center gap-2 rounded-sm border px-4 py-2 text-sm font-bold transition-colors ${isBookmarked ? "border-[#e60000] bg-[#e60000] text-white" : "border-stone-200 bg-white text-stone-700 hover:border-[#e60000]"}`}>
                 <Heart className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
                 <span>{isBookmarked ? "찜 취소" : "가게 찜하기"}</span>
               </button>
@@ -239,7 +241,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
             <div className="mb-4 flex items-center border-l-4 border-[#e60000] pl-4">
               <h2 className="m-0 text-lg font-bold text-[#25282b] md:text-xl">한줄평</h2>
             </div>
-            <p className="text-base leading-relaxed text-[#7e7e7e] md:text-lg">{shop.description}</p>
+            <p className="text-base leading-relaxed text-stone-700 md:text-lg">{shop.description}</p>
           </div>
 
           {shop.event_menus && shop.event_menus.length > 0 && (
@@ -263,7 +265,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                         <h3 className="text-lg font-black text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-xl">{event.name}</h3>
                         <span className="font-mono text-base font-bold text-[#25282b] md:text-lg">{event.price.toLocaleString()}원</span>
                       </div>
-                      <p className="text-sm leading-relaxed text-[#7e7e7e]">{event.description}</p>
+                      <p className="text-sm leading-relaxed text-stone-700">{event.description}</p>
                     </div>
                   </div>
                 ))}
@@ -289,7 +291,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                       </div>
                       <div>
                         <div className="flex items-center"><span className="mr-2 text-sm font-bold text-[#25282b] md:text-base">{menu.name}</span>{menu.is_signature && <span className="rounded-sm bg-[#e60000] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter text-white">SIG</span>}</div>
-                        <span className="text-xs text-stone-400 hidden sm:inline-block">클릭하면 자세히 보기</span>
+                        <span className="text-xs text-stone-600 hidden sm:inline-block">클릭하면 자세히 보기</span>
                       </div>
                     </div>
                     <div className="font-mono text-sm font-bold text-stone-700 md:text-base">{menu.price.toLocaleString()}원</div>
@@ -302,7 +304,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
           <div className="mt-10 border-t border-stone-200 pt-6 md:mt-12 md:pt-8">
             <div className="mb-4 flex items-end justify-between md:mb-6">
               <h2 className="flex items-center text-lg font-bold text-[#25282b] md:text-xl"><ImageIcon className="mr-2 h-5 w-5 text-[#e60000]" /> 유저 메뉴 인증</h2>
-              <span className="text-xs text-stone-400 font-mono">{shopPhotos.length}개 사진</span>
+              <span className="text-xs text-stone-600 font-mono">{shopPhotos.length}개 사진</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
@@ -344,7 +346,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                 <span className="break-keep text-xs font-black leading-tight text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-sm">
                   라멘 인증샷 올리기
                 </span>
-                <span className="text-[11px] font-bold text-stone-400 leading-tight break-keep">
+                <span className="text-[11px] font-bold text-stone-600 leading-tight break-keep">
                   내가 먹은 메뉴를 기록해요
                 </span>
               </button>
@@ -356,7 +358,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
           <div className="sticky top-24 space-y-6 md:space-y-8">
             <div className="rounded-md border border-stone-200 bg-white p-4 md:p-6">
               <h2 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Award className="mr-2 h-5 w-5 text-[#e60000]" /> 베스트 메뉴 투표</h2>
-              <p className="mb-6 text-sm leading-relaxed text-stone-500 md:mb-8">이 가게에서 제일 맛있었던 메뉴는?</p>
+              <p className="mb-6 text-sm leading-relaxed text-stone-700 md:mb-8">이 가게에서 제일 맛있었던 메뉴는?</p>
               
               <div className="space-y-5 md:space-y-6">
                 {votingMenus.map((menu) => (
@@ -374,7 +376,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                         className={`flex items-center gap-1 rounded-sm px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
                           menu.isVoted 
                             ? "bg-[#e60000] text-white" 
-                            : "bg-stone-100 text-stone-500 hover:bg-stone-200"
+                            : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                         }`}
                       >
                         {menu.isVoted && <Check className="w-3 h-3" />}
@@ -383,10 +385,10 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                     </div>
                     <ProgressBar votes={menu.votes} totalVotes={totalVotes} isSelected={menu.id === bestMenuId} />
                     <div className="flex justify-between items-center mt-1">
-                      <span className={`text-[10px] font-black ${menu.id === bestMenuId ? "text-[#e60000]" : "text-stone-300"}`}>
+                      <span className={`text-[10px] font-black ${menu.id === bestMenuId ? "text-[#e60000]" : "text-stone-600"}`}>
                         {menu.id === bestMenuId ? "가장 많은 투표" : ""}
                       </span>
-                      <div className="text-right text-[10px] font-mono font-bold text-stone-400">{menu.votes} 표</div>
+                      <div className="text-right text-[10px] font-mono font-bold text-stone-600">{menu.votes} 표</div>
                     </div>
                   </div>
                 ))}
@@ -397,11 +399,11 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               <div className="relative z-10">
                 <h2 className="text-lg font-black mb-4 uppercase tracking-tighter italic">Information</h2>
                 <div className="space-y-4 text-sm font-mono text-stone-300">
-                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">주소</span><span className="text-right break-keep">{formatInfoValue(shop.address)}</span></p>
-                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">영업시간</span><span className="text-right">{formatOperatingHours(shop.business_hours)}</span></p>
-                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">브레이크</span><span className="text-right">{formatBreakTime(shop.business_hours)}</span></p>
-                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">휴무일</span><span className="text-right break-keep">{formatInfoValue(shop.business_hours?.closed_days)}</span></p>
-                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">주차</span><span className="text-right break-keep">{formatInfoValue(shop.business_hours?.parking_info)}</span></p>
+                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">주소</span><span className="text-right break-keep text-white/90">{formatInfoValue(shop.address)}</span></p>
+                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">영업시간</span><span className="text-right text-white/90">{formatOperatingHours(shop.business_hours)}</span></p>
+                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">브레이크</span><span className="text-right text-white/90">{formatBreakTime(shop.business_hours)}</span></p>
+                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">휴무일</span><span className="text-right break-keep text-white/90">{formatInfoValue(shop.business_hours?.closed_days)}</span></p>
+                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">주차</span><span className="text-right break-keep text-white/90">{formatInfoValue(shop.business_hours?.parking_info)}</span></p>
                 </div>
                 <div className="mt-8 flex gap-3">
                   {shop.instagram_url && <a href={shop.instagram_url} target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 p-3 text-xs font-bold transition-colors hover:bg-[#e60000]"><Instagram className="h-4 w-4" /> Instagram</a>}
@@ -413,7 +415,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
             <div className="text-center">
               <button 
                 onClick={() => setIsReportModalOpen(true)}
-                className="text-xs text-stone-400 hover:text-stone-600 underline transition-colors underline-offset-4"
+                className="text-xs text-stone-600 hover:text-stone-800 underline transition-colors underline-offset-4"
                 aria-label="가게 정보 수정 및 이벤트 제보하기"
               >
                 정보 수정 및 새로운 이벤트 제보하기

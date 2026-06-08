@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, use, useEffect, useMemo, useRef } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Heart, MessageCircle, Send, Store, Loader2, Trash2, Edit3, CornerDownRight, X, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -20,6 +21,34 @@ import { useApp } from '@/app/context/AppContext';
 import Loading from '@/app/loading';
 
 const hotPostCardClass = "flex h-24 w-[13.5rem] flex-shrink-0 snap-start gap-2.5 rounded-sm border border-stone-200 bg-white p-3 transition-colors hover:border-[#e60000] sm:h-28 sm:w-[17rem] sm:gap-3 md:w-[calc((100%-1.5rem)/3)] md:max-w-none";
+
+const enhanceContentImages = (html: string, title: string) => {
+  let imageIndex = 0;
+
+  return html.replace(/<img\b([^>]*)>/gi, (match, attributes: string) => {
+    const isFirstImage = imageIndex === 0;
+    imageIndex += 1;
+    const srcMatch = attributes.match(/\ssrc=(["'])(.*?)\1/i);
+    const optimizedAttributes =
+      srcMatch && srcMatch[2].startsWith('https://images.raota.net')
+        ? attributes.replace(
+            srcMatch[0],
+            ` src="/_next/image?url=${encodeURIComponent(srcMatch[2])}&w=828&q=70"`,
+          )
+        : attributes;
+
+    const additions = [
+      /\salt=/i.test(optimizedAttributes) ? '' : ` alt="${title} 이미지 ${imageIndex}"`,
+      /\sloading=/i.test(optimizedAttributes) || isFirstImage ? '' : ' loading="lazy"',
+      /\sdecoding=/i.test(optimizedAttributes) ? '' : ' decoding="async"',
+      /\sfetchpriority=/i.test(optimizedAttributes) || !isFirstImage ? '' : ' fetchpriority="high"',
+      /\swidth=/i.test(optimizedAttributes) ? '' : ' width="800"',
+      /\sheight=/i.test(optimizedAttributes) ? '' : ' height="600"',
+    ].join('');
+
+    return `<img${optimizedAttributes}${additions}>`;
+  });
+};
 
 export default function CommunityDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -65,6 +94,10 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
 
     return sortedPosts;
   }, [hotPostsData, postId]);
+  const enhancedPostContent = useMemo(
+    () => enhanceContentImages(post?.content ?? '', post?.title ?? '라오타 커뮤니티 게시글'),
+    [post?.content, post?.title],
+  );
 
   // 작성자 판단 로직
   const isAuthor = useMemo(() => {
@@ -209,9 +242,15 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
           {isReply && <CornerDownRight className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-stone-300 md:h-4 md:w-4" />}
           {!isReply && (
             <Link href={`/user/${comment.authorId}`} className="flex-shrink-0">
-              <div className="h-9 w-9 overflow-hidden rounded-full border border-stone-200 bg-stone-100 md:h-10 md:w-10">
+              <div className="relative h-9 w-9 overflow-hidden rounded-full border border-stone-200 bg-stone-100 md:h-10 md:w-10">
                 {comment.authorImageUrl ? (
-                  <img src={comment.authorImageUrl} alt={comment.authorNickname} className="w-full h-full object-cover" />
+                  <Image
+                    src={comment.authorImageUrl}
+                    alt={comment.authorNickname}
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                  />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-stone-200 text-lg text-stone-400 md:text-xl">🍜</div>
                 )}
@@ -224,12 +263,12 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
                 <Link href={`/user/${comment.authorId}`} className="truncate font-bold text-[#25282b] transition-colors hover:text-[#e60000]">
                   <span className={isReply ? 'text-xs' : 'text-sm'}>{comment.authorNickname}</span>
                 </Link>
-                <span className="text-[10px] text-stone-400 font-mono">{new Date(comment.createdAt).toLocaleString()}</span>
+                <span className="text-[10px] text-stone-600 font-mono">{new Date(comment.createdAt).toLocaleString()}</span>
               </div>
               {isCommentAuthor && !comment.isDeleted && (
                 <div className="flex gap-2">
-                  <button onClick={() => { setEditingCommentId(comment.commentId); setEditingContent(comment.content); }} className="text-[10px] font-bold text-stone-400 transition-colors hover:text-[#25282b]">수정</button>
-                  <button onClick={() => showConfirm('정말 삭제하시겠습니까?', () => deleteCommentMutation.mutate(comment.commentId))} className="text-[10px] font-bold text-stone-400 transition-colors hover:text-[#e60000]">삭제</button>
+                  <button onClick={() => { setEditingCommentId(comment.commentId); setEditingContent(comment.content); }} className="text-[10px] font-bold text-stone-600 transition-colors hover:text-[#25282b]">수정</button>
+                  <button onClick={() => showConfirm('정말 삭제하시겠습니까?', () => deleteCommentMutation.mutate(comment.commentId))} className="text-[10px] font-bold text-stone-600 transition-colors hover:text-[#e60000]">삭제</button>
                 </div>
               )}
             </div>
@@ -238,14 +277,14 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
               <div className="mt-2 space-y-2">
                 <textarea value={editContent} onChange={(e) => setEditingContent(e.target.value)} className="w-full rounded-sm border border-stone-200 p-3 text-sm outline-none focus:border-[#e60000]" rows={3} autoFocus />
                 <div className="flex justify-end gap-2">
-                  <button onClick={() => setEditingCommentId(null)} className="px-3 py-1.5 text-xs font-bold text-stone-400 hover:text-stone-600">취소</button>
+                  <button onClick={() => setEditingCommentId(null)} className="px-3 py-1.5 text-xs font-bold text-stone-600 hover:text-stone-800">취소</button>
                   <button onClick={() => handleUpdateComment(comment.commentId)} className="rounded-sm bg-[#25282b] px-3 py-1.5 text-xs font-bold text-white">수정 완료</button>
                 </div>
               </div>
             ) : (
               <div className="relative">
                 {comment.isDeleted ? (
-                  <p className="text-stone-400 text-sm py-1" style={{ fontStyle: 'italic' }}>
+                  <p className="text-stone-600 text-sm py-1" style={{ fontStyle: 'italic' }}>
                     {comment.content}
                   </p>
                 ) : (
@@ -259,7 +298,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
                       {comment.content}
                     </p>
                     {!isReply && (
-                      <button onClick={() => setReplyTo({ id: comment.commentId, name: comment.authorNickname })} className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#e60000]/75 hover:text-[#e60000]">답글 달기</button>
+                      <button onClick={() => setReplyTo({ id: comment.commentId, name: comment.authorNickname })} className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#b80000] hover:text-[#e60000]">답글 달기</button>
                     )}
                   </>
                 )}
@@ -274,7 +313,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-20 sm:px-0">
       <div className="flex justify-between items-center mb-6">
-        <button onClick={() => router.push('/community')} className="flex items-center text-sm font-bold uppercase tracking-wider text-[#7e7e7e] transition-colors hover:text-[#e60000]">
+        <button onClick={() => router.push('/community')} className="flex items-center text-sm font-bold uppercase tracking-wider text-stone-600 transition-colors hover:text-[#e60000]">
           <ArrowLeft className="w-4 h-4 mr-2" /> 목록으로
         </button>
       </div>
@@ -287,7 +326,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
                 {getCategoryLabel(post.category)}
               </span>
               {post.storeName && (
-                <span className="flex items-center gap-1.5 rounded-sm border border-stone-100 bg-stone-50 px-2.5 py-1 text-[11px] text-[#7e7e7e] md:px-3 md:py-1.5 md:text-xs">
+                <span className="flex items-center gap-1.5 rounded-sm border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] text-stone-700 md:px-3 md:py-1.5 md:text-xs">
                   <Store className="w-3.5 h-3.5" /> {post.storeName}
                 </span>
               )}
@@ -295,8 +334,8 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
             
             {isAuthor && (
               <div className="flex gap-1">
-                <Link href={`/community/edit/${postId}`} className="p-2 text-stone-400 hover:text-stone-900 transition-colors"><Edit3 className="w-5 h-5" /></Link>
-                <button onClick={handleDeletePost} className="p-2 text-stone-400 transition-colors hover:text-[#e60000]"><Trash2 className="h-5 w-5" /></button>
+                <Link href={`/community/edit/${postId}`} className="p-2 text-stone-600 hover:text-stone-900 transition-colors" aria-label="게시글 수정"><Edit3 className="w-5 h-5" /></Link>
+                <button onClick={handleDeletePost} className="p-2 text-stone-600 transition-colors hover:text-[#e60000]" aria-label="게시글 삭제"><Trash2 className="h-5 w-5" /></button>
               </div>
             )}
           </div>
@@ -305,27 +344,41 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
 
           <div className="mb-6 flex items-center justify-between border-b border-stone-100 pb-5 md:mb-8 md:pb-6">
             <Link href={`/user/${post.authorId}`} className="flex items-center gap-3 group">
-              <div className="h-9 w-9 overflow-hidden rounded-full border border-stone-200 bg-stone-100 md:h-10 md:w-10">
+              <div className="relative h-9 w-9 overflow-hidden rounded-full border border-stone-200 bg-stone-100 md:h-10 md:w-10">
                 {post.authorImageUrl ? (
-                  <img src={post.authorImageUrl} alt={post.authorName} className="w-full h-full object-cover" />
+                  <Image
+                    src={post.authorImageUrl}
+                    alt={post.authorName}
+                    fill
+                    priority
+                    sizes="40px"
+                    className="object-cover"
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-lg bg-stone-200 text-stone-400 md:text-xl">🍜</div>
                 )}
               </div>
               <div>
                 <div className="text-sm font-bold text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-base">{post.authorName}</div>
-                <div className="text-xs text-stone-400 font-mono">{new Date(post.createdAt).toLocaleDateString()}</div>
+                <div className="text-xs text-stone-600 font-mono">{new Date(post.createdAt).toLocaleDateString()}</div>
               </div>
             </Link>
           </div>
 
           {post.imageUrl && (
-            <div className="mb-6 overflow-hidden rounded-md border border-stone-100 md:mb-8">
-              <img src={post.imageUrl} alt="" loading="lazy" className="w-full h-auto max-h-[600px] object-cover" />
+            <div className="relative mb-6 aspect-[4/3] overflow-hidden rounded-md border border-stone-100 md:mb-8">
+              <Image
+                src={post.imageUrl}
+                alt={`${post.title} 게시글 이미지`}
+                fill
+                priority
+                sizes="(min-width: 768px) 768px, calc(100vw - 40px)"
+                className="object-cover"
+              />
             </div>
           )}
 
-          <div className="prose prose-sm prose-stone max-w-none leading-relaxed text-[#25282b] prose-headings:font-black prose-img:rounded-md prose-a:text-[#3860be] md:prose-base md:text-lg" dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div className="prose prose-sm prose-stone max-w-none leading-relaxed text-[#25282b] prose-headings:font-black prose-img:h-auto prose-img:w-full prose-img:rounded-md prose-a:text-[#3860be] md:prose-base md:text-lg" dangerouslySetInnerHTML={{ __html: enhancedPostContent }} />
         </div>
 
         <div className="flex items-center justify-between border-t border-stone-100 bg-stone-50 px-5 py-4 md:px-8 md:py-6">
@@ -342,7 +395,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
             <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-white text-white' : ''}`} /> 
             <span>{post.likeCount}</span>
           </button>
-          <div className="flex items-center gap-2 text-sm font-bold text-stone-400 md:text-base">
+          <div className="flex items-center gap-2 text-sm font-bold text-stone-600 md:text-base">
             <MessageCircle className="w-4 h-4" /> <span>댓글 {comments.length}</span>
           </div>
         </div>
@@ -351,16 +404,16 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
       {/* Comments Section */}
       <div className="overflow-hidden rounded-sm border border-stone-200 bg-white">
         <div className="border-b border-stone-100 bg-stone-50 p-4 md:p-6">
-          <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-tighter text-[#25282b] md:text-base">
+          <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-tighter text-[#25282b] md:text-base">
             <MessageCircle className="h-4 w-4 text-[#e60000] md:h-5 md:w-5" /> 댓글 ({comments.length})
-          </h3>
+          </h2>
         </div>
 
         <div className="divide-y divide-stone-50">
           {isCommentsLoading ? (
              <div className="p-10 flex justify-center"><Loader2 className="w-6 h-6 text-stone-300 animate-spin" /></div>
           ) : comments.length === 0 ? (
-            <div className="py-16 text-center text-sm font-bold text-stone-400 md:py-20 md:text-base">아직 댓글이 없습니다.</div>
+            <div className="py-16 text-center text-sm font-bold text-stone-600 md:py-20 md:text-base">아직 댓글이 없습니다.</div>
           ) : (
             comments.map((comment: any) => (
               <div key={comment.commentId}>
@@ -380,7 +433,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
               <span className="flex items-center gap-2 text-xs font-bold text-[#e60000]">
                 <CornerDownRight className="w-3 h-3" /> @{replyTo.name} 님에게 답글 남기는 중
               </span>
-              <button type="button" onClick={() => setReplyTo(null)} className="text-[#e60000]/70 hover:text-[#e60000]"><X className="w-3.5 h-3.5" /></button>
+              <button type="button" onClick={() => setReplyTo(null)} className="text-[#b80000] hover:text-[#e60000]" aria-label="답글 입력 취소"><X className="w-3.5 h-3.5" /></button>
             </div>
           )}
           <div className="flex gap-2 md:gap-4 items-center">
@@ -395,6 +448,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
               />
               <button
                 type="submit"
+                aria-label={replyTo ? '답글 등록하기' : '댓글 등록하기'}
                 disabled={!newComment.trim() || commentMutation.isPending || !isLoggedIn}
                 className="flex flex-shrink-0 items-center justify-center rounded-sm bg-[#e60000] px-4 text-white transition-opacity hover:opacity-90 disabled:opacity-50 md:px-6"
               >
@@ -448,17 +502,23 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
             {hotPosts.map((hotPost) => (
               <Link key={hotPost.postId} href={`/community/${hotPost.postId}`} className={hotPostCardClass}>
                 {hotPost.imageUrl && (
-                  <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-sm bg-stone-100 sm:h-16 sm:w-16">
-                    <img src={hotPost.imageUrl} alt={hotPost.title} loading="lazy" className="h-full w-full object-cover" />
+                  <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-sm bg-stone-100 sm:h-16 sm:w-16">
+                    <Image
+                      src={hotPost.imageUrl}
+                      alt={hotPost.title}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                    />
                   </div>
                 )}
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <div className="mb-1 flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-stone-400">
+                  <div className="mb-1 flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-stone-600">
                     <span className="text-[#e60000]">{getCategoryLabel(hotPost.category)}</span>
                     <span>{new Date(hotPost.createdAt).toLocaleDateString()}</span>
                   </div>
                   <p className="line-clamp-2 text-[13px] font-black leading-4 text-[#25282b] sm:text-sm sm:leading-5">{hotPost.title}</p>
-                  <div className="mt-auto flex items-center gap-3 text-[11px] font-bold text-stone-400 sm:text-xs">
+                  <div className="mt-auto flex items-center gap-3 text-[11px] font-bold text-stone-600 sm:text-xs">
                     <span className="flex items-center gap-1"><Heart className="h-3.5 w-3.5" /> {hotPost.likeCount}</span>
                     <span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" /> {hotPost.commentCount}</span>
                   </div>
