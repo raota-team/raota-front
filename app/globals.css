@@ -2,14 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Pretendard";
-  font-style: normal;
-  font-weight: 45 920;
-  font-display: swap;
-  src: url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/woff2/PretendardVariable.woff2") format("woff2-variations");
-}
-
 :root {
   --raota-red: #e60000;
   --raota-charcoal: #25282b;
@@ -25,7 +17,7 @@ html {
 }
 
 body {
-  font-family: "Pretendard", "Helvetica Neue", Arial, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Helvetica Neue", Arial, sans-serif;
   background-color: #ffffff;
   margin: 0;
   overflow-y: scroll;
@@ -65,17 +57,6 @@ body {
   }
 }
 
-/* Swiper Pagination Customization */
-.swiper-pagination-bullet {
-  background-color: #44403c !important;
-  opacity: 0.5 !important;
-}
-
-.swiper-pagination-bullet-active {
-  background-color: var(--raota-red) !important;
-  opacity: 1 !important;
-}
-
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
@@ -97,9 +78,6 @@ body {
     overflow-x: clip;
   }
 
-  .swiper-pagination {
-    bottom: 4px !important;
-  }
 }
 
 /* Tiptap Editor Styles (Ensure visibility even if Prose plugin fails) */

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import {
   Camera,
@@ -19,15 +21,16 @@ import {
 } from "lucide-react";
 import { Shop, UserPhoto, MenuItem } from "../../../types";
 import ProgressBar from "../../../components/ProgressBar";
-import PhotoModal from "../../../components/PhotoModal";
-import ReportModal from "../../../components/ReportModal";
-import UploadPhotoModal from "../../../components/UploadPhotoModal";
-import MenuDetailModal from "../../../components/MenuDetailModal";
 import Loading from "@/app/loading";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
 import { toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture, deleteProofPicture } from "@/lib/api/ramen-shops";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
+
+const PhotoModal = dynamic(() => import("../../../components/PhotoModal"), { ssr: false });
+const ReportModal = dynamic(() => import("../../../components/ReportModal"), { ssr: false });
+const UploadPhotoModal = dynamic(() => import("../../../components/UploadPhotoModal"), { ssr: false });
+const MenuDetailModal = dynamic(() => import("../../../components/MenuDetailModal"), { ssr: false });
 
 interface ShopDetailClientProps {
   initialShop?: Shop;
@@ -72,7 +75,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
   const refreshShopData = async () => {
     try {
-      const photos = await getShopPhotos(shopId, 0, 50);
+      const photos = await getShopPhotos(shopId, 0, 12);
       setShopPhotos(photos);
       
       const votes = await getVoteStatus(shopId);
@@ -190,6 +193,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       <button 
         onClick={() => router.push("/shops")} 
         className="group mb-8 flex items-center text-[#7e7e7e] transition-colors hover:text-[#e60000]"
+        aria-label="라멘 가게 목록으로 돌아가기"
       >
         <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
         <span className="font-bold text-sm uppercase tracking-widest">목록으로 돌아가기</span>
@@ -198,10 +202,13 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       <div className="mb-10 grid grid-cols-1 gap-6 lg:mb-12 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-8">
           <div className="group relative h-72 w-full overflow-hidden rounded-md bg-stone-100 md:h-80 lg:h-96">
-            <img 
+            <Image
               src={shop.imageUrl} 
               alt={shop.name} 
-              className="h-full w-full object-cover saturate-105" 
+              fill
+              priority
+              sizes="(min-width: 1024px) 832px, calc(100vw - 32px)"
+              className="object-cover saturate-105"
             />
             <span className="absolute right-4 top-4 inline-flex items-center rounded-sm border border-stone-200 bg-white px-3 py-1.5 text-xs font-black text-[#25282b] shadow-lg shadow-black/10 md:right-5 md:top-5 md:text-sm">
               <Camera className="mr-1.5 h-3.5 w-3.5 text-[#e60000] md:h-4 md:w-4" /> 인증 {shopPhotos.length}회
@@ -230,29 +237,30 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
           <div className="prose prose-stone mb-10 max-w-none md:mb-12">
             <div className="mb-4 flex items-center border-l-4 border-[#e60000] pl-4">
-              <h3 className="m-0 text-lg font-bold text-[#25282b] md:text-xl">한줄평</h3>
+              <h2 className="m-0 text-lg font-bold text-[#25282b] md:text-xl">한줄평</h2>
             </div>
             <p className="text-base leading-relaxed text-[#7e7e7e] md:text-lg">{shop.description}</p>
           </div>
 
           {shop.event_menus && shop.event_menus.length > 0 && (
             <div className="mb-10 md:mb-12">
-              <h3 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Sparkles className="mr-2 h-5 w-5 text-[#e60000]" /> 이벤트 메뉴</h3>
+              <h2 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Sparkles className="mr-2 h-5 w-5 text-[#e60000]" /> 이벤트 메뉴</h2>
               <div className="grid grid-cols-1 gap-4 md:gap-6">
                 {shop.event_menus.map((event) => (
                   <div key={event.id} className="group flex flex-col overflow-hidden rounded-md border border-stone-200 bg-white transition-colors hover:border-[#e60000] md:flex-row">
-                    <div className="relative h-40 overflow-hidden md:h-auto md:w-1/3">
-                      <img 
+                    <div className="relative h-40 overflow-hidden md:min-h-48 md:w-1/3">
+                      <Image
                         src={event.image_url} 
                         alt={event.name} 
-                        loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" 
+                        fill
+                        sizes="(min-width: 768px) 280px, calc(100vw - 32px)"
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                       />
                       <div className="absolute left-2 top-2"><span className="rounded-sm bg-[#e60000] px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">{event.badge_text}</span></div>
                     </div>
                     <div className="flex flex-col justify-center p-4 md:w-2/3 md:p-6">
                       <div className="flex justify-between items-start mb-2">
-                        <h4 className="text-lg font-black text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-xl">{event.name}</h4>
+                        <h3 className="text-lg font-black text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-xl">{event.name}</h3>
                         <span className="font-mono text-base font-bold text-[#25282b] md:text-lg">{event.price.toLocaleString()}원</span>
                       </div>
                       <p className="text-sm leading-relaxed text-[#7e7e7e]">{event.description}</p>
@@ -265,17 +273,18 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
           {shop.menu_list && shop.menu_list.length > 0 && (
             <div className="mb-10 md:mb-12">
-              <h3 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Utensils className="mr-2 h-5 w-5 text-stone-500" /> 일반 메뉴</h3>
+              <h2 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Utensils className="mr-2 h-5 w-5 text-stone-500" /> 일반 메뉴</h2>
               <div className="rounded-md border border-stone-200 bg-white p-2">
                 {shop.menu_list.map((menu, idx) => (
                   <div key={menu.id} onClick={() => setSelectedMenu(menu)} className={`flex cursor-pointer items-center justify-between border-l-4 border-l-transparent p-3 transition-colors hover:border-l-[#e60000] hover:bg-stone-50 md:p-4 ${idx !== shop.menu_list.length - 1 ? "border-b border-stone-200" : ""}`}>
                     <div className="flex items-center">
-                      <div className="mr-3 h-10 w-10 flex-shrink-0 overflow-hidden rounded-sm bg-stone-100 md:mr-4 md:h-12 md:w-12">
-                        <img 
+                      <div className="relative mr-3 h-10 w-10 flex-shrink-0 overflow-hidden rounded-sm bg-stone-100 md:mr-4 md:h-12 md:w-12">
+                        <Image
                           src={menu.image_url} 
                           alt={menu.name} 
-                          loading="lazy"
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110" 
+                          fill
+                          sizes="48px"
+                          className="object-cover transition-transform duration-300 hover:scale-110"
                         />
                       </div>
                       <div>
@@ -292,18 +301,19 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
           <div className="mt-10 border-t border-stone-200 pt-6 md:mt-12 md:pt-8">
             <div className="mb-4 flex items-end justify-between md:mb-6">
-              <h3 className="flex items-center text-lg font-bold text-[#25282b] md:text-xl"><ImageIcon className="mr-2 h-5 w-5 text-[#e60000]" /> 유저 메뉴 인증</h3>
+              <h2 className="flex items-center text-lg font-bold text-[#25282b] md:text-xl"><ImageIcon className="mr-2 h-5 w-5 text-[#e60000]" /> 유저 메뉴 인증</h2>
               <span className="text-xs text-stone-400 font-mono">{shopPhotos.length}개 사진</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
               {shopPhotos.map((photo) => (
                 <div key={photo.id} onClick={() => setSelectedPhoto(photo)} className="group relative aspect-square cursor-pointer overflow-hidden rounded-sm border border-stone-200 bg-stone-100 transition-colors hover:border-[#e60000]">
-                  <img 
+                  <Image
                     src={photo.imageUrl} 
                     alt={photo.menuName} 
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" 
+                    fill
+                    sizes="(min-width: 768px) 260px, calc((100vw - 44px) / 2)"
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
                     <p className="text-white text-xs font-bold truncate">
@@ -326,6 +336,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                   setIsUploadModalOpen(true);
                 }}
                 className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-stone-300 bg-stone-50 p-3 text-center transition-colors hover:border-[#e60000] md:gap-3 md:p-4"
+                aria-label="라멘 인증샷 올리기"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition-colors group-hover:border-[#e60000] group-hover:text-[#e60000] md:h-12 md:w-12">
                   <Camera className="h-5 w-5 md:h-6 md:w-6" />
@@ -344,7 +355,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
         <div className="lg:col-span-4">
           <div className="sticky top-24 space-y-6 md:space-y-8">
             <div className="rounded-md border border-stone-200 bg-white p-4 md:p-6">
-              <h3 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Award className="mr-2 h-5 w-5 text-[#e60000]" /> 베스트 메뉴 투표</h3>
+              <h2 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Award className="mr-2 h-5 w-5 text-[#e60000]" /> 베스트 메뉴 투표</h2>
               <p className="mb-6 text-sm leading-relaxed text-stone-500 md:mb-8">이 가게에서 제일 맛있었던 메뉴는?</p>
               
               <div className="space-y-5 md:space-y-6">
@@ -359,6 +370,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                       </div>
                       <button 
                         onClick={() => handleVote(menu)} 
+                        aria-label={`${menu.name} 메뉴에 투표하기`}
                         className={`flex items-center gap-1 rounded-sm px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
                           menu.isVoted 
                             ? "bg-[#e60000] text-white" 
@@ -383,7 +395,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
             <div className="relative overflow-hidden rounded-md bg-[#25282b] p-5 text-white md:p-8">
               <div className="relative z-10">
-                <h4 className="text-lg font-black mb-4 uppercase tracking-tighter italic">Information</h4>
+                <h2 className="text-lg font-black mb-4 uppercase tracking-tighter italic">Information</h2>
                 <div className="space-y-4 text-sm font-mono text-stone-300">
                   <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">주소</span><span className="text-right break-keep">{formatInfoValue(shop.address)}</span></p>
                   <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-500 flex-shrink-0">영업시간</span><span className="text-right">{formatOperatingHours(shop.business_hours)}</span></p>
@@ -402,6 +414,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               <button 
                 onClick={() => setIsReportModalOpen(true)}
                 className="text-xs text-stone-400 hover:text-stone-600 underline transition-colors underline-offset-4"
+                aria-label="가게 정보 수정 및 이벤트 제보하기"
               >
                 정보 수정 및 새로운 이벤트 제보하기
               </button>
@@ -410,30 +423,34 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
         </div>
       </div>
 
-      <ReportModal 
-        isOpen={isReportModalOpen} 
-        onClose={() => setIsReportModalOpen(false)} 
-        shopId={shopId} 
-        shopName={shop.name} 
-      />
+      {isReportModalOpen && (
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          shopId={shopId}
+          shopName={shop.name}
+        />
+      )}
 
-      <UploadPhotoModal 
-        isOpen={isUploadModalOpen} 
-        onClose={() => setIsUploadModalOpen(false)} 
-        shopName={shop.name} 
-        menuList={shop.menu_list} 
-        onUpload={async (formData) => {
-          try {
-            await addProofPicture(shopId, formData);
-            showToast("사진이 성공적으로 등록되었습니다!", "success");
-            await refreshShopData();
-            queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
-          } catch (error: any) {
-            console.error("Backend registration failed:", error);
-            showToast(error.message || "사진 등록 중 오류가 발생했습니다.", "error");
-          }
-        }}
-      />
+      {isUploadModalOpen && (
+        <UploadPhotoModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          shopName={shop.name}
+          menuList={shop.menu_list}
+          onUpload={async (formData) => {
+            try {
+              await addProofPicture(shopId, formData);
+              showToast("사진이 성공적으로 등록되었습니다!", "success");
+              await refreshShopData();
+              queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
+            } catch (error: any) {
+              console.error("Backend registration failed:", error);
+              showToast(error.message || "사진 등록 중 오류가 발생했습니다.", "error");
+            }
+          }}
+        />
+      )}
 
       {selectedMenu && (
         <MenuDetailModal 

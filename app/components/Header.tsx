@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogIn, Menu, X, Home, MessageSquare, User, UtensilsCrossed, Sparkles } from 'lucide-react';
@@ -65,7 +66,14 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-14 items-center justify-between md:h-16">
               <Link href="/" className="flex items-center cursor-pointer">
-                <img src="/logo.png" alt="RAOTA Logo" className="w-7 h-7 md:w-10 md:h-10 transition-all duration-300" />
+                <Image
+                  src="/logo.png"
+                  alt="RAOTA Logo"
+                  width={40}
+                  height={40}
+                  sizes="(min-width: 768px) 40px, 28px"
+                  className="w-7 h-7 md:w-10 md:h-10 transition-all duration-300"
+                />
                 <span className={`ml-2 text-base font-extrabold uppercase tracking-[-0.02em] transition-colors md:text-xl ${logoTextColor}`}>RAOTA<span className="text-[#e60000]">.</span></span>
               </Link>
 
@@ -107,6 +115,9 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
               <button
                 className={`md:hidden p-1.5 transition-colors ${isTransparent ? 'text-white' : 'text-[#25282b] hover:text-[#e60000]'}`}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label={isMobileMenuOpen ? '모바일 메뉴 닫기' : '모바일 메뉴 열기'}
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-navigation"
               >
                 {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -121,7 +132,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
       )}
 
       {/* Mobile Slide-out Menu */}
-      <div className={`md:hidden fixed inset-y-0 right-0 z-[70] w-full max-w-72 transform bg-white pt-14 pb-safe transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div id="mobile-navigation" className={`md:hidden fixed inset-y-0 right-0 z-[70] w-full max-w-72 transform bg-white pt-14 pb-safe transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full">
           <div className="flex-1 py-3">
             <Link

@@ -4,9 +4,6 @@ import { AppProvider } from "./context/AppContext";
 import ClientLayout from "./components/ClientLayout";
 import QueryProvider from "./providers/QueryProvider";
 import "./globals.css";
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
 
 // 검색 엔진 최적화를 위한 기본 설정
 const SITE_NAME = "라오타 RAOTA";

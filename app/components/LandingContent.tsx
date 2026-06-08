@@ -223,7 +223,7 @@ export default function LandingContent() {
                       <p className="mb-3 break-keep text-sm font-semibold leading-5 text-[#e60000]">
                         {card.pain}
                       </p>
-                      <h4 className="mb-3 text-xl font-bold text-[#25282b] transition-colors duration-300 group-hover:text-[#e60000] md:text-2xl">{card.title}</h4>
+                      <h3 className="mb-3 text-xl font-bold text-[#25282b] transition-colors duration-300 group-hover:text-[#e60000] md:text-2xl">{card.title}</h3>
                       <p className="text-[15px] leading-relaxed text-[#7e7e7e] md:text-base">
                         {card.desc}
                       </p>
@@ -280,7 +280,7 @@ export default function LandingContent() {
                       {review.label}
                     </p>
                   </div>
-                  <h4 className="mb-3 break-keep text-lg font-bold text-[#25282b]">{review.shop}</h4>
+                  <h3 className="mb-3 break-keep text-lg font-bold text-[#25282b]">{review.shop}</h3>
                   <p className="break-keep text-base leading-relaxed text-[#7e7e7e] line-clamp-4">&quot;{review.text}&quot;</p>
                 </div>
                 <div className="mt-8 flex items-center gap-3 border-t border-stone-200 pt-5">

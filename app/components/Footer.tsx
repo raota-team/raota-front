@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 const Footer: React.FC = () => {
   return (
@@ -35,7 +36,7 @@ const Footer: React.FC = () => {
             </div>
           </div>
           <div className="col-span-2 flex items-start justify-start md:col-span-1 md:justify-end">
-            <img src="/logo.png" alt="RAOTA Logo" className="h-10 w-10" />
+            <Image src="/logo.png" alt="RAOTA Logo" width={40} height={40} className="h-10 w-10" />
           </div>
         </div>
         <div className="text-xs font-medium text-white/60 sm:text-sm">

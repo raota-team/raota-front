@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 export default function Loading() {
   return (
@@ -15,9 +16,11 @@ export default function Loading() {
         {/* Animated Logo */}
         <div className="relative mb-8">
           <div className="absolute inset-0 bg-red-600 rounded-full blur-xl opacity-20 animate-ping"></div>
-          <img 
+          <Image
             src="/logo.png" 
             alt="RAOTA Loading" 
+            width={80}
+            height={80}
             className="w-20 h-20 relative z-10 animate-bounce-slow"
           />
         </div>
