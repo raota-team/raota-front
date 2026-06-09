@@ -361,11 +361,11 @@ export default function RecommendPage() {
           />
           <div className="absolute inset-0 bg-[#25282b]/45" />
         </div>
-        <div className="relative z-10 mx-auto flex min-h-[9rem] max-w-7xl flex-col items-center justify-center px-4 py-5 text-center sm:px-6 md:min-h-[16rem] lg:px-8">
+        <div className="relative z-10 mx-auto flex min-h-[9rem] max-w-7xl flex-col items-center justify-center px-4 pt-10 pb-6 text-center sm:px-6 md:min-h-[16rem] md:pt-16 md:pb-12 lg:px-8">
           <div className="max-w-3xl">
-            <h1 className="vodafone-display text-4xl text-white sm:text-5xl md:text-6xl text-center">
-              RECOMMENDATION<span className="text-[#e60000]">.</span>
-              <span className="inline-block align-middle ml-2 sm:ml-3 rounded-full bg-[#e60000] px-2.5 py-0.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-white select-none">
+            <h1 className="vodafone-display text-4xl text-white sm:text-5xl md:text-6xl flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+              <span className="leading-none">RECOMMENDATION<span className="text-[#e60000]">.</span></span>
+              <span className="inline-flex items-center rounded-full bg-[#e60000] px-2.5 py-1 text-[10px] sm:text-xs font-black uppercase tracking-wider text-white select-none leading-none">
                 Beta
               </span>
             </h1>
