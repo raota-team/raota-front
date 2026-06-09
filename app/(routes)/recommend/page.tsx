@@ -146,19 +146,16 @@ export default function RecommendPage() {
     };
   }, []);
 
-  const handleTasteSoupChange = (value: string | null, autoNext = true) => {
+  const handleTasteSoupChange = (value: string | null) => {
     setSelectedSoup(value);
-    if (value && autoNext) setTasteStep(1);
   };
 
-  const handleTasteMoodChange = (value: string | null, autoNext = true) => {
+  const handleTasteMoodChange = (value: string | null) => {
     setSelectedMood(value);
-    if (value && autoNext) setTasteStep(2);
   };
 
-  const handleTastePriorityChange = (value: string | null, autoNext = true) => {
+  const handleTastePriorityChange = (value: string | null) => {
     setSelectedPriority(value);
-    if (value && autoNext) setTasteStep(3);
   };
 
   const handleModeChange = (mode: ModeId) => {
@@ -464,7 +461,7 @@ export default function RecommendPage() {
                         value={selectedSoup} 
                         options={tasteOptions.soup} 
                         onChange={handleTasteSoupChange} 
-                        placeholder="예: 돈코츠, 토리파이탄, 이에케, 마제소바" 
+                        placeholder="국물 종류를 직접 입력하거나 아래 키워드를 선택해보세요" 
                       />
                     </QuestionCard>
                   )}
@@ -475,7 +472,7 @@ export default function RecommendPage() {
                         value={selectedMood} 
                         options={tasteOptions.mood} 
                         onChange={handleTasteMoodChange} 
-                        placeholder="예: 혼밥, 데이트, 조용히 식사" 
+                        placeholder="식사 상황을 직접 입력하거나 아래 키워드를 선택해보세요" 
                       />
                     </QuestionCard>
                   )}
@@ -486,7 +483,7 @@ export default function RecommendPage() {
                         value={selectedPriority} 
                         options={tasteOptions.priority} 
                         onChange={handleTastePriorityChange} 
-                        placeholder="예: 가성비, 차슈 퀄리티, 면의 익힘 정도" 
+                        placeholder="우선순위를 직접 입력하거나 아래 키워드를 선택해보세요" 
                       />
                     </QuestionCard>
                   )}

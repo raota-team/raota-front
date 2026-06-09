@@ -4,7 +4,7 @@ interface HybridInputGroupProps {
   label: string;
   value: string | null;
   options: string[];
-  onChange: (value: string | null, autoNext?: boolean) => void;
+  onChange: (value: string | null) => void;
   placeholder: string;
 }
 
@@ -27,7 +27,7 @@ export function HybridInputGroup({
         value={value || ""}
         onChange={(e) => {
           const val = e.target.value;
-          onChange(val === "" ? null : val, false); // 직접 입력시에는 autoNext = false
+          onChange(val === "" ? null : val);
         }}
         placeholder={placeholder}
         className="w-full bg-stone-50 border border-stone-200 text-stone-750 py-3 px-4 rounded-sm outline-none focus:ring-1 focus:ring-[#e60000] focus:border-[#e60000] transition-all font-medium text-sm placeholder:text-stone-400"
@@ -44,7 +44,7 @@ export function HybridInputGroup({
                 key={option}
                 type="button"
                 onClick={() => {
-                  onChange(isSelected ? null : option, true); // 태그 클릭시에는 autoNext = true
+                  onChange(isSelected ? null : option);
                 }}
                 className={`rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all ${
                   isSelected
