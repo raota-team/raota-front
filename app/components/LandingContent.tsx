@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { useApp } from '../context/AppContext';
 import HomeHeroActions from './HomeHeroActions';
 import { Do_Hyeon } from 'next/font/google';
 import {
@@ -40,6 +41,7 @@ export default function LandingContent() {
   const [heroRef, heroVisible] = useScrollReveal();
   const [contentRef, contentVisible] = useScrollReveal({ threshold: 0.05 });
   const [startPCAnim, setStartPCAnim] = useState(false);
+  const { showToast } = useApp();
   
   useEffect(() => {
     const timer = setTimeout(() => setStartPCAnim(true), 300);
@@ -193,7 +195,7 @@ export default function LandingContent() {
                 color: 'bg-stone-50 text-[#25282b]',
                 onClick: (e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.preventDefault();
-                  alert('준비 중인 서비스입니다.');
+                  showToast('웨이팅 스팟 서비스는 준비 중입니다.', 'info');
                 }
               },
               { label: '내 정보', icon: LayoutGrid, href: '/mypage', color: 'bg-stone-50 text-[#25282b]' },
