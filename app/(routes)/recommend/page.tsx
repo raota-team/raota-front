@@ -95,20 +95,9 @@ export default function RecommendPage() {
   const isCompareReady = Boolean(compareShopA && compareShopB);
   const isSummaryReady = Boolean(summaryShop);
 
-  const isTasteSubmitted =
-    Boolean(submittedTaste) &&
-    submittedTaste?.soup === selectedSoup &&
-    submittedTaste?.mood === selectedMood &&
-    submittedTaste?.priority === selectedPriority &&
-    submittedTaste?.focus === tasteFocus.trim();
-  const isCompareSubmitted =
-    Boolean(submittedCompare) &&
-    submittedCompare?.shopA.id === compareShopA?.id &&
-    submittedCompare?.shopB.id === compareShopB?.id;
-  const isSummarySubmitted =
-    Boolean(submittedSummary) &&
-    submittedSummary?.shop.id === summaryShop?.id &&
-    submittedSummary?.focus === summaryFocus.trim();
+  const isTasteSubmitted = Boolean(submittedTaste);
+  const isCompareSubmitted = Boolean(submittedCompare);
+  const isSummarySubmitted = Boolean(submittedSummary);
 
   const shouldShowResults =
     activeMode === "taste" ? isTasteSubmitted : activeMode === "compare" ? isCompareSubmitted : isSummarySubmitted;
