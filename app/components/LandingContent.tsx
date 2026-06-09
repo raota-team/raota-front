@@ -186,12 +186,22 @@ export default function LandingContent() {
             {[
               { label: '전체 맛집', icon: Store, href: '/shops', color: 'bg-stone-50 text-[#25282b]' },
               { label: '커뮤니티', icon: Users, href: '/community', color: 'bg-stone-50 text-[#25282b]' },
-              { label: '웨이팅 스팟', icon: MapPin, href: '/waiting-map', color: 'bg-stone-50 text-[#25282b]' },
+              { 
+                label: '웨이팅 스팟', 
+                icon: MapPin, 
+                href: '/waiting-map', 
+                color: 'bg-stone-50 text-[#25282b]',
+                onClick: (e: React.MouseEvent<HTMLAnchorElement>) => {
+                  e.preventDefault();
+                  alert('준비 중인 서비스입니다.');
+                }
+              },
               { label: '내 정보', icon: LayoutGrid, href: '/mypage', color: 'bg-stone-50 text-[#25282b]' },
             ].map((item) => (
               <Link 
                 key={item.label}
                 href={item.href}
+                onClick={item.onClick}
                 className="group flex flex-col items-center justify-center rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2] transition-all hover:-translate-y-1 hover:ring-[#e60000]/20"
               >
                 <div className={`mb-3 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full ${item.color} group-hover:bg-[#e60000] group-hover:text-white transition-colors`}>
