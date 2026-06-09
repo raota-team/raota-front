@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query"; //내가추가
 import { getRamenShops } from "@/lib/api/ramen-shops"; //내가 추가
 
 import { ChoiceGroup } from "./_components/ChoiceGroup";
+import { HybridInputGroup } from "./_components/HybridInputGroup";
 import { RecommendEmptyState } from "./_components/RecommendEmptyState";
 import { ShopOptionList } from "./_components/ShopOptionList";
 import { TasteResults } from "./_components/TasteResults";
@@ -145,19 +146,19 @@ export default function RecommendPage() {
     };
   }, []);
 
-  const handleTasteSoupChange = (value: string | null) => {
+  const handleTasteSoupChange = (value: string | null, autoNext = true) => {
     setSelectedSoup(value);
-    if (value) setTasteStep(1);
+    if (value && autoNext) setTasteStep(1);
   };
 
-  const handleTasteMoodChange = (value: string | null) => {
+  const handleTasteMoodChange = (value: string | null, autoNext = true) => {
     setSelectedMood(value);
-    if (value) setTasteStep(2);
+    if (value && autoNext) setTasteStep(2);
   };
 
-  const handleTastePriorityChange = (value: string | null) => {
+  const handleTastePriorityChange = (value: string | null, autoNext = true) => {
     setSelectedPriority(value);
-    if (value) setTasteStep(3);
+    if (value && autoNext) setTasteStep(3);
   };
 
   const handleModeChange = (mode: ModeId) => {
@@ -458,17 +459,35 @@ export default function RecommendPage() {
                 <>
                   {tasteStep === 0 && (
                     <QuestionCard step="01" title="지금 어떤 국물이 당기나요?">
-                      <ChoiceGroup label="국물" value={selectedSoup} options={tasteOptions.soup} onChange={handleTasteSoupChange} />
+                      <HybridInputGroup 
+                        label="국물 종류" 
+                        value={selectedSoup} 
+                        options={tasteOptions.soup} 
+                        onChange={handleTasteSoupChange} 
+                        placeholder="예: 돈코츠, 토리파이탄, 이에케, 마제소바" 
+                      />
                     </QuestionCard>
                   )}
                   {tasteStep === 1 && (
                     <QuestionCard step="02" title="오늘은 어떤 분위기로 먹고 싶나요?">
-                      <ChoiceGroup label="상황" value={selectedMood} options={tasteOptions.mood} onChange={handleTasteMoodChange} />
+                      <HybridInputGroup 
+                        label="식사 상황" 
+                        value={selectedMood} 
+                        options={tasteOptions.mood} 
+                        onChange={handleTasteMoodChange} 
+                        placeholder="예: 혼밥, 데이트, 조용히 식사" 
+                      />
                     </QuestionCard>
                   )}
                   {tasteStep === 2 && (
                     <QuestionCard step="03" title="가장 중요하게 보는 포인트는 무엇인가요?">
-                      <ChoiceGroup label="우선순위" value={selectedPriority} options={tasteOptions.priority} onChange={handleTastePriorityChange} />
+                      <HybridInputGroup 
+                        label="우선순위" 
+                        value={selectedPriority} 
+                        options={tasteOptions.priority} 
+                        onChange={handleTastePriorityChange} 
+                        placeholder="예: 가성비, 차슈 퀄리티, 면의 익힘 정도" 
+                      />
                     </QuestionCard>
                   )}
                   {tasteStep === 3 && (
