@@ -255,7 +255,7 @@ export function CompareResults({
         <h5 className="text-sm font-extrabold tracking-[0.15em] text-[#25282b]">상세 비교</h5>
         <div className="flex flex-col gap-4">
           {compareNarratives.map((item) => (
-            <article key={item.title} className="min-w-0 border border-stone-200 bg-white p-5 md:p-6 shadow-sm hover:shadow-md transition-all">
+            <article key={item.title} className="min-w-0 border border-stone-200 bg-white p-5 md:p-6">
               <div className="flex items-center gap-2.5 border-b border-stone-100 pb-3 mb-3">
                 <span className="inline-flex items-center justify-center rounded-full bg-red-50 text-[#e60000] text-[9px] font-black w-5 h-5 uppercase">VS</span>
                 <h4 className="text-sm font-black text-stone-900">{item.title}</h4>
