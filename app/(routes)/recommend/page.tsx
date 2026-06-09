@@ -450,7 +450,7 @@ export default function RecommendPage() {
                         value={selectedSoup} 
                         options={tasteOptions.soup} 
                         onChange={handleTasteSoupChange} 
-                        placeholder="국물 종류를 직접 입력하거나 아래 키워드를 선택해보세요" 
+                        placeholder="원하는 국물 종류 직접 입력" 
                       />
                     </QuestionCard>
                   )}
@@ -461,7 +461,7 @@ export default function RecommendPage() {
                         value={selectedMood} 
                         options={tasteOptions.mood} 
                         onChange={handleTasteMoodChange} 
-                        placeholder="식사 상황을 직접 입력하거나 아래 키워드를 선택해보세요" 
+                        placeholder="오늘의 식사 상황 직접 입력" 
                       />
                     </QuestionCard>
                   )}
@@ -472,7 +472,7 @@ export default function RecommendPage() {
                         value={selectedPriority} 
                         options={tasteOptions.priority} 
                         onChange={handleTastePriorityChange} 
-                        placeholder="우선순위를 직접 입력하거나 아래 키워드를 선택해보세요" 
+                        placeholder="우선순위 포인트 직접 입력" 
                       />
                     </QuestionCard>
                   )}
