@@ -96,6 +96,35 @@ const polarPoint = (index: number, total: number, radius: number) => {
   };
 };
 
+const highlightShopNames = (text: string, shopA: string, shopB: string) => {
+  if (!text) return "";
+  
+  const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedA = escapeRegExp(shopA);
+  const escapedB = escapeRegExp(shopB);
+  
+  const regex = new RegExp(`(${escapedA}|${escapedB})`, 'g');
+  const parts = text.split(regex);
+  
+  return parts.map((part, index) => {
+    if (part === shopA) {
+      return (
+        <strong key={index} className="font-extrabold text-[#e60000] bg-red-50/80 px-1 py-0.5 rounded-sm">
+          {part}
+        </strong>
+      );
+    }
+    if (part === shopB) {
+      return (
+        <strong key={index} className="font-extrabold text-[#25282b] bg-stone-100 px-1 py-0.5 rounded-sm">
+          {part}
+        </strong>
+      );
+    }
+    return part;
+  });
+};
+
 export function CompareResults({
   primaryShop,
   secondaryShop,
@@ -224,11 +253,20 @@ export function CompareResults({
       {/* Narrative Analysis */}
       <div className="space-y-4">
         <h5 className="text-sm font-extrabold tracking-[0.15em] text-[#25282b]">상세 비교</h5>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-4">
           {compareNarratives.map((item) => (
-            <article key={item.title} className="min-w-0 border border-stone-200 bg-white p-5">
-              <p className="text-[12px] font-extrabold uppercase tracking-widest text-[#e60000]">{item.title}</p>
-              <p className="mt-3 break-words text-sm font-medium leading-relaxed text-[#25282b]">{item.body}</p>
+            <article key={item.title} className="min-w-0 border border-stone-200 bg-white p-5 md:p-6 shadow-sm hover:shadow-md transition-all">
+              <div className="flex items-center gap-2.5 border-b border-stone-100 pb-3 mb-3">
+                <span className="inline-flex items-center justify-center rounded-full bg-red-50 text-[#e60000] text-[9px] font-black w-5 h-5 uppercase">VS</span>
+                <h4 className="text-sm font-black text-stone-900">{item.title}</h4>
+              </div>
+              <p className="break-words text-sm font-medium leading-relaxed text-stone-600">
+                {highlightShopNames(
+                  item.body, 
+                  compareData?.shopA.name ?? primaryShop.name, 
+                  compareData?.shopB.name ?? secondaryShop.name
+                )}
+              </p>
             </article>
           ))}
         </div>
