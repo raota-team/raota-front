@@ -2,10 +2,34 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import HomeHeroActions from './HomeHeroActions';
 import { Do_Hyeon } from 'next/font/google';
-import { Sparkles, Scale, MessageSquare, MessageCircleMore, Camera, ChevronLeft, ChevronRight, Users, UtensilsCrossed } from 'lucide-react';
+import {
+  Sparkles,
+  Scale,
+  MessageSquare,
+  MessageCircleMore,
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  Users,
+  UtensilsCrossed,
+  Heart,
+  MessageCircle,
+  TrendingUp,
+  Map,
+  MapPin,
+  Search,
+  ArrowRight,
+  Zap,
+  LayoutGrid,
+  Store,
+  Clock,
+  ChevronUp
+} from 'lucide-react';
+import { mockCommunityPosts } from '@/app/lib/community-data';
 
 const doHyeon = Do_Hyeon({
   weight: '400',
@@ -13,326 +37,405 @@ const doHyeon = Do_Hyeon({
 });
 
 export default function LandingContent() {
-  const [featuresHeaderRef, featuresHeaderVisible] = useScrollReveal();
-  const [featuresGridRef, featuresGridVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.08 });
-  const [reviewsHeaderRef, reviewsHeaderVisible] = useScrollReveal();
-  const [reviewsGridRef, reviewsGridVisible] = useScrollReveal({ threshold: 0.08 });
-  const [ctaRef, ctaVisible] = useScrollReveal({ threshold: 0.2 });
-
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(true);
-
-  const checkScroll = () => {
-    if (featuresGridRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = featuresGridRef.current;
-      setShowLeftArrow(scrollLeft > 10);
-      setShowRightArrow(scrollWidth - scrollLeft - clientWidth > 10);
-    }
-  };
-
+  const [heroRef, heroVisible] = useScrollReveal();
+  const [contentRef, contentVisible] = useScrollReveal({ threshold: 0.05 });
+  const [startPCAnim, setStartPCAnim] = useState(false);
+  
   useEffect(() => {
-    const el = featuresGridRef.current;
-    if (el) {
-      checkScroll();
-      el.addEventListener('scroll', checkScroll);
-      window.addEventListener('resize', checkScroll);
-    }
-    return () => {
-      if (el) {
-        el.removeEventListener('scroll', checkScroll);
-      }
-      window.removeEventListener('resize', checkScroll);
-    };
-  }, [featuresGridRef]);
-
-  const handleScroll = (direction: 'left' | 'right') => {
-    if (featuresGridRef.current) {
-      const { clientWidth } = featuresGridRef.current;
-      const scrollAmount = clientWidth * 0.75;
-      const newScrollLeft = direction === 'left'
-        ? featuresGridRef.current.scrollLeft - scrollAmount
-        : featuresGridRef.current.scrollLeft + scrollAmount;
-
-      featuresGridRef.current.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth',
-      });
-    }
-  };
-
-  const featureCards = [
-    {
-      href: '/recommend?mode=taste',
-      icon: Sparkles,
-      badge: 'Taste Match',
-      pain: '후기는 많아도, 내 입맛에 맞을지 고민될 때',
-      title: '내 취향 저격 라멘 추천',
-      desc: '국물의 농도, 면의 식감, 선호하는 토핑부터 그날의 기분까지 섬세하게 반영하여 실패 없는 완벽한 한 그릇을 찾아드려요.',
-    },
-    {
-      href: '/recommend?mode=compare',
-      icon: Scale,
-      badge: 'Quick Compare',
-      pain: '두 매장 중 하나를 고르기 어려울 때',
-      title: '헷갈리는 두 매장 1:1 비교',
-      desc: '대표 메뉴와 분위기는 물론 방문자들의 핵심 평가까지 한눈에 대조하여, 지금 상황에 가장 끌리는 곳을 쉽게 결정해 보세요.',
-    },
-    {
-      href: '/recommend?mode=summary',
-      icon: MessageSquare,
-      badge: 'Review Summary',
-      pain: '긴 후기들을 전부 읽기 지칠 때',
-      title: '핵심만 쏙 뽑아낸 리뷰 요약',
-      desc: '실제 방문자들의 칭찬과 솔직한 아쉬운 점을 키워드 중심으로 정리하여, 수십 개의 후기를 읽지 않아도 매장 특징을 단번에 파악해요.',
-    },
-    {
-      href: '/shops',
-      icon: Camera,
-      badge: 'Photo Proof',
-      pain: '내가 먹은 라멘을 기록하고 싶을 때',
-      title: '실시간 메뉴 사진 & 인증',
-      desc: '드신 메뉴를 선택해 직접 찍은 인증샷과 한줄평을 등록해 보세요. 방문한 매장의 생생한 정보를 다른 사람들과 공유하고 기록으로 남길 수 있습니다.',
-    },
-  ];
-
-  const reviews = [
-    {
-      author: '면치기달인',
-      shop: '멘야로지',
-      label: '풍미가 진하게 남는 한 그릇',
-      text: '시그니처인 흑마늘 라멘의 풍미가 미쳤습니다. 국물 농도도 적당하고 차슈 추가는 선택이 아닌 필수입니다.',
-    },
-    {
-      author: '라멘투어',
-      shop: '566라멘',
-      label: '양과 스타일이 확실한 선택',
-      text: '지로계 스타일을 좋아한다면 이보다 더 좋은 선택지는 없습니다. 양이 정말 많으니 처음 가시는 분은 기본 사이즈를 추천합니다.',
-    },
-    {
-      author: '국물매니아',
-      shop: '가솔린앤로지스',
-      label: '국물 취향이 분명한 사람에게',
-      text: '농후한 돈코츠 육수가 일품. 가게가 조금 협소하지만 그 특유의 일본 로컬 분위기 자체가 조미료가 됩니다.',
-    },
-  ];
+    const timer = setTimeout(() => setStartPCAnim(true), 300);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // 최근 커뮤니티 글
+  const trendingPosts = mockCommunityPosts.slice(0, 4);
+  const quickTips = mockCommunityPosts.filter(p => p.category === 'tip').slice(0, 3);
 
   return (
-    <div className="overflow-hidden bg-white">
-      {/* Hero Section */}
-      <section className="relative flex min-h-[calc(100svh-56px)] items-center justify-center overflow-hidden bg-[#25282b] pt-12 sm:pt-0">
+    <div className="min-h-screen bg-[#f2f2f2] pb-6 md:pb-10">
+      {/* 1. Portal Hero Section - Focus on AI Recommendation */}
+      <section className="relative min-h-[480px] h-[70vh] md:h-[500px] w-full overflow-hidden bg-[#25282b]">
         <div className="absolute inset-0">
           <Image
             src="/hero-home.jpg"
-            alt="Ramen Shop"
+            alt="Ramen Background"
             fill
             priority
-            sizes="100vw"
-            className="object-cover opacity-70 saturate-[0.85]"
+            className="object-cover opacity-50 saturate-[0.8]"
           />
-          <div className="absolute inset-0 bg-[#25282b]/35"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#25282b] via-[#25282b]/80 to-transparent"></div>
         </div>
 
-        <div className="relative z-10 mx-auto max-w-6xl px-6 text-center text-white sm:-mt-4">
-          <h1 className={`mb-8 animate-fade-in-down text-[clamp(3.2rem,10.5vw,7.5rem)] font-extrabold uppercase leading-[0.98] tracking-[-0.025em] ${doHyeon.className}`}>
-            <span className="block text-[clamp(2.6rem,7.8vw,5.2rem)]">헤매지 않고 찾는</span>
-            <span className="block">RAMEN</span>
-            <span className="block text-[clamp(2.6rem,7.2vw,5rem)]">오늘의 한 그릇</span>
-          </h1>
-
-          <p className="animate-fade-in-up mx-auto mb-12 max-w-3xl break-keep text-base font-medium leading-relaxed text-white/85 md:text-xl">
-            <span className="block">어디가 더 맛있을지보다 지금 나한테 맞는 한 그릇이 무엇인지,</span>
-            <span className="block">RAOTA가 그 고민부터 함께 정리해드립니다.</span>
-          </p>
-
-          <div className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <HomeHeroActions />
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="bg-white px-6 py-14 md:py-20">
-        <div className="mx-auto max-w-7xl">
-          <div
-            ref={featuresHeaderRef}
-            className={`reveal-hidden ${featuresHeaderVisible ? 'reveal-visible' : ''} grid gap-6 md:grid-cols-[1fr_1.15fr] md:items-end`}
-          >
-            <div>
-              <p className="mb-4 text-xs font-extrabold uppercase tracking-[0.28em] text-[#e60000]">
-                Less Guesswork
-              </p>
-              <h2 className="max-w-[15ch] break-keep text-[clamp(2.2rem,8vw,3rem)] font-light leading-tight text-[#25282b] md:max-w-none md:text-5xl">
-                <span className="block">좋아 보이는 곳은 많은데,</span>
-                <span className="block">막상 고르기는 어렵죠.</span>
-              </h2>
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center pt-24 pb-28 md:flex-row md:items-center md:justify-between md:pt-0 md:pb-0 px-4 md:px-12">
+          <div className="max-w-2xl">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-md bg-[#e60000] px-3 py-1">
+              <Zap className="h-3.5 w-3.5 text-white fill-white" />
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white">AI Powered</span>
             </div>
-            <p className="max-w-2xl break-keep text-lg leading-8 text-[#7e7e7e]">
-              <span className="block">
-                후기는 넘치고, 내 취향은 설명하기 어렵고, 후보가 생겨도 마지막 선택에서 자주 멈추게 됩니다.
-              </span>
-              <span className="mt-2 block">
-                RAOTA는 그 고민이 길어지는 지점을 AI로 정리해 오늘의 한 그릇을 더 쉽게 고르게 만듭니다.
-              </span>
+            <h1 className={`mb-4 md:mb-6 text-[clamp(2rem,8vw,4.5rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-white ${doHyeon.className}`}>
+              오늘 당신의 <br />
+              <span className="text-[#e60000]">베스트 한 그릇</span>은?
+            </h1>
+            <p className="mb-6 md:mb-10 max-w-lg text-base md:text-lg font-medium leading-relaxed text-white/80 break-keep">
+              취향 분석부터 매장 비교까지, <br className="hidden md:block" />
+              라오타 AI가 실패 없는 라멘 선택을 도와드립니다.
             </p>
-          </div>
 
-          {/* Core Features Slider Container */}
-          <div className="relative group/slider mt-12 md:mt-24">
-            {/* Left Button */}
-            {showLeftArrow && (
-              <button
-                onClick={() => handleScroll('left')}
-                className="absolute left-2 lg:-left-6 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] transition-all hover:border-[#e60000] hover:text-[#e60000] active:scale-95 hidden md:flex opacity-90 hover:opacity-100"
-                aria-label="이전 카드 보기"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
-            )}
-
-            {/* Right Button */}
-            {showRightArrow && (
-              <button
-                onClick={() => handleScroll('right')}
-                className="absolute right-2 lg:-right-6 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] transition-all hover:border-[#e60000] hover:text-[#e60000] active:scale-95 hidden md:flex opacity-90 hover:opacity-100"
-                aria-label="다음 카드 보기"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </button>
-            )}
-
-            {/* Core Features Scrollable Element */}
-            <div
-              ref={featuresGridRef}
-              className="flex snap-x snap-mandatory overflow-x-auto gap-6 -mx-6 -mt-4 px-6 pt-4 pb-8 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] md:mx-0 md:px-0"
-            >
-              {featureCards.map((card, i) => {
-                const Icon = card.icon;
-                return (
-                  <a
-                    key={card.badge}
-                    href={card.href}
-                    className={`group flex w-[78vw] min-w-[244px] max-w-[320px] snap-center flex-col justify-between rounded-[0px_6px_0px_0px] border border-stone-200 bg-[#f7f7f7] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#e60000] reveal-hidden ${featuresGridVisible ? 'reveal-visible' : ''} reveal-delay-${i + 1} sm:w-[320px] sm:max-w-[340px] md:w-[360px] md:max-w-[380px] md:p-8 shrink-0`}
-                  >
-                    <div>
-                      <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full border border-stone-200 bg-white text-[#25282b] transition-colors duration-300 group-hover:border-[#e60000] group-hover:bg-[#e60000] group-hover:text-white">
-                        <Icon className="h-6 w-6" />
-                      </div>
-                      <div className="mb-4 flex items-center gap-2">
-                        <span className="inline-block rounded-[2px] border border-[#e60000] bg-white px-2 py-0.5 text-[12px] font-bold uppercase tracking-wider text-[#e60000] transition-colors duration-300 group-hover:bg-[#e60000] group-hover:text-white">{card.badge}</span>
-                      </div>
-                      <p className="mb-3 break-keep text-sm font-semibold leading-5 text-[#e60000]">
-                        {card.pain}
-                      </p>
-                      <h3 className="mb-3 text-xl font-bold text-[#25282b] transition-colors duration-300 group-hover:text-[#e60000] md:text-2xl">{card.title}</h3>
-                      <p className="text-[15px] leading-relaxed text-[#7e7e7e] md:text-base">
-                        {card.desc}
-                      </p>
-                    </div>
-                    <div className="mt-8 flex items-center font-bold text-[#25282b] transition-colors duration-300 group-hover:text-[#e60000]">
-                      <span className="text-sm">바로가기</span>
-                      <svg className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Vodafone Red Chapter Divider */}
-      <div className="vodafone-red-band w-full" aria-hidden="true" />
-
-      {/* Community Sneak Peek */}
-      <section className="bg-[#f7f7f7] px-6 py-16 md:py-32">
-        <div className="mx-auto max-w-7xl">
-          <div
-            ref={reviewsHeaderRef}
-            className={`reveal-hidden ${reviewsHeaderVisible ? 'reveal-visible' : ''} mb-12 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end`}
-          >
-            <div>
-              <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.2em] text-[#e60000]">Last Check Before You Go</p>
-              <h2 className="max-w-[12ch] break-keep text-3xl font-extrabold leading-tight text-[#25282b] md:max-w-none md:text-5xl">
-                선택 전에 보는 <span className="whitespace-nowrap">진짜 후기.</span>
-              </h2>
-            </div>
-            <a href="/community" className="inline-flex items-center gap-2 text-sm font-bold text-[#e60000] hover:underline">
-              후기 더 보러가기
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-            </a>
-          </div>
-
-          <div
-            ref={reviewsGridRef}
-            className="flex snap-x snap-mandatory overflow-x-auto gap-4 -mx-6 -mt-1 px-6 pt-1 pb-8 md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-visible md:px-0 md:mx-0 md:mt-0 md:gap-6 md:pt-0 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          >
-            {reviews.map((review, i) => (
-              <div
-                key={i}
-                className={`flex min-w-[280px] max-w-[340px] snap-center flex-col justify-between rounded-[6px] border border-stone-200 bg-white p-6 transition-all hover:-translate-y-1 hover:border-[#e60000]/30 reveal-hidden ${reviewsGridVisible ? 'reveal-visible' : ''} reveal-delay-${i + 1} md:min-w-0 md:max-w-none sm:p-8`}
-              >
-                <div>
-                  <div className="mb-5 flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f8f1f1] text-[#e60000]">
-                      <MessageCircleMore className="h-5 w-5" />
-                    </div>
-                    <p className="break-keep text-sm font-semibold leading-5 text-[#e60000]">
-                      {review.label}
-                    </p>
-                  </div>
-                  <h3 className="mb-3 break-keep text-lg font-bold text-[#25282b]">{review.shop}</h3>
-                  <p className="break-keep text-base leading-relaxed text-[#7e7e7e] line-clamp-4">&quot;{review.text}&quot;</p>
-                </div>
-                <div className="mt-8 flex items-center gap-3 border-t border-stone-200 pt-5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f2f2f2] text-sm font-bold text-[#25282b]">
-                    {review.author.slice(0, 1)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#25282b]">{review.author}</p>
-                    <p className="text-xs text-[#7e7e7e]">라멘 커뮤니티 유저</p>
-                  </div>
-                </div>
+            {/* Mobile Only: Stats Counter under "도와드립니다." */}
+            <div className="md:hidden mb-8 flex items-center gap-4 text-[10px] text-white/50 border-t border-b border-white/10 py-3 max-w-xs">
+              <div className="flex-shrink-0 whitespace-nowrap">
+                <AnimatedCounter 
+                  value={120} 
+                  suffix="개+" 
+                  className="text-white text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
+                  shouldStart={true} 
+                />
+                등록된 라멘집
               </div>
-            ))}
+              <div className="h-5 w-px bg-white/10 flex-shrink-0"></div>
+              <div className="flex-shrink-0 whitespace-nowrap">
+                <AnimatedCounter 
+                  value={14250} 
+                  suffix="회+" 
+                  className="text-[#e60000] text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
+                  shouldStart={true} 
+                />
+                AI 맞춤 추천
+              </div>
+              <div className="h-5 w-px bg-white/10 flex-shrink-0"></div>
+              <div className="flex-shrink-0 whitespace-nowrap">
+                <AnimatedCounter 
+                  value={3120} 
+                  suffix="건" 
+                  className="text-white text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
+                  shouldStart={true} 
+                />
+                솔직한 후기
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+              <Link 
+                href="/recommend?mode=taste"
+                className="vodafone-button-pill bg-[#e60000] px-6 md:px-8 py-3.5 md:py-4 transition-transform hover:scale-[1.02] active:scale-95 text-center"
+              >
+                <span className="flex items-center justify-center gap-2 text-white font-bold text-sm md:text-base">
+                  취향으로 추천받기 <Sparkles className="h-4 w-4 md:h-5 md:w-5" />
+                </span>
+              </Link>
+              <Link 
+                href="/recommend?mode=compare"
+                className="vodafone-button-pill border border-white/30 bg-white/10 px-6 md:px-8 py-3.5 md:py-4 backdrop-blur-md transition-all hover:bg-white/20 text-center"
+              >
+                <span className="flex items-center justify-center gap-2 text-white font-bold text-sm md:text-base">
+                  매장 1:1 비교 <Scale className="h-4 w-4 md:h-5 md:w-5" />
+                </span>
+              </Link>
+            </div>
+          </div>
+
+          {/* PC 전용 서비스 통계 패널 (오른쪽 배치 - 맨처음 디자인처럼 깔끔한 가로바 형태) */}
+          <div className="hidden md:flex items-center gap-6 lg:gap-10 text-[11px] md:text-xs text-white/50 border-t border-b border-white/10 py-4 px-1 max-w-none">
+            <div className="flex-shrink-0 whitespace-nowrap">
+              <AnimatedCounter 
+                value={120} 
+                suffix="개+" 
+                className="text-white text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
+                shouldStart={startPCAnim} 
+              />
+              등록된 라멘집
+            </div>
+            <div className="h-8 w-px bg-white/10 flex-shrink-0"></div>
+            <div className="flex-shrink-0 whitespace-nowrap">
+              <AnimatedCounter 
+                value={14250} 
+                suffix="회+" 
+                className="text-[#e60000] text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
+                shouldStart={startPCAnim} 
+              />
+              AI 맞춤 추천
+            </div>
+            <div className="h-8 w-px bg-white/10 flex-shrink-0"></div>
+            <div className="flex-shrink-0 whitespace-nowrap">
+              <AnimatedCounter 
+                value={3120} 
+                suffix="건" 
+                className="text-white text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
+                shouldStart={startPCAnim} 
+              />
+              솔직한 후기
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Institutional CTA Panel */}
-      <section
-        ref={ctaRef}
-        className="relative px-6 py-20 text-center md:py-32 overflow-hidden"
+      {/* 2. Portal Main Content Area */}
+      <div 
+        ref={contentRef}
+        className={`mx-auto -mt-20 md:-mt-12 grid max-w-7xl gap-4 md:gap-8 px-4 lg:grid-cols-[1fr_320px] md:px-12 reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
       >
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/hero-ramen.webp"
-            alt="Background"
-            fill
-            sizes="100vw"
-            className="object-cover opacity-60 saturate-50"
-          />
-          <div className="absolute inset-0 bg-[#25282b]/85" />
+        {/* Mobile: Move Profile Card to top for dashboard feel */}
+        <div className="lg:hidden">
+          <UserProfileCard />
         </div>
-        <div className={`relative z-10 mx-auto max-w-4xl reveal-hidden ${ctaVisible ? 'reveal-visible' : ''}`}>
-          <h2 className="mb-6 break-keep text-[clamp(1.75rem,6vw,4rem)] font-extrabold tracking-tight text-white leading-tight">
-            오늘 먹을 라멘,
-            <span className="block">지금 바로 추천받기</span>
-          </h2>
-          <p className="mx-auto mb-12 max-w-2xl break-keep text-lg font-medium leading-relaxed text-white/80">
-            취향에 맞는 한 그릇을 빠르게 골라보세요.
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <a href="/shops" className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-8 text-base font-bold text-white transition-colors hover:bg-white/20">
-              라멘집 보러가기
-              <UtensilsCrossed className="h-5 w-5" />
-            </a>
-            <a href="/community" className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-white/30 bg-transparent px-8 text-base font-bold text-white transition-colors hover:bg-white/10">
-              커뮤니티 보기
-              <Users className="h-5 w-5" />
-            </a>
+
+        {/* Left Column: Community & Feeds */}
+        <main className="flex flex-col gap-4 md:gap-8 lg:h-full">
+          
+          {/* Quick Menu Grid */}
+          <section className="grid grid-cols-2 gap-3 md:gap-4 sm:grid-cols-4">
+            {[
+              { label: '전체 맛집', icon: Store, href: '/shops', color: 'bg-stone-50 text-[#25282b]' },
+              { label: '커뮤니티', icon: Users, href: '/community', color: 'bg-stone-50 text-[#25282b]' },
+              { label: '웨이팅 스팟', icon: MapPin, href: '/waiting-map', color: 'bg-stone-50 text-[#25282b]' },
+              { label: '내 정보', icon: LayoutGrid, href: '/mypage', color: 'bg-stone-50 text-[#25282b]' },
+            ].map((item) => (
+              <Link 
+                key={item.label}
+                href={item.href}
+                className="group flex flex-col items-center justify-center rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2] transition-all hover:-translate-y-1 hover:ring-[#e60000]/20"
+              >
+                <div className={`mb-3 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full ${item.color} group-hover:bg-[#e60000] group-hover:text-white transition-colors`}>
+                  <item.icon className="h-5 w-5 md:h-6 md:w-6" />
+                </div>
+                <span className="text-xs md:text-sm font-bold text-[#25282b] group-hover:text-[#e60000]">{item.label}</span>
+              </Link>
+            ))}
+          </section>
+
+          {/* Main Community Feed */}
+          <section className="rounded-md bg-white p-4 md:p-8 shadow-sm ring-1 ring-[#f2f2f2]">
+            <div className="mb-4 md:mb-8 flex items-center justify-between">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="h-6 md:h-8 w-1 md:w-1.5 rounded-full bg-[#e60000]"></div>
+                <h2 className="text-xl md:text-2xl font-black text-[#25282b]">실시간 인기 게시글</h2>
+              </div>
+              <Link href="/community" className="text-xs md:text-sm font-bold text-[#7e7e7e] hover:text-[#e60000]">
+                더보기 +
+              </Link>
+            </div>
+
+            <div className="grid gap-4 md:gap-6 md:grid-cols-2">
+              {trendingPosts.map((post) => (
+                <Link 
+                  key={post.id}
+                  href={`/community/${post.id}`}
+                  className="group flex items-start gap-4 border-b border-[#f2f2f2] pb-4 md:pb-6 last:border-0 last:pb-0"
+                >
+                  <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-[0px_8px_0px_0px] bg-stone-100 ring-1 ring-stone-100">
+                    {post.imageUrl ? (
+                      <Image src={post.imageUrl} alt={post.title} fill className="object-cover transition-transform group-hover:scale-110" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-stone-300">
+                        <MessageSquare className="h-6 w-6 md:h-8 md:w-8" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col min-w-0">
+                    <span className="mb-0.5 md:mb-1 text-[9px] md:text-[10px] font-black uppercase tracking-wider text-[#e60000]">
+                      {post.categoryName}
+                    </span>
+                    <h3 className="mb-1.5 md:mb-2 truncate text-sm md:text-base font-bold text-[#25282b] group-hover:text-[#e60000]">
+                      {post.title}
+                    </h3>
+                    <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-xs text-[#7e7e7e]">
+                      <span className="font-bold text-[#25282b]">{post.author}</span>
+                      <div className="flex items-center gap-1">
+                        <Heart className="h-2.5 w-2.5 md:h-3 w-3" /> {post.likes}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MessageCircle className="h-2.5 w-2.5 md:h-3 w-3" /> {post.comments}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Bottom Banner Group: AI Summary & Contact Banner */}
+          <div className="lg:mt-auto flex flex-col gap-4 md:gap-8 w-full">
+            {/* AI Feature Summary Banner */}
+            <section className="relative overflow-hidden rounded-md bg-[#e60000] p-5 md:p-8 text-white shadow-lg">
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
+                <div className="mb-4 md:mb-0">
+                  <h2 className="mb-2 text-xl md:text-2xl font-black leading-tight">
+                    길게 읽지 마세요, <br />
+                    AI가 3줄 요약해 드립니다.
+                  </h2>
+                  <p className="text-sm md:text-base text-white/85">수많은 리뷰 속 핵심 장단점만 쏙쏙!</p>
+                </div>
+                <Link 
+                  href="/recommend?mode=summary"
+                  className="vodafone-button-pill bg-white px-8 py-3 text-sm font-bold text-[#e60000] transition-transform hover:scale-105 active:scale-95 text-center"
+                >
+                  지금 요약 보기
+                </Link>
+              </div>
+              <div className="absolute -right-8 -top-8 opacity-10">
+                <MessageSquare className="h-32 md:h-48 w-32 md:w-48" />
+              </div>
+            </section>
+
+            {/* PC Only: Contact Us Banner aligned to the bottom */}
+            <div className="hidden lg:block">
+              <ContactUsBanner />
+            </div>
           </div>
+        </main>
+
+        {/* Right Column: Sidebar (Desktop) / Bottom Content (Mobile) */}
+        <aside className="flex flex-col gap-4 md:gap-8 lg:h-full">
+          {/* Desktop Only: Profile Card */}
+          <div className="hidden lg:block">
+            <UserProfileCard />
+          </div>
+
+          {/* Live Shop Ranking */}
+          <div className="rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2]">
+            <div className="mb-3 flex items-center justify-between border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
+              <h2 className="font-black text-base md:text-lg text-[#25282b]">실시간 인기 매장</h2>
+              <Link href="/shops" className="text-[10px] font-bold text-[#7e7e7e] hover:text-[#e60000]">전체보기</Link>
+            </div>
+            <div className="space-y-0">
+              {[
+                { name: '멘야로지', rank: 1, trend: 'up' },
+                { name: '566라멘', rank: 2, trend: 'up' },
+                { name: '가솔린앤로지스', rank: 3, trend: 'down' },
+                { name: '멘야무사시', rank: 4, trend: 'new' },
+                { name: '토리파이탄 오레노', rank: 5, trend: 'up' },
+              ].map((shop, i) => (
+                <div key={shop.name} className={`flex items-center justify-between py-2 md:py-3 ${i !== 4 ? 'border-b border-[#f2f2f2]/50' : ''}`}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className={`w-4 text-xs md:text-sm font-black ${shop.rank <= 3 ? 'text-[#e60000]' : 'text-[#bebebe]'}`}>
+                      {shop.rank}
+                    </span>
+                    <span className="text-xs md:text-sm font-bold text-[#25282b] truncate">{shop.name}</span>
+                  </div>
+                  <div className="flex-shrink-0 ml-2">
+                    {shop.trend === 'up' && <ChevronUp className="h-3 w-3 text-[#e60000]" />}
+                    {shop.trend === 'new' && <span className="text-[8px] font-black text-[#e60000]">NEW</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Tips Portal */}
+          <div className="rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2] lg:mt-auto">
+            <div className="mb-3 flex items-center gap-2 border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
+              <Sparkles className="h-4 w-4 text-[#e60000]" />
+              <h2 className="font-black text-base md:text-lg text-[#25282b]">라멘 꿀팁</h2>
+            </div>
+            <div className="space-y-0">
+              {quickTips.map((tip, i) => (
+                <Link 
+                  key={tip.id} 
+                  href={`/community/${tip.id}`}
+                  className={`group block py-2 md:py-3 ${i !== quickTips.length - 1 ? 'border-b border-[#f2f2f2]/50' : ''}`}
+                >
+                  <p className="line-clamp-2 text-xs leading-relaxed text-[#7e7e7e] group-hover:text-[#e60000]">
+                    {tip.title}
+                  </p>
+                  <span className="mt-1 block text-[10px] text-[#bebebe]">{tip.date}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* Mobile Only: Contact Us Banner at the very bottom */}
+        <div className="lg:hidden mt-4">
+          <ContactUsBanner />
         </div>
-      </section>
+      </div>
     </div>
+  );
+}
+
+function UserProfileCard() {
+  return (
+    <div className="rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2]">
+      <div className="mb-4 md:mb-6 flex items-center gap-4">
+        <div className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-[#f2f2f2] flex items-center justify-center text-[#e60000]">
+          <Users className="h-6 w-6 md:h-7 md:w-7" />
+        </div>
+        <div>
+          <p className="text-[10px] md:text-xs text-[#7e7e7e]">어서오세요!</p>
+          <p className="text-sm md:text-base font-bold text-[#25282b]">라멘을 사랑하는 분</p>
+        </div>
+      </div>
+      <Link 
+        href="/login"
+        className="flex w-full items-center justify-center rounded-sm bg-[#25282b] py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 active:opacity-95"
+      >
+        로그인하기
+      </Link>
+      <div className="mt-4 flex justify-between px-2 text-[10px] md:text-[11px] font-bold text-[#7e7e7e]">
+        <Link href="/register" className="hover:text-[#e60000]">회원가입</Link>
+        <Link href="/find" className="hover:text-[#e60000]">계정찾기</Link>
+      </div>
+    </div>
+  );
+}
+
+interface AnimatedCounterProps {
+  value: number;
+  duration?: number;
+  suffix?: string;
+  className?: string;
+  shouldStart?: boolean;
+}
+
+function AnimatedCounter({ 
+  value, 
+  duration = 1200, 
+  suffix = '', 
+  className = '', 
+  shouldStart = true 
+}: AnimatedCounterProps) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!shouldStart) return;
+    
+    let startTimestamp: number | null = null;
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const easeProgress = progress * (2 - progress); // easeOutQuad
+      setCount(Math.floor(easeProgress * value));
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }, [value, duration, shouldStart]);
+
+  const formattedCount = count.toLocaleString('ko-KR');
+
+  return <span className={className}>{formattedCount}{suffix}</span>;
+}
+
+function ContactUsBanner() {
+  return (
+    <section className="relative overflow-hidden rounded-md bg-[#1a1a1a] p-5 md:p-6 text-white shadow-md border border-stone-850">
+      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="min-w-0">
+          <span className="inline-block rounded-sm bg-[#e60000] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white mb-2">CONTACT</span>
+          <h3 className="mb-1 text-base md:text-lg font-black tracking-tight leading-snug">
+            궁금한 점이 있으신가요?
+          </h3>
+          <p className="text-xs md:text-sm text-white/70 leading-relaxed break-keep">
+            서비스 이용 관련 제보, 개선을 위한 건의 사항 등 라오타에 전하고 싶은 모든 의견을 자유롭게 보내주세요.
+          </p>
+        </div>
+        <Link 
+          href="/community" 
+          className="vodafone-button-pill bg-white/10 hover:bg-white/20 border border-white/20 px-6 py-2.5 text-xs font-bold text-white transition-all text-center shrink-0 whitespace-nowrap self-stretch md:self-auto flex items-center justify-center gap-1.5"
+        >
+          문의 및 제보하기 <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+    </section>
   );
 }

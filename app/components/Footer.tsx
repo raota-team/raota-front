@@ -3,45 +3,35 @@ import Image from 'next/image';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#25282b] py-10 text-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-y-10 gap-x-6 border-b border-white/25 pb-10 md:grid-cols-5 md:gap-8 md:pb-8">
-          <div className="col-span-2 md:col-span-1">
-            <h2 className="text-base font-extrabold uppercase">RAOTA</h2>
-            <p className="mt-3 max-w-xs text-sm leading-6 text-white/70">
-              라멘에 진심인 사람들의 맛집 지도와 커뮤니티.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-sm font-extrabold uppercase">Explore</h3>
-            <div className="mt-4 space-y-3 text-sm text-white/75">
-              <a href="/recommend" className="block hover:text-white">추천받기</a>
-              <a href="/shops" className="block hover:text-white">가게</a>
-              <a href="/community" className="block hover:text-white">커뮤니티</a>
+    <footer className="bg-[#25282b] py-5 md:py-6 text-white/80 border-t border-white/5">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-5 md:flex-row md:justify-between md:items-center">
+          {/* Left Column: Brand & Logo with perfect alignment */}
+          <div className="flex items-center gap-3">
+            <Image src="/logo.png" alt="RAOTA Logo" width={32} height={32} className="h-8 w-8 opacity-95 shrink-0" />
+            <div className="flex flex-col justify-center">
+              <span className="text-sm font-black tracking-wider text-white uppercase leading-none">RAOTA</span>
+              <span className="text-[9px] text-white/40 mt-1 block font-medium leading-none">라멘에 진심인 사람들</span>
             </div>
           </div>
-          <div>
-            <h3 className="text-sm font-extrabold uppercase">Account</h3>
-            <div className="mt-4 space-y-3 text-sm text-white/75">
-              <a href="/login" className="block hover:text-white">로그인</a>
-              <a href="/login" className="block hover:text-white">시작하기</a>
+
+          {/* Right Column: Legal & Contact */}
+          <div className="flex flex-col gap-1 md:items-end">
+            <div className="flex items-center gap-3 text-[11px] font-semibold text-white/60">
+              <a href="/terms" className="hover:text-white transition-colors">이용약관</a>
+              <span className="text-white/20 text-[9px]">|</span>
+              <a href="/privacy" className="hover:text-white transition-colors">개인정보처리방침</a>
             </div>
-          </div>
-          <div className="col-span-2 md:col-span-1">
-            <h3 className="text-sm font-extrabold uppercase">Legal</h3>
-            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/75 md:block md:space-y-3">
-              <a href="/terms" className="block hover:text-white">이용약관</a>
-              <a href="/privacy" className="block hover:text-white">개인정보처리방침</a>
-              <a href="mailto:contact@raota.net" className="block hover:text-white">문의하기</a>
-            </div>
-          </div>
-          <div className="col-span-2 flex items-start justify-start md:col-span-1 md:justify-end">
-            <Image src="/logo.png" alt="RAOTA Logo" width={40} height={40} className="h-10 w-10" />
+            <a href="mailto:contact@raota.net" className="hover:text-white transition-colors text-[10px] text-white/40 mt-0.5 block md:text-right font-medium">
+              제휴 및 문의: contact@raota.net
+            </a>
           </div>
         </div>
-        <div className="text-xs font-medium text-white/60 sm:text-sm">
-          © 2026 RAOTA. <span className="hidden sm:inline">All rights reserved. </span>
-          <span className="block sm:inline">RAOTA - 라멘에 진심인 사람들</span>
+
+        {/* Bottom copyright */}
+        <div className="mt-5 border-t border-white/5 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] text-white/40">
+          <p>© 2026 RAOTA. All rights reserved.</p>
+          <p className="font-medium hidden sm:block">RAOTA - 라멘 맛집 정보 · AI 추천 · 커뮤니티</p>
         </div>
       </div>
     </footer>

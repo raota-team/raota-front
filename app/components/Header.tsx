@@ -132,77 +132,79 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
       )}
 
       {/* Mobile Slide-out Menu */}
-      <div id="mobile-navigation" className={`md:hidden fixed inset-y-0 right-0 z-[70] w-full max-w-72 transform bg-white pt-14 pb-safe transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="flex flex-col h-full">
-          <div className="flex-1 py-3">
-            <Link
-              href="/"
-              onClick={closeMobileMenu}
-              className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
-            >
-              <Home className="w-5 h-5 mr-3" />
-              홈
-            </Link>
-            <Link
-              href="/recommend"
-              onClick={closeMobileMenu}
-              className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/recommend') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
-            >
-              <Sparkles className="w-5 h-5 mr-3" />
-              추천받기
-            </Link>
-            <Link
-              href="/shops"
-              onClick={closeMobileMenu}
-              className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/shops') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
-            >
-              <UtensilsCrossed className="w-5 h-5 mr-3" />
-              가게
-            </Link>
-            <Link
-              href="/community"
-              onClick={closeMobileMenu}
-              className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/community') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
-            >
-              <MessageSquare className="w-5 h-5 mr-3" />
-              커뮤니티
-            </Link>
-            <Link
-              href={myPagePath}
-              onClick={closeMobileMenu}
-              className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive(myPagePath) ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
-            >
-              <User className="w-5 h-5 mr-3" />
-              마이페이지
-            </Link>
-          </div>
-
-          {/* Login/Logout at bottom */}
-          <div className="border-t border-stone-200 p-4">
-            {isAuthChecking && !isLoggedIn ? (
-              <div className="h-11 w-full rounded-sm bg-stone-100" aria-hidden="true" />
-            ) : isLoggedIn ? (
-              <button
-                onClick={() => {
-                  handleLogout();
-                  closeMobileMenu();
-                }}
-                className="w-full rounded-sm border border-[#333333] py-3 text-center text-sm font-bold text-[#333333] transition-opacity hover:opacity-90"
-              >
-                로그아웃
-              </button>
-            ) : (
+      {isMobileMenuOpen && (
+        <div id="mobile-navigation" className="fixed inset-y-0 right-0 z-[70] w-full max-w-72 bg-white pt-14 pb-safe md:hidden">
+          <div className="flex flex-col h-full">
+            <div className="flex-1 py-3">
               <Link
-                href="/login"
+                href="/"
                 onClick={closeMobileMenu}
-                className="flex w-full items-center justify-center rounded-sm bg-[#e60000] py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
               >
-                <LogIn className="w-4 h-4 mr-2" /> 로그인
+                <Home className="w-5 h-5 mr-3" />
+                홈
               </Link>
-            )}
+              <Link
+                href="/recommend"
+                onClick={closeMobileMenu}
+                className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/recommend') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
+              >
+                <Sparkles className="w-5 h-5 mr-3" />
+                추천받기
+              </Link>
+              <Link
+                href="/shops"
+                onClick={closeMobileMenu}
+                className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/shops') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
+              >
+                <UtensilsCrossed className="w-5 h-5 mr-3" />
+                가게
+              </Link>
+              <Link
+                href="/community"
+                onClick={closeMobileMenu}
+                className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive('/community') ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
+              >
+                <MessageSquare className="w-5 h-5 mr-3" />
+                커뮤니티
+              </Link>
+              <Link
+                href={myPagePath}
+                onClick={closeMobileMenu}
+                className={`flex items-center border-l-4 px-6 py-4 text-lg font-normal transition-colors ${isActive(myPagePath) ? 'border-[#e60000] text-[#e60000]' : 'border-transparent text-[#25282b] hover:text-[#e60000]'}`}
+              >
+                <User className="w-5 h-5 mr-3" />
+                마이페이지
+              </Link>
+            </div>
+
+            {/* Login/Logout at bottom */}
+            <div className="border-t border-stone-200 p-4">
+              {isAuthChecking && !isLoggedIn ? (
+                <div className="h-11 w-full rounded-sm bg-stone-100" aria-hidden="true" />
+              ) : isLoggedIn ? (
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    closeMobileMenu();
+                  }}
+                  className="w-full rounded-sm border border-[#333333] py-3 text-center text-sm font-bold text-[#333333] transition-opacity hover:opacity-90"
+                >
+                  로그아웃
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={closeMobileMenu}
+                  className="flex w-full items-center justify-center rounded-sm bg-[#e60000] py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                >
+                  <LogIn className="w-4 h-4 mr-2" /> 로그인
+                </Link>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 };
