@@ -152,26 +152,24 @@ export default function ShopsListPage() {
   return (
     <div className="min-h-screen">
       {/* Header Section */}
-      <section className="relative min-h-[10rem] overflow-hidden md:min-h-[16rem]">
+      <section className="relative h-[10rem] overflow-hidden md:h-[14rem]">
         <div className="absolute inset-0">
           <img src="/header-shoplist-anime.png" alt="Ramen Shops" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[#25282b]/45"></div>
         </div>
-        <div className="relative z-10 mx-auto flex min-h-[10rem] max-w-7xl flex-col justify-center px-4 py-6 sm:px-6 lg:min-h-[16rem] lg:px-8">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-4 pt-16 pb-4 text-center text-white sm:px-6 md:pt-16 md:pb-6 lg:px-8">
           <div className="text-center text-white">
-            <h1 className="vodafone-display mb-3 text-4xl text-white sm:text-5xl md:text-6xl">
+            <h1 className="vodafone-display mb-3 text-3xl text-white sm:text-4xl md:text-5xl">
               RAMEN ARCHIVE<span className="text-[#e60000]">.</span>
             </h1>
-            <p className="mx-auto max-w-lg text-base font-medium leading-relaxed text-white/85 sm:text-lg">
-              <span className="block md:hidden">전국의 라멘 가게를 탐색하고</span>
-              <span className="block md:hidden">취향에 맞는 한 그릇을 찾아보세요</span>
-              <span className="hidden md:block">전국의 라멘 가게를 탐색하고 취향에 맞는 한 그릇을 찾아보세요</span>
+            <p className="mx-auto max-w-lg text-sm font-medium leading-relaxed text-white/85 sm:text-lg">
+              전국의 라멘 가게를 탐색해보세요
             </p>
           </div>
         </div>
       </section>
 
-      <section className="relative z-20 -mt-6 px-4 sm:px-6 lg:-mt-8 lg:px-8">
+      <section className="relative z-20 mt-6 px-4 sm:px-6 lg:-mt-8 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mx-auto w-full max-w-3xl rounded-[18px] border border-stone-200 bg-white p-2 shadow-[0_10px_28px_rgba(37,40,43,0.06)] sm:max-w-[44rem] sm:p-2.5">
             <div className="relative mx-auto w-full">

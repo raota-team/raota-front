@@ -350,31 +350,32 @@ export default function RecommendPage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#25282b]">
+      <section className="relative h-[10rem] overflow-hidden md:h-[14rem]">
         <div className="absolute inset-0">
           <Image
             src="/header-recommend.png"
             alt="Recommend background"
             fill
             priority
-            className="object-cover opacity-55"
+            className="object-cover"
           />
-          <div className="absolute inset-0 bg-[#25282b]/45" />
+          <div className="absolute inset-0 bg-[#25282b]/40" />
         </div>
-        <div className="relative z-10 mx-auto flex min-h-[9rem] max-w-7xl flex-col items-center justify-center px-4 pt-10 pb-6 text-center sm:px-6 md:min-h-[16rem] md:pt-16 md:pb-12 lg:px-8">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-6 pt-16 pb-4 text-center text-white md:pt-16 md:pb-6">
           <div className="max-w-3xl">
-            <h1 className="vodafone-display text-4xl text-white sm:text-5xl md:text-6xl flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+            <h1 className="vodafone-display mb-3 text-3xl leading-none text-white sm:text-4xl md:text-5xl flex items-center justify-center gap-2.5 flex-nowrap whitespace-nowrap">
               <span className="leading-none">RECOMMENDATION<span className="text-[#e60000]">.</span></span>
-              <span className="inline-flex items-center rounded-full bg-[#e60000] px-2.5 py-1 text-[10px] sm:text-xs font-black uppercase tracking-wider text-white select-none leading-none">
+              <span className="inline-flex shrink-0 items-center rounded-full bg-[#e60000] px-2 py-0.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-white select-none leading-none">
                 Beta
               </span>
             </h1>
-            <p className="mx-auto mt-3 max-w-xl text-base font-medium leading-relaxed text-white/85 sm:text-lg">
+            <p className="mx-auto max-w-md text-sm font-medium leading-relaxed text-white/85 sm:text-lg">
               AI를 통해 추천받고 싶은 방식을 골라보세요.
             </p>
             {/* AI Disclaimer */}
-            <p className="mx-auto mt-4 max-w-xl text-[11px] font-medium leading-relaxed text-white/50">
-              * AI 추천 결과는 실제 정보와 다를 수 있으며, 모델 특성상 올바르지 않은 정보가 포함될 수 있습니다.
+            <p className="mx-auto mt-2 max-w-xl text-[10px] sm:text-xs font-medium leading-relaxed text-white/75">
+              <span className="sm:hidden">* AI 추천 결과는 실제 정보와 다를 수 있습니다.</span>
+              <span className="hidden sm:inline">* AI 추천 결과는 실제 정보와 다를 수 있으며, 모델 특성상 올바르지 않은 정보가 포함될 수 있습니다.</span>
             </p>
           </div>
         </div>
