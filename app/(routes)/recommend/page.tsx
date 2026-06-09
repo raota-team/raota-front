@@ -363,12 +363,11 @@ export default function RecommendPage() {
         </div>
         <div className="relative z-10 mx-auto flex min-h-[9rem] max-w-7xl flex-col items-center justify-center px-4 py-5 text-center sm:px-6 md:min-h-[16rem] lg:px-8">
           <div className="max-w-3xl">
-            {/* Beta Test Badge */}
-            <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-[#e60000] px-3.5 py-1">
-              <span className="text-[10px] font-black uppercase tracking-wider text-white">Beta Test</span>
-            </div>
-            <h1 className="vodafone-display text-4xl text-white sm:text-5xl md:text-6xl">
-              RECOMMENDATION<span className="text-[#e60000]">.</span>
+            <h1 className="vodafone-display text-4xl text-white sm:text-5xl md:text-6xl flex flex-wrap items-center justify-center gap-3">
+              <span>RECOMMENDATION<span className="text-[#e60000]">.</span></span>
+              <span className="inline-flex items-center rounded-full bg-[#e60000] px-2.5 py-0.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-white select-none">
+                Beta
+              </span>
             </h1>
             <p className="mx-auto mt-3 max-w-xl text-base font-medium leading-relaxed text-white/85 sm:text-lg">
               AI를 통해 추천받고 싶은 방식을 골라보세요.
