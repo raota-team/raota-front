@@ -424,7 +424,6 @@ export function SummaryResults({
         <div className="grid gap-4">
           {sampleReviews.map((review, index) => {
             const displayName = getReviewDisplayName(review.name, index);
-            const rating = Math.max(0, Math.min(5, Number(review.rating) || 0));
 
             return (
               <article key={`${displayName}-${index}`} className="min-w-0 border border-stone-200 bg-white p-5">
@@ -434,14 +433,6 @@ export function SummaryResults({
                       {displayName.slice(0, 1)}
                     </div>
                     <span className="min-w-0 truncate font-bold text-[#25282b]">{displayName}</span>
-                  </div>
-                  <div className="flex shrink-0 gap-0.5">
-                    {Array.from({ length: 5 }).map((_, starIndex) => (
-                      <Star
-                        key={starIndex}
-                        className={`h-3 w-3 ${starIndex < rating ? "fill-[#e60000] text-[#e60000]" : "fill-stone-200 text-stone-200"}`}
-                      />
-                    ))}
                   </div>
                 </div>
                 <p className="mt-4 break-words text-sm font-medium leading-relaxed text-[#7e7e7e]">{review.text}</p>
