@@ -239,7 +239,7 @@ export default function LandingContent() {
               {recentVerifiedShops.map((shop) => (
                 <Link 
                   key={shop.id}
-                  href={`/shops/${shop.id}`}
+                  href={`/shop/${shop.id}`}
                   className="group flex items-start gap-4 border-b border-[#f2f2f2] pb-4 md:pb-6 last:border-0 last:pb-0"
                 >
                   <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-[0px_8px_0px_0px] bg-stone-100 ring-1 ring-stone-100">
