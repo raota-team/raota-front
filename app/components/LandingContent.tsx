@@ -89,7 +89,7 @@ export default function LandingContent() {
             </h1>
             <p className="mb-6 md:mb-10 max-w-lg text-base md:text-lg font-medium leading-relaxed text-white/80 break-keep">
               취향 분석부터 매장 비교까지, <br className="hidden md:block" />
-              라오타 AI가 실패 없는 라멘 선택을 도와드립니다.
+              라오타가 실패 없는 라멘 선택을 도와드립니다.
             </p>
 
             {/* Mobile Only: Stats Counter under "도와드립니다." */}
