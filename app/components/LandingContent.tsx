@@ -124,43 +124,64 @@ export default function LandingContent() {
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full">
+            {/* Mobile: Premium Card Widget Style */}
+            <div className="flex flex-col gap-3 w-full sm:hidden">
               <Link 
                 href="/recommend?mode=taste"
-                className="group relative flex flex-1 flex-col justify-center overflow-hidden rounded-[0px_6px_0px_0px] bg-[#e60000] p-5 md:p-6 transition-opacity hover:opacity-95 active:opacity-90"
+                className="group relative flex flex-col justify-center overflow-hidden rounded-[0px_6px_0px_0px] bg-[#e60000] p-5 transition-opacity hover:opacity-95 active:opacity-90"
               >
                 <div className="relative z-10 flex items-center justify-between">
                   <div>
-                    <h3 className="mb-1 text-base font-black tracking-tight text-white md:text-lg">
+                    <h3 className="mb-1 text-base font-black tracking-tight text-white">
                       취향으로 추천받기
                     </h3>
-                    <p className="text-xs font-medium text-white/80 md:text-sm break-keep">
+                    <p className="text-xs font-medium text-white/80 break-keep">
                       내 입맛에 딱 맞는 라멘 찾기
                     </p>
                   </div>
-                  <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-full bg-white text-[#e60000]">
-                    <Sparkles className="h-5 w-5 md:h-6 md:w-6" />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#e60000]">
+                    <Sparkles className="h-5 w-5" />
                   </div>
                 </div>
               </Link>
               
               <Link 
                 href="/recommend?mode=compare"
-                className="group relative flex flex-1 flex-col justify-center overflow-hidden rounded-md border border-white/20 bg-white/10 p-5 md:p-6 transition-opacity hover:opacity-95 active:opacity-90"
+                className="group relative flex flex-col justify-center overflow-hidden rounded-md border border-white/20 bg-white/10 p-5 transition-opacity hover:opacity-95 active:opacity-90"
               >
                 <div className="relative z-10 flex items-center justify-between">
                   <div>
-                    <h3 className="mb-1 text-base font-black tracking-tight text-white md:text-lg">
+                    <h3 className="mb-1 text-base font-black tracking-tight text-white">
                       매장 1:1 비교
                     </h3>
-                    <p className="text-xs font-medium text-white/60 md:text-sm break-keep">
+                    <p className="text-xs font-medium text-white/60 break-keep">
                       어디로 갈지 고민될 때
                     </p>
                   </div>
-                  <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
-                    <Scale className="h-5 w-5 md:h-6 md:w-6" />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
+                    <Scale className="h-5 w-5" />
                   </div>
                 </div>
+              </Link>
+            </div>
+
+            {/* PC: Original Pill Button Style */}
+            <div className="hidden sm:flex flex-row gap-3 md:gap-4">
+              <Link 
+                href="/recommend?mode=taste"
+                className="vodafone-button-pill bg-[#e60000] px-6 md:px-8 py-3.5 md:py-4 transition-transform hover:scale-[1.02] active:scale-95 text-center"
+              >
+                <span className="flex items-center justify-center gap-2 text-white font-bold text-sm md:text-base">
+                  취향으로 추천받기 <Sparkles className="h-4 w-4 md:h-5 md:w-5" />
+                </span>
+              </Link>
+              <Link 
+                href="/recommend?mode=compare"
+                className="vodafone-button-pill border border-white/30 bg-white/10 px-6 md:px-8 py-3.5 md:py-4 backdrop-blur-md transition-all hover:bg-white/20 text-center"
+              >
+                <span className="flex items-center justify-center gap-2 text-white font-bold text-sm md:text-base">
+                  매장 1:1 비교 <Scale className="h-4 w-4 md:h-5 md:w-5" />
+                </span>
               </Link>
             </div>
           </div>
