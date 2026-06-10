@@ -36,9 +36,11 @@ export default function UserProfileCard() {
           </div>
         )}
         <div className="min-w-0 pr-2">
-          <p className="text-[10px] md:text-xs text-[#7e7e7e]">어서오세요!</p>
+          <p className="text-[10px] md:text-xs text-[#7e7e7e] flex items-center gap-1">
+            어서오세요! <span className="text-[11px] md:text-xs">👋</span>
+          </p>
           <p className="text-sm md:text-base font-bold text-[#25282b] truncate">
-            {user ? `👋 ${user.nickname}님` : '라멘을 사랑하는 분'}
+            {user ? `${user.nickname}님` : '라멘을 사랑하는 분'}
           </p>
         </div>
       </div>
