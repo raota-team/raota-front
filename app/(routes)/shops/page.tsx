@@ -118,8 +118,8 @@ export default function ShopsListPage() {
     })),
   ];
   const shops = data?.shops ?? [];
-  const totalPages = Math.max(data?.page.totalPages ?? 1, 1);
-  const totalElements = data?.page.totalElements ?? 0;
+  const totalPages = Math.max(data?.page?.totalPages ?? 1, 1);
+  const totalElements = data?.page?.totalElements ?? 0;
   const maxVisiblePages = 5;
   const visiblePageNumbers = useMemo(() => {
     const pageCount = Math.min(maxVisiblePages, totalPages - pageWindowStart);

@@ -32,7 +32,9 @@ import {
   LayoutGrid,
   Store,
   Clock,
-  ChevronUp
+  ChevronUp,
+  Star,
+  BadgeCheck
 } from 'lucide-react';
 import { mockCommunityPosts } from '@/app/lib/community-data';
 
@@ -52,9 +54,16 @@ export default function LandingContent() {
     return () => clearTimeout(timer);
   }, []);
   
-  // 최근 커뮤니티 글
-  const trendingPosts = mockCommunityPosts.slice(0, 4);
+  // 최근 커뮤니티 글 (꿀팁용)
   const quickTips = mockCommunityPosts.filter(p => p.category === 'tip').slice(0, 3);
+
+  // 최근 인증된 라멘집 모크 데이터
+  const recentVerifiedShops = [
+    { id: '1', name: '멘야로지', location: '서울 마포구', rating: 4.8, reviews: 156, tags: ['토리파이탄', '웨이팅'], imageUrl: '' },
+    { id: '2', name: '566라멘', location: '서울 마포구', rating: 4.6, reviews: 89, tags: ['지로계', '가성비'], imageUrl: '' },
+    { id: '3', name: '가솔린앤로지스', location: '부산 진구', rating: 4.7, reviews: 234, tags: ['츠케멘', '진한맛'], imageUrl: '' },
+    { id: '4', name: '멘야무사시', location: '서울 강남구', rating: 4.5, reviews: 312, tags: ['쇼유라멘', '데이트'], imageUrl: '' },
+  ];
 
   return (
     <div className="min-h-screen bg-[#f2f2f2] pb-6 md:pb-10">
@@ -218,48 +227,47 @@ export default function LandingContent() {
             ))}
           </section>
 
-          {/* Main Community Feed */}
+          {/* Recently Verified Shops */}
           <section className="rounded-md bg-white p-4 md:p-8 shadow-sm ring-1 ring-[#f2f2f2]">
             <div className="mb-4 md:mb-8 flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="h-6 md:h-8 w-1 md:w-1.5 rounded-full bg-[#e60000]"></div>
-                <h2 className="text-xl md:text-2xl font-black text-[#25282b]">실시간 인기 게시글</h2>
+                <h2 className="text-xl md:text-2xl font-black text-[#25282b]">최근 인증된 라멘집</h2>
               </div>
-              <Link href="/community" className="text-xs md:text-sm font-bold text-[#7e7e7e] hover:text-[#e60000]">
+              <Link href="/shops" className="text-xs md:text-sm font-bold text-[#7e7e7e] hover:text-[#e60000]">
                 더보기 +
               </Link>
             </div>
 
             <div className="grid gap-4 md:gap-6 md:grid-cols-2">
-              {trendingPosts.map((post) => (
+              {recentVerifiedShops.map((shop) => (
                 <Link 
-                  key={post.id}
-                  href={`/community/${post.id}`}
+                  key={shop.id}
+                  href={`/shops/${shop.id}`}
                   className="group flex items-start gap-4 border-b border-[#f2f2f2] pb-4 md:pb-6 last:border-0 last:pb-0"
                 >
                   <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-[0px_8px_0px_0px] bg-stone-100 ring-1 ring-stone-100">
-                    {post.imageUrl ? (
-                      <Image src={post.imageUrl} alt={post.title} fill className="object-cover" />
+                    {shop.imageUrl ? (
+                      <Image src={shop.imageUrl} alt={shop.name} fill className="object-cover" />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-stone-300">
-                        <MessageSquare className="h-6 w-6 md:h-8 md:w-8" />
+                      <div className="flex h-full w-full items-center justify-center text-stone-300 group-hover:text-[#e60000] transition-colors">
+                        <Store className="h-6 w-6 md:h-8 md:w-8" />
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col min-w-0">
-                    <span className="mb-0.5 md:mb-1 text-[9px] md:text-[10px] font-black uppercase tracking-wider text-[#e60000]">
-                      {post.categoryName}
-                    </span>
+                  <div className="flex flex-1 flex-col min-w-0 justify-center h-full py-1">
+                    <div className="mb-1 flex items-center gap-1 text-[9px] md:text-[10px] font-black tracking-wider text-[#e60000]">
+                      <BadgeCheck className="h-3 w-3" /> 인증 완료
+                    </div>
                     <h3 className="mb-1.5 md:mb-2 truncate text-sm md:text-base font-bold text-[#25282b] group-hover:text-[#e60000]">
-                      {post.title}
+                      {shop.name}
                     </h3>
                     <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-xs text-[#7e7e7e]">
-                      <span className="font-bold text-[#25282b]">{post.author}</span>
-                      <div className="flex items-center gap-1">
-                        <Heart className="h-2.5 w-2.5 md:h-3 w-3" /> {post.likes}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MessageCircle className="h-2.5 w-2.5 md:h-3 w-3" /> {post.comments}
+                      <span className="font-bold text-[#25282b]">{shop.location}</span>
+                      <div className="flex items-center gap-1 text-[#e60000]">
+                        <Star className="h-2.5 w-2.5 md:h-3 md:w-3 fill-[#e60000]" /> 
+                        <span className="font-bold">{shop.rating}</span>
+                        <span className="text-[#bebebe] font-medium">({shop.reviews})</span>
                       </div>
                     </div>
                   </div>

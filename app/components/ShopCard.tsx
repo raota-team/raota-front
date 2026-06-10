@@ -13,13 +13,24 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
       href={`/shop/${shop.id}`}
       className="group relative flex min-h-32 cursor-pointer flex-row overflow-hidden rounded-md bg-white transition-colors duration-200 hover:text-[#e60000] md:min-h-0 md:flex-col"
     >
-      <div className="relative min-h-32 w-32 flex-shrink-0 self-stretch overflow-hidden rounded-l-md md:h-48 md:min-h-0 md:w-full md:self-auto md:rounded-l-none md:rounded-t-md">
-        <img 
-          src={shop.imageUrl} 
-          alt={shop.name} 
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" 
-        />
+      <div className="relative min-h-32 w-32 flex-shrink-0 self-stretch overflow-hidden rounded-l-md md:h-48 md:min-h-0 md:w-full md:self-auto md:rounded-l-none md:rounded-t-md bg-stone-100 flex items-center justify-center">
+        {shop.imageUrl ? (
+          <Image 
+            src={shop.imageUrl} 
+            alt={shop.name} 
+            fill
+            sizes="(max-width: 768px) 128px, (max-width: 1200px) 33vw, 25vw"
+            className="absolute inset-0 object-cover transition-transform duration-700 group-hover:scale-[1.03]" 
+            onError={(e) => {
+              // 이미지 로드 실패 시 대체 이미지 또는 요소로 전환
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="text-stone-300">
+            <span className="text-4xl opacity-50">🍜</span>
+          </div>
+        )}
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-between p-3 md:p-5">
         <div className="min-w-0">
