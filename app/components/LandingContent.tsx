@@ -67,7 +67,7 @@ export default function LandingContent() {
   return (
     <div className="min-h-screen bg-[#f2f2f2] pb-6 md:pb-10">
       {/* 1. Portal Hero Section - Focus on AI Recommendation */}
-      <section ref={heroRef} className="relative min-h-[480px] h-[70vh] md:h-[500px] w-full overflow-hidden bg-[#25282b]">
+      <section ref={heroRef} className="relative min-h-[380px] h-[55vh] md:h-[500px] w-full overflow-hidden bg-[#25282b]">
         <div className="absolute inset-0">
           <Image
             src="/hero-home.jpg"
@@ -79,7 +79,7 @@ export default function LandingContent() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#25282b] via-[#25282b]/80 to-transparent"></div>
         </div>
 
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center pt-24 pb-16 md:flex-row md:items-center md:justify-between md:pt-0 md:pb-0 px-4 md:px-12">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center pt-20 pb-12 md:flex-row md:items-center md:justify-between md:pt-0 md:pb-0 px-4 md:px-12">
           <div className="max-w-2xl">
 
             <h1 className={`mb-4 md:mb-6 text-[clamp(2rem,8vw,4.5rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-white ${doHyeon.className}`}>
@@ -202,37 +202,6 @@ export default function LandingContent() {
         {/* Left Column: Community & Feeds */}
         <main className="flex flex-col gap-4 md:gap-8 lg:h-full">
           
-          {/* Quick Menu Grid */}
-          <section className="grid grid-cols-2 gap-3 md:gap-4 sm:grid-cols-4">
-            {[
-              { label: '전체 맛집', icon: Store, href: '/shops', color: 'bg-stone-50 text-[#25282b]' },
-              { label: '커뮤니티', icon: Users, href: '/community', color: 'bg-stone-50 text-[#25282b]' },
-              { 
-                label: '웨이팅 스팟', 
-                icon: MapPin, 
-                href: '/waiting-map', 
-                color: 'bg-stone-50 text-[#25282b]',
-                onClick: (e: React.MouseEvent<HTMLAnchorElement>) => {
-                  e.preventDefault();
-                  showToast('웨이팅 스팟 서비스는 준비 중입니다.', 'info');
-                }
-              },
-              { label: '내 정보', icon: LayoutGrid, href: '/mypage', color: 'bg-stone-50 text-[#25282b]' },
-            ].map((item) => (
-              <Link 
-                key={item.label}
-                href={item.href}
-                onClick={item.onClick}
-                className="group flex flex-col items-center justify-center rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2] transition-all hover:-translate-y-1 hover:ring-[#e60000]/20"
-              >
-                <div className={`mb-3 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full ${item.color} group-hover:bg-[#e60000] group-hover:text-white transition-colors`}>
-                  <item.icon className="h-5 w-5 md:h-6 md:w-6" />
-                </div>
-                <span className="text-xs md:text-sm font-bold text-[#25282b] group-hover:text-[#e60000]">{item.label}</span>
-              </Link>
-            ))}
-          </section>
-
           {/* Recently Verified Shops */}
           <section className="rounded-md bg-white p-4 md:p-8 shadow-sm ring-1 ring-[#f2f2f2]">
             <div className="mb-4 md:mb-8 flex items-center justify-between">
@@ -276,6 +245,37 @@ export default function LandingContent() {
                 </Link>
               ))}
             </div>
+          </section>
+
+          {/* Quick Menu Grid */}
+          <section className="grid grid-cols-2 gap-3 md:gap-4 sm:grid-cols-4">
+            {[
+              { label: '전체 맛집', icon: Store, href: '/shops', color: 'bg-stone-50 text-[#25282b]' },
+              { label: '커뮤니티', icon: Users, href: '/community', color: 'bg-stone-50 text-[#25282b]' },
+              { 
+                label: '웨이팅 스팟', 
+                icon: MapPin, 
+                href: '/waiting-map', 
+                color: 'bg-stone-50 text-[#25282b]',
+                onClick: (e: React.MouseEvent<HTMLAnchorElement>) => {
+                  e.preventDefault();
+                  showToast('웨이팅 스팟 서비스는 준비 중입니다.', 'info');
+                }
+              },
+              { label: '내 정보', icon: LayoutGrid, href: '/mypage', color: 'bg-stone-50 text-[#25282b]' },
+            ].map((item) => (
+              <Link 
+                key={item.label}
+                href={item.href}
+                onClick={item.onClick}
+                className="group flex flex-col items-center justify-center rounded-md bg-white py-3 px-2 md:py-4 md:px-4 shadow-sm ring-1 ring-[#f2f2f2] transition-all hover:-translate-y-1 hover:ring-[#e60000]/20"
+              >
+                <div className={`mb-2 flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full ${item.color} group-hover:bg-[#e60000] group-hover:text-white transition-colors`}>
+                  <item.icon className="h-4 w-4 md:h-5 md:w-5" />
+                </div>
+                <span className="text-[11px] md:text-sm font-bold text-[#25282b] group-hover:text-[#e60000]">{item.label}</span>
+              </Link>
+            ))}
           </section>
 
           {/* Bottom Banner Group: AI Summary & Contact Banner */}
