@@ -86,7 +86,7 @@ export default function LandingContent() {
               오늘 당신의 <br />
               <span className="text-[#e60000]">베스트 한 그릇</span>은?
             </h1>
-            <p className="mb-6 md:mb-10 max-w-lg text-base md:text-lg font-medium leading-relaxed text-white/80 break-keep">
+            <p className="mb-10 md:mb-12 max-w-lg text-base md:text-lg font-medium leading-relaxed text-white/80 break-keep">
               취향 분석부터 매장 비교까지, <br className="hidden md:block" />
               라오타가 실패 없는 라멘 선택을 도와드립니다.
             </p>
