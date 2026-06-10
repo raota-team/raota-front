@@ -263,7 +263,7 @@ export default function LandingContent() {
                       <span className="font-bold text-[#25282b]">{shop.location}</span>
                       <div className="flex items-center gap-1 text-[#7e7e7e]">
                         <Camera className="h-3 w-3" />
-                        <span className="font-medium">유저 인증샷 업로드</span>
+                        <span className="font-medium">인증샷 <b className="text-[#25282b]">{shop.reviews}</b>개</span>
                       </div>
                     </div>
                   </div>
