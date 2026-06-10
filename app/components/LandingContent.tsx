@@ -182,7 +182,7 @@ export default function LandingContent() {
       {/* 2. Portal Main Content Area */}
       <div 
         ref={contentRef}
-        className={`mx-auto -mt-32 md:-mt-12 grid max-w-7xl gap-4 md:gap-8 px-4 lg:grid-cols-[1fr_320px] md:px-12 reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
+        className={`relative z-20 mx-auto -mt-32 md:-mt-12 grid max-w-7xl gap-4 md:gap-8 px-4 lg:grid-cols-[1fr_320px] md:px-12 reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
       >
         {/* Mobile: Move Profile Card to top for dashboard feel */}
         <div className="lg:hidden">
