@@ -11,6 +11,7 @@ import AnimatedCounter from './AnimatedCounter';
 import ContactUsBanner from './ContactUsBanner';
 import TrendingTagsRanking from './TrendingTagsRanking';
 import { Do_Hyeon } from 'next/font/google';
+import { useDiscoveryStats, useRecentVerifiedShops, useHomeTips } from '@/hooks/queries/useDiscovery';
 import {
   Sparkles,
   Scale,
@@ -54,16 +55,14 @@ export default function LandingContent() {
     return () => clearTimeout(timer);
   }, []);
   
-  // 최근 커뮤니티 글 (꿀팁용)
-  const quickTips = mockCommunityPosts.filter(p => p.category === 'tip').slice(0, 3);
+  // 서버 연동 데이터
+  const { data: statsData } = useDiscoveryStats();
+  const { data: recentShopsData, isLoading: isLoadingShops } = useRecentVerifiedShops(4);
+  const { data: homeTipsData, isLoading: isLoadingTips } = useHomeTips('tip', 3);
 
-  // 최근 인증된 라멘집 모크 데이터
-  const recentVerifiedShops = [
-    { id: '1', name: '멘야로지', location: '서울 마포구', rating: 4.8, reviews: 156, tags: ['토리파이탄', '웨이팅'], imageUrl: '' },
-    { id: '2', name: '566라멘', location: '서울 마포구', rating: 4.6, reviews: 89, tags: ['지로계', '가성비'], imageUrl: '' },
-    { id: '3', name: '가솔린앤로지스', location: '부산 진구', rating: 4.7, reviews: 234, tags: ['츠케멘', '진한맛'], imageUrl: '' },
-    { id: '4', name: '멘야무사시', location: '서울 강남구', rating: 4.5, reviews: 312, tags: ['쇼유라멘', '데이트'], imageUrl: '' },
-  ];
+  const stats = statsData?.data || { totalShops: 0, totalReviews: 0, totalUsers: 0 };
+  const quickTips = homeTipsData?.data || [];
+  const recentVerifiedShops = recentShopsData?.data || [];
 
   return (
     <div className="min-h-screen bg-[#f2f2f2] pb-6 md:pb-10">
@@ -96,32 +95,32 @@ export default function LandingContent() {
             <div className="md:hidden mb-8 flex items-center gap-4 text-[10px] text-white/50 border-t border-b border-white/10 py-3 max-w-xs">
               <div className="flex-shrink-0 whitespace-nowrap">
                 <AnimatedCounter 
-                  value={120} 
+                  value={stats.totalShops || 0} 
                   suffix="개+" 
                   className="text-white text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
-                  shouldStart={heroVisible} 
+                  shouldStart={heroVisible && stats.totalShops > 0} 
                 />
                 등록된 라멘집
               </div>
               <div className="h-5 w-px bg-white/10 flex-shrink-0"></div>
               <div className="flex-shrink-0 whitespace-nowrap">
                 <AnimatedCounter 
-                  value={14250} 
-                  suffix="회+" 
+                  value={stats.totalReviews || 0} 
+                  suffix="건+" 
                   className="text-[#e60000] text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
-                  shouldStart={heroVisible} 
+                  shouldStart={heroVisible && stats.totalReviews > 0} 
                 />
-                AI 맞춤 추천
+                솔직한 후기
               </div>
               <div className="h-5 w-px bg-white/10 flex-shrink-0"></div>
               <div className="flex-shrink-0 whitespace-nowrap">
                 <AnimatedCounter 
-                  value={3120} 
-                  suffix="건" 
+                  value={stats.totalUsers || 0} 
+                  suffix="명" 
                   className="text-white text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
-                  shouldStart={heroVisible} 
+                  shouldStart={heroVisible && stats.totalUsers > 0} 
                 />
-                솔직한 후기
+                활동중인 유저
               </div>
             </div>
             
@@ -149,32 +148,32 @@ export default function LandingContent() {
           <div className="hidden md:flex items-center gap-6 lg:gap-10 text-[11px] md:text-xs text-white/50 border-t border-b border-white/10 py-4 px-1 max-w-none">
             <div className="flex-shrink-0 whitespace-nowrap">
               <AnimatedCounter 
-                value={120} 
+                value={stats.totalShops || 0} 
                 suffix="개+" 
                 className="text-white text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
-                shouldStart={startPCAnim} 
+                shouldStart={startPCAnim && stats.totalShops > 0} 
               />
               등록된 라멘집
             </div>
             <div className="h-8 w-px bg-white/10 flex-shrink-0"></div>
             <div className="flex-shrink-0 whitespace-nowrap">
               <AnimatedCounter 
-                value={14250} 
-                suffix="회+" 
+                value={stats.totalReviews || 0} 
+                suffix="건+" 
                 className="text-[#e60000] text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
-                shouldStart={startPCAnim} 
+                shouldStart={startPCAnim && stats.totalReviews > 0} 
               />
-              AI 맞춤 추천
+              솔직한 후기
             </div>
             <div className="h-8 w-px bg-white/10 flex-shrink-0"></div>
             <div className="flex-shrink-0 whitespace-nowrap">
               <AnimatedCounter 
-                value={3120} 
-                suffix="건" 
+                value={stats.totalUsers || 0} 
+                suffix="명" 
                 className="text-white text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
-                shouldStart={startPCAnim} 
+                shouldStart={startPCAnim && stats.totalUsers > 0} 
               />
-              솔직한 후기
+              활동중인 유저
             </div>
           </div>
         </div>
@@ -260,7 +259,7 @@ export default function LandingContent() {
                       <span className="font-bold text-[#25282b]">{shop.location}</span>
                       <div className="flex items-center gap-1 text-[#7e7e7e]">
                         <Camera className="h-3 w-3" />
-                        <span className="font-medium">인증샷 <b className="text-[#25282b]">{shop.reviews}</b>개</span>
+                        <span className="font-medium">인증샷 <b className="text-[#25282b]">{shop.photoCount || 0}</b>개</span>
                       </div>
                     </div>
                   </div>
@@ -327,7 +326,7 @@ export default function LandingContent() {
                   <p className="line-clamp-2 text-xs leading-relaxed text-[#7e7e7e] group-hover:text-[#e60000]">
                     {tip.title}
                   </p>
-                  <span className="mt-1 block text-[10px] text-[#bebebe]">{tip.date}</span>
+                  <span className="mt-1 block text-[10px] text-[#bebebe]">{tip.createdAt ? new Date(tip.createdAt).toLocaleDateString() : ''}</span>
                 </Link>
               ))}
             </div>
