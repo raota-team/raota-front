@@ -9,7 +9,7 @@ import HomeHeroActions from './HomeHeroActions';
 import UserProfileCard from './UserProfileCard';
 import AnimatedCounter from './AnimatedCounter';
 import ContactUsBanner from './ContactUsBanner';
-import LiveShopRanking from './LiveShopRanking';
+import TrendingTagsRanking from './TrendingTagsRanking';
 import { Do_Hyeon } from 'next/font/google';
 import {
   Sparkles,
@@ -232,7 +232,7 @@ export default function LandingContent() {
             <div className="mb-4 md:mb-8 flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="h-6 md:h-8 w-1 md:w-1.5 rounded-full bg-[#e60000]"></div>
-                <h2 className="text-xl md:text-2xl font-black text-[#25282b]">최근 인증된 라멘집</h2>
+                <h2 className="text-xl md:text-2xl font-black text-[#25282b]">최근 사진 인증된 라멘집</h2>
               </div>
               <Link href="/shops" className="text-xs md:text-sm font-bold text-[#7e7e7e] hover:text-[#e60000]">
                 더보기 +
@@ -256,18 +256,14 @@ export default function LandingContent() {
                     )}
                   </div>
                   <div className="flex flex-1 flex-col min-w-0 justify-center h-full py-1">
-                    <div className="mb-1 flex items-center gap-1 text-[9px] md:text-[10px] font-black tracking-wider text-[#e60000]">
-                      <BadgeCheck className="h-3 w-3" /> 인증 완료
-                    </div>
                     <h3 className="mb-1.5 md:mb-2 truncate text-sm md:text-base font-bold text-[#25282b] group-hover:text-[#e60000]">
                       {shop.name}
                     </h3>
                     <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-xs text-[#7e7e7e]">
                       <span className="font-bold text-[#25282b]">{shop.location}</span>
-                      <div className="flex items-center gap-1 text-[#e60000]">
-                        <Star className="h-2.5 w-2.5 md:h-3 md:w-3 fill-[#e60000]" /> 
-                        <span className="font-bold">{shop.rating}</span>
-                        <span className="text-[#bebebe] font-medium">({shop.reviews})</span>
+                      <div className="flex items-center gap-1 text-[#7e7e7e]">
+                        <Camera className="h-3 w-3" />
+                        <span className="font-medium">유저 인증샷 업로드</span>
                       </div>
                     </div>
                   </div>
@@ -295,6 +291,7 @@ export default function LandingContent() {
                   지금 요약 보기
                 </Link>
               </div>
+
               <div className="absolute -right-8 -top-8 opacity-10">
                 <MessageSquare className="h-32 md:h-48 w-32 md:w-48" />
               </div>
@@ -314,8 +311,8 @@ export default function LandingContent() {
             <UserProfileCard />
           </div>
 
-          {/* Live Shop Ranking */}
-          <LiveShopRanking />
+          {/* Trending Tags Ranking */}
+          <TrendingTagsRanking />
 
           {/* Quick Tips Portal */}
           <div className="rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2] lg:mt-auto">
