@@ -230,7 +230,8 @@ export default function CommunityPage() {
   };
 
   if (isLoading && posts.length === 0) {
-    return <Loading />;
+    // Return empty here so we can show skeleton cards inside the main layout
+    // instead of a blocking full-screen loading spinner
   }
 
   return (
@@ -372,7 +373,20 @@ export default function CommunityPage() {
             {isFetching && <span className="text-xs font-bold text-stone-400">업데이트 중</span>}
           </div>
 
-          {posts.length > 0 ? (
+          {isLoading && posts.length === 0 ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex h-[7.25rem] w-full animate-pulse gap-4 rounded-md border border-stone-100 bg-stone-50 p-3.5 sm:h-32 sm:p-4">
+                  <div className="flex flex-1 flex-col justify-between">
+                    <div className="h-4 w-1/3 rounded bg-stone-200"></div>
+                    <div className="h-6 w-3/4 rounded bg-stone-200"></div>
+                    <div className="h-4 w-1/4 rounded bg-stone-200"></div>
+                  </div>
+                  <div className="h-full w-24 rounded-md bg-stone-200 sm:w-36"></div>
+                </div>
+              ))}
+            </div>
+          ) : posts.length > 0 ? (
             <div className={`space-y-4 transition-opacity duration-300 ${isFetching ? 'opacity-60' : 'opacity-100'}`}>
               {posts.map((post) =>
                 <PostListCard key={post.postId} post={post} />,

@@ -91,75 +91,43 @@ export default function LandingContent() {
               라오타가 실패 없는 라멘 선택을 도와드립니다.
             </p>
 
-            {/* Mobile Only: Stats Counter under "도와드립니다." */}
-            <div className="md:hidden mb-8 flex items-center gap-4 text-[10px] text-white/50 border-t border-b border-white/10 py-3 max-w-xs">
-              <div className="flex-shrink-0 whitespace-nowrap">
-                <AnimatedCounter 
-                  value={stats.totalShops || 0} 
-                  suffix="개+" 
-                  className="text-white text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
-                  shouldStart={heroVisible && stats.totalShops > 0} 
-                />
-                등록된 라멘집
-              </div>
-              <div className="h-5 w-px bg-white/10 flex-shrink-0"></div>
-              <div className="flex-shrink-0 whitespace-nowrap">
-                <AnimatedCounter 
-                  value={stats.totalReviews || 0} 
-                  suffix="건+" 
-                  className="text-[#e60000] text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
-                  shouldStart={heroVisible && stats.totalReviews > 0} 
-                />
-                솔직한 후기
-              </div>
-              <div className="h-5 w-px bg-white/10 flex-shrink-0"></div>
-              <div className="flex-shrink-0 whitespace-nowrap">
-                <AnimatedCounter 
-                  value={stats.totalUsers || 0} 
-                  suffix="건+" 
-                  className="text-white text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
-                  shouldStart={heroVisible && stats.totalUsers > 0} 
-                />
-                AI 분석 리뷰
-              </div>
-            </div>
+            {/* Mobile Only: Stats Counter under "도와드립니다." (Hidden to reduce clutter on mobile) */}
+            {/* Removed the stats block on mobile to make the view cleaner and less cluttered */}
             
-            {/* Mobile: Premium Card Widget Style */}
-            <div className="flex flex-col gap-3 w-full sm:hidden">
+            {/* Mobile: Premium Card Widget Style (Side by Side) */}
+            <div className="grid grid-cols-2 gap-3 w-full sm:hidden">
               <Link 
                 href="/recommend?mode=taste"
-                className="group relative flex flex-col justify-center overflow-hidden rounded-[0px_6px_0px_0px] bg-[#e60000] p-5 transition-opacity hover:opacity-95 active:opacity-90"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-[0px_6px_0px_0px] bg-[#e60000] p-4 transition-opacity hover:opacity-95 active:opacity-90 min-h-[110px]"
               >
-                <div className="relative z-10 flex items-center justify-between">
+                <div className="relative z-10 flex flex-col h-full justify-between">
                   <div>
-                    <h3 className="mb-1 text-base font-black tracking-tight text-white">
-                      취향으로 추천받기
+                    <h3 className="mb-1 text-sm font-black tracking-tight text-white leading-tight">
+                      취향으로<br/>추천받기
                     </h3>
-                    <p className="text-xs font-medium text-white/80 break-keep">
-                      내 입맛에 딱 맞는 라멘 찾기
-                    </p>
                   </div>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#e60000]">
-                    <Sparkles className="h-5 w-5" />
+                  <div className="flex justify-end mt-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#e60000]">
+                      <Sparkles className="h-4 w-4" />
+                    </div>
                   </div>
                 </div>
               </Link>
               
               <Link 
                 href="/recommend?mode=compare"
-                className="group relative flex flex-col justify-center overflow-hidden rounded-md border border-white/20 bg-white/10 p-5 transition-opacity hover:opacity-95 active:opacity-90"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-md border border-white/20 bg-white/10 p-4 transition-opacity hover:opacity-95 active:opacity-90 min-h-[110px]"
               >
-                <div className="relative z-10 flex items-center justify-between">
+                <div className="relative z-10 flex flex-col h-full justify-between">
                   <div>
-                    <h3 className="mb-1 text-base font-black tracking-tight text-white">
-                      매장 1:1 비교
+                    <h3 className="mb-1 text-sm font-black tracking-tight text-white leading-tight">
+                      매장 1:1<br/>비교하기
                     </h3>
-                    <p className="text-xs font-medium text-white/60 break-keep">
-                      어디로 갈지 고민될 때
-                    </p>
                   </div>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
-                    <Scale className="h-5 w-5" />
+                  <div className="flex justify-end mt-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white">
+                      <Scale className="h-4 w-4" />
+                    </div>
                   </div>
                 </div>
               </Link>
