@@ -40,6 +40,12 @@ export interface UserProfileResponse {
   data: MyProfileData;
 }
 
+export interface MemberSummaryResponse {
+  id: number;
+  nickname: string;
+  profileImageUrl: string;
+}
+
 // 내 글
 export interface MyPostSummary {
   post_id: number;
@@ -113,6 +119,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 /** 내 프로필 조회 */
 export const getMyProfile = async (): Promise<UserProfileResponse> => {
   return await apiClient<UserProfileResponse>(`/users/me/profile`);
+};
+
+/** 내 요약 프로필 조회 (홈 화면용) */
+export const getMemberSummary = async (): Promise<{ success: boolean; data: MemberSummaryResponse }> => {
+  return await apiClient<{ success: boolean; data: MemberSummaryResponse }>(`/users/me/summary`);
 };
 
 /** 타 사용자 프로필 조회 */

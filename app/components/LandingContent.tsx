@@ -116,11 +116,11 @@ export default function LandingContent() {
               <div className="flex-shrink-0 whitespace-nowrap">
                 <AnimatedCounter 
                   value={stats.totalUsers || 0} 
-                  suffix="명" 
+                  suffix="건+" 
                   className="text-white text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
                   shouldStart={heroVisible && stats.totalUsers > 0} 
                 />
-                활동중인 유저
+                AI 분석 리뷰
               </div>
             </div>
             
@@ -169,11 +169,11 @@ export default function LandingContent() {
             <div className="flex-shrink-0 whitespace-nowrap">
               <AnimatedCounter 
                 value={stats.totalUsers || 0} 
-                suffix="명" 
+                suffix="건+" 
                 className="text-white text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
                 shouldStart={startPCAnim && stats.totalUsers > 0} 
               />
-              활동중인 유저
+              AI 분석 리뷰
             </div>
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function LandingContent() {
       {/* 2. Portal Main Content Area */}
       <div 
         ref={contentRef}
-        className={`mx-auto -mt-20 md:-mt-12 grid max-w-7xl gap-4 md:gap-8 px-4 lg:grid-cols-[1fr_320px] md:px-12 reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
+        className={`mx-auto -mt-32 md:-mt-12 grid max-w-7xl gap-4 md:gap-8 px-4 lg:grid-cols-[1fr_320px] md:px-12 reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
       >
         {/* Mobile: Move Profile Card to top for dashboard feel */}
         <div className="lg:hidden">
@@ -311,24 +311,31 @@ export default function LandingContent() {
           <TrendingTagsRanking />
 
           {/* Quick Tips Portal */}
-          <div className="rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2] lg:mt-auto">
+          <div className="rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2]">
             <div className="mb-3 flex items-center gap-2 border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
               <Sparkles className="h-4 w-4 text-[#e60000]" />
               <h2 className="font-black text-base md:text-lg text-[#25282b]">라멘 꿀팁</h2>
             </div>
-            <div className="space-y-0">
-              {quickTips.map((tip, i) => (
-                <Link 
-                  key={tip.id} 
-                  href={`/community/${tip.id}`}
-                  className={`group block py-2 md:py-3 ${i !== quickTips.length - 1 ? 'border-b border-[#f2f2f2]/50' : ''}`}
-                >
-                  <p className="line-clamp-2 text-xs leading-relaxed text-[#7e7e7e] group-hover:text-[#e60000]">
-                    {tip.title}
-                  </p>
-                  <span className="mt-1 block text-[10px] text-[#bebebe]">{tip.createdAt ? new Date(tip.createdAt).toLocaleDateString() : ''}</span>
-                </Link>
-              ))}
+            <div className="space-y-0 min-h-[180px]">
+              {quickTips.length > 0 ? (
+                quickTips.map((tip, i) => (
+                  <Link 
+                    key={tip.id} 
+                    href={`/community/${tip.id}`}
+                    className={`group block py-2 md:py-3 ${i !== quickTips.length - 1 ? 'border-b border-[#f2f2f2]/50' : ''}`}
+                  >
+                    <p className="line-clamp-2 text-xs leading-relaxed text-[#7e7e7e] group-hover:text-[#e60000]">
+                      {tip.title}
+                    </p>
+                    <span className="mt-1 block text-[10px] text-[#bebebe]">{tip.createdAt ? new Date(tip.createdAt).toLocaleDateString() : ''}</span>
+                  </Link>
+                ))
+              ) : (
+                <div className="flex h-full min-h-[100px] flex-col items-center justify-center text-center">
+                  <p className="text-xs text-[#bebebe]">아직 등록된 꿀팁이 없어요.</p>
+                  <p className="text-[10px] text-[#bebebe] mt-1">첫 번째 꿀팁을 남겨보세요!</p>
+                </div>
+              )}
             </div>
           </div>
         </aside>

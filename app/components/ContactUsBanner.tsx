@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 
 export default function ContactUsBanner() {
   return (
-    <section className="relative overflow-hidden rounded-md bg-[#1a1a1a] p-5 md:p-6 text-white shadow-md border border-stone-850">
+    <section className="relative overflow-hidden rounded-md bg-[#25282b] p-5 md:p-6 text-white shadow-md">
       <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="min-w-0">
           <span className="inline-block rounded-sm bg-[#e60000] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white mb-2">CONTACT</span>
@@ -15,7 +15,7 @@ export default function ContactUsBanner() {
           </p>
         </div>
         <Link 
-          href="/community" 
+          href="mailto:contact@raota.net" 
           className="vodafone-button-pill bg-white/10 hover:bg-white/20 border border-white/20 px-6 py-2.5 text-xs font-bold text-white transition-all text-center shrink-0 whitespace-nowrap self-stretch md:self-auto flex items-center justify-center gap-1.5"
         >
           문의 및 제보하기 <ArrowRight className="h-3.5 w-3.5" />
