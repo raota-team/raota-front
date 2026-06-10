@@ -79,7 +79,7 @@ export default function LandingContent() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#25282b] via-[#25282b]/80 to-transparent"></div>
         </div>
 
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center pt-24 pb-28 md:flex-row md:items-center md:justify-between md:pt-0 md:pb-0 px-4 md:px-12">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center pt-24 pb-16 md:flex-row md:items-center md:justify-between md:pt-0 md:pb-0 px-4 md:px-12">
           <div className="max-w-2xl">
 
             <h1 className={`mb-4 md:mb-6 text-[clamp(2rem,8vw,4.5rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-white ${doHyeon.className}`}>
