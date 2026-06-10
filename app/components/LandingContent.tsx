@@ -82,10 +82,7 @@ export default function LandingContent() {
 
         <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center pt-24 pb-28 md:flex-row md:items-center md:justify-between md:pt-0 md:pb-0 px-4 md:px-12">
           <div className="max-w-2xl">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-md bg-[#e60000] px-3 py-1">
-              <Zap className="h-3.5 w-3.5 text-white fill-white" />
-              <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white">AI Powered</span>
-            </div>
+
             <h1 className={`mb-4 md:mb-6 text-[clamp(2rem,8vw,4.5rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-white ${doHyeon.className}`}>
               오늘 당신의 <br />
               <span className="text-[#e60000]">베스트 한 그릇</span>은?
