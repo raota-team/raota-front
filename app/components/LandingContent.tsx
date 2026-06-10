@@ -127,9 +127,8 @@ export default function LandingContent() {
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full">
               <Link 
                 href="/recommend?mode=taste"
-                className="group relative flex flex-1 flex-col justify-center overflow-hidden rounded-xl bg-[#e60000] p-5 md:p-6 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-[#e60000]/30 active:scale-[0.98]"
+                className="group relative flex flex-1 flex-col justify-center overflow-hidden rounded-[0px_6px_0px_0px] bg-[#e60000] p-5 md:p-6 transition-opacity hover:opacity-95 active:opacity-90"
               >
-                <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-white/20 blur-3xl transition-transform duration-500 group-hover:scale-150"></div>
                 <div className="relative z-10 flex items-center justify-between">
                   <div>
                     <h3 className="mb-1 text-base font-black tracking-tight text-white md:text-lg">
@@ -139,7 +138,7 @@ export default function LandingContent() {
                       내 입맛에 딱 맞는 라멘 찾기
                     </p>
                   </div>
-                  <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md">
+                  <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-full bg-white text-[#e60000]">
                     <Sparkles className="h-5 w-5 md:h-6 md:w-6" />
                   </div>
                 </div>
@@ -147,7 +146,7 @@ export default function LandingContent() {
               
               <Link 
                 href="/recommend?mode=compare"
-                className="group relative flex flex-1 flex-col justify-center overflow-hidden rounded-xl border border-white/20 bg-white/10 p-5 md:p-6 backdrop-blur-md transition-all hover:-translate-y-1 hover:bg-white/20 active:scale-[0.98]"
+                className="group relative flex flex-1 flex-col justify-center overflow-hidden rounded-md border border-white/20 bg-white/10 p-5 md:p-6 transition-opacity hover:opacity-95 active:opacity-90"
               >
                 <div className="relative z-10 flex items-center justify-between">
                   <div>
@@ -158,7 +157,7 @@ export default function LandingContent() {
                       어디로 갈지 고민될 때
                     </p>
                   </div>
-                  <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition-colors group-hover:bg-white/20">
+                  <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
                     <Scale className="h-5 w-5 md:h-6 md:w-6" />
                   </div>
                 </div>
@@ -204,7 +203,7 @@ export default function LandingContent() {
       {/* 2. Portal Main Content Area */}
       <div 
         ref={contentRef}
-        className={`relative z-20 mx-auto -mt-32 md:-mt-12 grid max-w-7xl gap-4 md:gap-8 px-4 lg:grid-cols-[1fr_320px] md:px-12 reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
+        className={`relative z-20 mx-auto -mt-20 md:-mt-12 grid max-w-7xl gap-4 md:gap-8 px-4 lg:grid-cols-[1fr_320px] md:px-12 reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
       >
         {/* Mobile: Move Profile Card to top for dashboard feel */}
         <div className="lg:hidden">
