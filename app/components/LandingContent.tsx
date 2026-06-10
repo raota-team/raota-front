@@ -6,6 +6,10 @@ import Link from 'next/link';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { useApp } from '../context/AppContext';
 import HomeHeroActions from './HomeHeroActions';
+import UserProfileCard from './UserProfileCard';
+import AnimatedCounter from './AnimatedCounter';
+import ContactUsBanner from './ContactUsBanner';
+import LiveShopRanking from './LiveShopRanking';
 import { Do_Hyeon } from 'next/font/google';
 import {
   Sparkles,
@@ -55,7 +59,7 @@ export default function LandingContent() {
   return (
     <div className="min-h-screen bg-[#f2f2f2] pb-6 md:pb-10">
       {/* 1. Portal Hero Section - Focus on AI Recommendation */}
-      <section className="relative min-h-[480px] h-[70vh] md:h-[500px] w-full overflow-hidden bg-[#25282b]">
+      <section ref={heroRef} className="relative min-h-[480px] h-[70vh] md:h-[500px] w-full overflow-hidden bg-[#25282b]">
         <div className="absolute inset-0">
           <Image
             src="/hero-home.jpg"
@@ -89,7 +93,7 @@ export default function LandingContent() {
                   value={120} 
                   suffix="개+" 
                   className="text-white text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
-                  shouldStart={true} 
+                  shouldStart={heroVisible} 
                 />
                 등록된 라멘집
               </div>
@@ -99,7 +103,7 @@ export default function LandingContent() {
                   value={14250} 
                   suffix="회+" 
                   className="text-[#e60000] text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
-                  shouldStart={true} 
+                  shouldStart={heroVisible} 
                 />
                 AI 맞춤 추천
               </div>
@@ -109,7 +113,7 @@ export default function LandingContent() {
                   value={3120} 
                   suffix="건" 
                   className="text-white text-sm block font-extrabold tracking-tight mb-0.5 whitespace-nowrap" 
-                  shouldStart={true} 
+                  shouldStart={heroVisible} 
                 />
                 솔직한 후기
               </div>
@@ -235,7 +239,7 @@ export default function LandingContent() {
                 >
                   <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-[0px_8px_0px_0px] bg-stone-100 ring-1 ring-stone-100">
                     {post.imageUrl ? (
-                      <Image src={post.imageUrl} alt={post.title} fill className="object-cover transition-transform group-hover:scale-110" />
+                      <Image src={post.imageUrl} alt={post.title} fill className="object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-stone-300">
                         <MessageSquare className="h-6 w-6 md:h-8 md:w-8" />
@@ -303,34 +307,7 @@ export default function LandingContent() {
           </div>
 
           {/* Live Shop Ranking */}
-          <div className="rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2]">
-            <div className="mb-3 flex items-center justify-between border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
-              <h2 className="font-black text-base md:text-lg text-[#25282b]">실시간 인기 매장</h2>
-              <Link href="/shops" className="text-[10px] font-bold text-[#7e7e7e] hover:text-[#e60000]">전체보기</Link>
-            </div>
-            <div className="space-y-0">
-              {[
-                { name: '멘야로지', rank: 1, trend: 'up' },
-                { name: '566라멘', rank: 2, trend: 'up' },
-                { name: '가솔린앤로지스', rank: 3, trend: 'down' },
-                { name: '멘야무사시', rank: 4, trend: 'new' },
-                { name: '토리파이탄 오레노', rank: 5, trend: 'up' },
-              ].map((shop, i) => (
-                <div key={shop.name} className={`flex items-center justify-between py-2 md:py-3 ${i !== 4 ? 'border-b border-[#f2f2f2]/50' : ''}`}>
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className={`w-4 text-xs md:text-sm font-black ${shop.rank <= 3 ? 'text-[#e60000]' : 'text-[#bebebe]'}`}>
-                      {shop.rank}
-                    </span>
-                    <span className="text-xs md:text-sm font-bold text-[#25282b] truncate">{shop.name}</span>
-                  </div>
-                  <div className="flex-shrink-0 ml-2">
-                    {shop.trend === 'up' && <ChevronUp className="h-3 w-3 text-[#e60000]" />}
-                    {shop.trend === 'new' && <span className="text-[8px] font-black text-[#e60000]">NEW</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <LiveShopRanking />
 
           {/* Quick Tips Portal */}
           <div className="rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2] lg:mt-auto">
@@ -361,93 +338,5 @@ export default function LandingContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-function UserProfileCard() {
-  return (
-    <div className="rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2]">
-      <div className="mb-4 md:mb-6 flex items-center gap-4">
-        <div className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-[#f2f2f2] flex items-center justify-center text-[#e60000]">
-          <Users className="h-6 w-6 md:h-7 md:w-7" />
-        </div>
-        <div>
-          <p className="text-[10px] md:text-xs text-[#7e7e7e]">어서오세요!</p>
-          <p className="text-sm md:text-base font-bold text-[#25282b]">라멘을 사랑하는 분</p>
-        </div>
-      </div>
-      <Link 
-        href="/login"
-        className="flex w-full items-center justify-center rounded-sm bg-[#25282b] py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 active:opacity-95"
-      >
-        로그인하기
-      </Link>
-      <div className="mt-4 flex justify-between px-2 text-[10px] md:text-[11px] font-bold text-[#7e7e7e]">
-        <Link href="/register" className="hover:text-[#e60000]">회원가입</Link>
-        <Link href="/find" className="hover:text-[#e60000]">계정찾기</Link>
-      </div>
-    </div>
-  );
-}
-
-interface AnimatedCounterProps {
-  value: number;
-  duration?: number;
-  suffix?: string;
-  className?: string;
-  shouldStart?: boolean;
-}
-
-function AnimatedCounter({ 
-  value, 
-  duration = 1200, 
-  suffix = '', 
-  className = '', 
-  shouldStart = true 
-}: AnimatedCounterProps) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!shouldStart) return;
-    
-    let startTimestamp: number | null = null;
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const easeProgress = progress * (2 - progress); // easeOutQuad
-      setCount(Math.floor(easeProgress * value));
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-    window.requestAnimationFrame(step);
-  }, [value, duration, shouldStart]);
-
-  const formattedCount = count.toLocaleString('ko-KR');
-
-  return <span className={className}>{formattedCount}{suffix}</span>;
-}
-
-function ContactUsBanner() {
-  return (
-    <section className="relative overflow-hidden rounded-md bg-[#1a1a1a] p-5 md:p-6 text-white shadow-md border border-stone-850">
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="min-w-0">
-          <span className="inline-block rounded-sm bg-[#e60000] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white mb-2">CONTACT</span>
-          <h3 className="mb-1 text-base md:text-lg font-black tracking-tight leading-snug">
-            궁금한 점이 있으신가요?
-          </h3>
-          <p className="text-xs md:text-sm text-white/70 leading-relaxed break-keep">
-            서비스 이용 관련 제보, 개선을 위한 건의 사항 등 라오타에 전하고 싶은 모든 의견을 자유롭게 보내주세요.
-          </p>
-        </div>
-        <Link 
-          href="/community" 
-          className="vodafone-button-pill bg-white/10 hover:bg-white/20 border border-white/20 px-6 py-2.5 text-xs font-bold text-white transition-all text-center shrink-0 whitespace-nowrap self-stretch md:self-auto flex items-center justify-center gap-1.5"
-        >
-          문의 및 제보하기 <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
-      </div>
-    </section>
   );
 }
