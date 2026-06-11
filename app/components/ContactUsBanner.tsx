@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 
 export default function ContactUsBanner() {
   return (
-    <section className="relative overflow-hidden rounded-md bg-[#25282b] p-5 md:p-6 text-white shadow-md">
+    <section className="relative overflow-hidden rounded-md bg-[#25282b] p-5 text-white md:p-6">
       <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="min-w-0">
           <span className="inline-block rounded-sm bg-[#e60000] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white mb-2">CONTACT</span>

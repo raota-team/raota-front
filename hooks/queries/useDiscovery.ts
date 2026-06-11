@@ -1,11 +1,13 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getDiscoveryStats,
   getRecentVerifiedShops,
   getTrendingTags,
   getHomeTips,
+  getWeekendRecommendations,
+  generateWeekendRecommendations,
 } from "@/lib/api/discovery";
 
 export const useDiscoveryStats = () => {
@@ -37,5 +39,24 @@ export const useHomeTips = (category: string = "tip", limit: number = 3) => {
     queryKey: ["discovery", "home-tips", category, limit],
     queryFn: () => getHomeTips(category, limit),
     staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+export const useWeekendRecommendations = () => {
+  return useQuery({
+    queryKey: ["discovery", "weekend-recommendations"],
+    queryFn: () => getWeekendRecommendations(),
+    staleTime: 1000 * 60 * 60, // 1 hour
+  });
+};
+
+export const useGenerateWeekendRecommendations = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => generateWeekendRecommendations(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["discovery", "weekend-recommendations"] });
+    },
   });
 };

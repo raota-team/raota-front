@@ -10,6 +10,7 @@ import UserProfileCard from './UserProfileCard';
 import AnimatedCounter from './AnimatedCounter';
 import ContactUsBanner from './ContactUsBanner';
 import TrendingTagsRanking from './TrendingTagsRanking';
+import WeekendRecommendation from './WeekendRecommendation';
 import { Do_Hyeon } from 'next/font/google';
 import { useDiscoveryStats, useRecentVerifiedShops, useHomeTips } from '@/hooks/queries/useDiscovery';
 import {
@@ -65,9 +66,9 @@ export default function LandingContent() {
   const recentVerifiedShops = recentShopsData?.data || [];
 
   return (
-    <div className="min-h-screen bg-[#f2f2f2] pb-6 md:pb-10">
+    <div className="min-h-screen bg-white pb-6 md:pb-10">
       {/* 1. Portal Hero Section - Focus on AI Recommendation */}
-      <section ref={heroRef} className="relative min-h-[380px] h-[55vh] md:h-[500px] w-full overflow-hidden bg-[#25282b]">
+      <section ref={heroRef} className="relative h-[430px] min-h-[430px] w-full overflow-hidden bg-[#25282b] md:h-[500px] md:min-h-0">
         <div className="absolute inset-0">
           <Image
             src="/hero-home.jpg"
@@ -76,10 +77,9 @@ export default function LandingContent() {
             priority
             className="object-cover opacity-50 saturate-[0.8]"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#25282b] via-[#25282b]/80 to-transparent"></div>
         </div>
 
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center pt-20 pb-12 md:flex-row md:items-center md:justify-between md:pt-0 md:pb-0 px-4 md:px-12">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-10 pt-20 md:flex-row md:items-center md:justify-between md:px-12 md:pt-0 md:pb-0">
           <div className="max-w-2xl">
 
             <h1 className={`mb-4 md:mb-6 text-[clamp(2rem,8vw,4.5rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-white ${doHyeon.className}`}>
@@ -94,42 +94,32 @@ export default function LandingContent() {
             {/* Mobile Only: Stats Counter under "도와드립니다." (Hidden to reduce clutter on mobile) */}
             {/* Removed the stats block on mobile to make the view cleaner and less cluttered */}
             
-            {/* Mobile: Premium Card Widget Style (Side by Side) */}
-            <div className="grid grid-cols-2 gap-3 w-full sm:hidden">
+            {/* Mobile: Hero CTA buttons */}
+            <div className="grid max-w-[360px] grid-cols-2 gap-2.5 sm:hidden">
               <Link 
                 href="/recommend?mode=taste"
-                className="group relative flex flex-col justify-between overflow-hidden rounded-md bg-[#e60000] p-4 transition-opacity hover:opacity-95 active:opacity-90 min-h-[110px]"
+                aria-label="취향으로 추천받기"
+                className="group flex h-14 items-center justify-between rounded-full bg-[#e60000] px-4 text-white transition-opacity hover:opacity-95 active:opacity-90"
               >
-                <div className="relative z-10 flex flex-col h-full justify-between">
-                  <div>
-                    <h3 className="mb-1 text-sm font-black tracking-tight text-white leading-tight">
-                      취향으로<br/>추천받기
-                    </h3>
-                  </div>
-                  <div className="flex justify-end mt-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#e60000]">
-                      <Sparkles className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
+                <span className="text-sm font-bold tracking-[0.01em]">
+                  취향 추천
+                </span>
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#e60000]">
+                  <Sparkles className="h-4 w-4" />
+                </span>
               </Link>
               
               <Link 
                 href="/recommend?mode=compare"
-                className="group relative flex flex-col justify-between overflow-hidden rounded-md border border-white/20 bg-white/10 p-4 transition-opacity hover:opacity-95 active:opacity-90 min-h-[110px]"
+                aria-label="매장 1:1 비교"
+                className="group flex h-14 items-center justify-between rounded-full border border-white/35 bg-white/10 px-4 text-white transition-colors hover:bg-white/20 active:bg-white/15"
               >
-                <div className="relative z-10 flex flex-col h-full justify-between">
-                  <div>
-                    <h3 className="mb-1 text-sm font-black tracking-tight text-white leading-tight">
-                      매장 1:1<br/>비교하기
-                    </h3>
-                  </div>
-                  <div className="flex justify-end mt-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white">
-                      <Scale className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
+                <span className="text-sm font-bold tracking-[0.01em]">
+                  1:1 비교
+                </span>
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white">
+                  <Scale className="h-4 w-4" />
+                </span>
               </Link>
             </div>
 
@@ -137,7 +127,7 @@ export default function LandingContent() {
             <div className="hidden sm:flex flex-row gap-3 md:gap-4">
               <Link 
                 href="/recommend?mode=taste"
-                className="vodafone-button-pill bg-[#e60000] px-6 md:px-8 py-3.5 md:py-4 transition-transform hover:scale-[1.02] active:scale-95 text-center"
+                className="vodafone-button-pill bg-[#e60000] px-6 py-3.5 text-center transition-opacity hover:opacity-95 active:opacity-90 md:px-8 md:py-4"
               >
                 <span className="flex items-center justify-center gap-2 text-white font-bold text-sm md:text-base">
                   취향으로 추천받기 <Sparkles className="h-4 w-4 md:h-5 md:w-5" />
@@ -145,7 +135,7 @@ export default function LandingContent() {
               </Link>
               <Link 
                 href="/recommend?mode=compare"
-                className="vodafone-button-pill border border-white/30 bg-white/10 px-6 md:px-8 py-3.5 md:py-4 backdrop-blur-md transition-all hover:bg-white/20 text-center"
+                className="vodafone-button-pill border border-white/30 bg-white/10 px-6 py-3.5 text-center transition-colors hover:bg-white/20 md:px-8 md:py-4"
               >
                 <span className="flex items-center justify-center gap-2 text-white font-bold text-sm md:text-base">
                   매장 1:1 비교 <Scale className="h-4 w-4 md:h-5 md:w-5" />
@@ -173,7 +163,7 @@ export default function LandingContent() {
                 className="text-[#e60000] text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
                 shouldStart={startPCAnim && stats.totalReviews > 0} 
               />
-              솔직한 후기
+              참고한 후기
             </div>
             <div className="h-8 w-px bg-white/10 flex-shrink-0"></div>
             <div className="flex-shrink-0 whitespace-nowrap">
@@ -192,18 +182,22 @@ export default function LandingContent() {
       {/* 2. Portal Main Content Area */}
       <div 
         ref={contentRef}
-        className={`relative z-20 mx-auto -mt-[78px] md:-mt-12 grid max-w-7xl gap-4 md:gap-8 px-4 lg:grid-cols-[1fr_320px] md:px-12 reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
+        className={`relative z-20 mx-auto mt-8 grid max-w-7xl gap-4 px-4 md:mt-12 md:gap-8 md:px-12 lg:grid-cols-[1fr_320px] reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
       >
-        {/* Mobile: Move Profile Card to top for dashboard feel */}
-        <div className="lg:hidden">
-          <UserProfileCard />
-        </div>
-
         {/* Left Column: Community & Feeds */}
         <main className="flex flex-col gap-4 md:gap-8 lg:h-full">
           
+          {/* Weekend Recommendation */}
+          <WeekendRecommendation />
+
+          {/* Mobile: Move Profile Card under recommendation for dashboard feel */}
+          <div className="lg:hidden">
+            <UserProfileCard />
+          </div>
+
           {/* Recently Verified Shops */}
-          <section className="rounded-md bg-white p-4 md:p-8 shadow-sm ring-1 ring-[#f2f2f2]">
+
+          <section className="rounded-md bg-white p-4 md:p-8">
             <div className="mb-4 md:mb-8 flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="h-6 md:h-8 w-1 md:w-1.5 rounded-full bg-[#e60000]"></div>
@@ -268,7 +262,7 @@ export default function LandingContent() {
                 key={item.label}
                 href={item.href}
                 onClick={item.onClick}
-                className="group flex flex-col items-center justify-center rounded-md bg-white py-3 px-2 md:py-4 md:px-4 shadow-sm ring-1 ring-[#f2f2f2] transition-all hover:-translate-y-1 hover:ring-[#e60000]/20"
+                className="group flex flex-col items-center justify-center rounded-md bg-white py-3 px-2 ring-1 ring-[#f2f2f2] transition-colors hover:ring-[#e60000]/20 md:py-4 md:px-4"
               >
                 <div className={`mb-2 flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full ${item.color} group-hover:bg-[#e60000] group-hover:text-white transition-colors`}>
                   <item.icon className="h-4 w-4 md:h-5 md:w-5" />
@@ -281,7 +275,7 @@ export default function LandingContent() {
           {/* Bottom Banner Group: AI Summary & Contact Banner */}
           <div className="lg:mt-auto flex flex-col gap-4 md:gap-8 w-full">
             {/* AI Feature Summary Banner */}
-            <section className="relative overflow-hidden rounded-md bg-[#e60000] p-5 md:p-8 text-white shadow-lg">
+            <section className="relative overflow-hidden rounded-md bg-[#e60000] p-5 text-white md:p-8">
               <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
                 <div className="mb-4 md:mb-0">
                   <h2 className="mb-2 text-xl md:text-2xl font-black leading-tight">
@@ -292,7 +286,7 @@ export default function LandingContent() {
                 </div>
                 <Link 
                   href="/recommend?mode=summary"
-                  className="vodafone-button-pill bg-white px-8 py-3 text-sm font-bold text-[#e60000] transition-transform hover:scale-105 active:scale-95 text-center"
+                  className="vodafone-button-pill bg-white px-8 py-3 text-center text-sm font-bold text-[#e60000] transition-opacity hover:opacity-90 active:opacity-95"
                 >
                   지금 요약 보기
                 </Link>
@@ -321,7 +315,7 @@ export default function LandingContent() {
           <TrendingTagsRanking />
 
           {/* Quick Tips Portal */}
-          <div className="rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2]">
+          <div className="rounded-md bg-white p-4 md:p-6">
             <div className="mb-3 flex items-center gap-2 border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
               <Sparkles className="h-4 w-4 text-[#e60000]" />
               <h2 className="font-black text-base md:text-lg text-[#25282b]">라멘 꿀팁</h2>

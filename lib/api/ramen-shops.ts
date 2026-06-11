@@ -84,6 +84,7 @@ export interface RamenShopsParams {
   district?: string;
   keyword?: string;
   tag?: string;
+  ramenTypeId?: string | number;
 }
 
 export interface RamenShopsPageInfo {
@@ -241,6 +242,7 @@ export const getRamenShops = async (
       district: params.district,
       keyword: params.keyword,
       tag: params.tag,
+      ramenTypeId: params.ramenTypeId,
     },
   });
 

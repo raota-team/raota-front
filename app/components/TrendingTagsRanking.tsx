@@ -41,7 +41,7 @@ export default function TrendingTagsRanking() {
   }, [currentIndex, tags.length]);
 
   return (
-    <div className="rounded-md bg-white p-4 md:p-6 shadow-sm ring-1 ring-[#f2f2f2]">
+    <div className="rounded-md bg-white p-4 ring-1 ring-[#f2f2f2] md:p-6">
       <div className="mb-3 flex items-center justify-between border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
         <h2 className="font-black text-base md:text-lg text-[#25282b] flex items-center gap-2">
           실시간 인기 검색어
@@ -67,9 +67,9 @@ export default function TrendingTagsRanking() {
             {tags.map((tag, i) => (
             <li 
               key={`pc-${tag.name}`} 
-              className={`flex items-center justify-between py-2 md:py-3 px-2 rounded-md
-                transition-all duration-500 ease-out bg-transparent scale-100
-                ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+              className={`flex items-center justify-between rounded-md bg-transparent px-2 py-2
+                transition-opacity duration-300 ease-out md:py-3
+                ${mounted ? 'opacity-100' : 'opacity-0'}
                 ${i !== tags.length - 1 ? 'border-b border-[#f2f2f2]/50' : ''}
               `}
               style={{ transitionDelay: mounted ? '0ms' : `${i * 100}ms` }}
@@ -86,8 +86,8 @@ export default function TrendingTagsRanking() {
                 </div>
               </div>
               <div className="flex-shrink-0 ml-2 flex items-center">
-                {tag.trend === 'up' && <ChevronUp className="h-3 w-3 text-[#e60000] animate-bounce" />}
-                {tag.trend === 'new' && <span className="text-[8px] font-black text-[#e60000] animate-pulse">NEW</span>}
+                {tag.trend === 'up' && <ChevronUp className="h-3 w-3 text-[#e60000]" />}
+                {tag.trend === 'new' && <span className="text-[8px] font-black text-[#e60000]">NEW</span>}
                 {tag.trend === 'down' && <span className="text-[10px] font-black text-stone-300">-</span>}
               </div>
             </li>
@@ -122,8 +122,8 @@ export default function TrendingTagsRanking() {
                 </div>
               </div>
               <div className="flex-shrink-0 ml-2">
-                {tag.trend === 'up' && <ChevronUp className="h-3 w-3 text-[#e60000] animate-bounce" />}
-                {tag.trend === 'new' && <span className="text-[8px] font-black text-[#e60000] animate-pulse">NEW</span>}
+                {tag.trend === 'up' && <ChevronUp className="h-3 w-3 text-[#e60000]" />}
+                {tag.trend === 'new' && <span className="text-[8px] font-black text-[#e60000]">NEW</span>}
                 {tag.trend === 'down' && <span className="text-[10px] font-black text-stone-300">-</span>}
               </div>
             </div>
@@ -143,8 +143,8 @@ export default function TrendingTagsRanking() {
                 </div>
               </div>
               <div className="flex-shrink-0 ml-2">
-                {tags[0].trend === 'up' && <ChevronUp className="h-3 w-3 text-[#e60000] animate-bounce" />}
-                {tags[0].trend === 'new' && <span className="text-[8px] font-black text-[#e60000] animate-pulse">NEW</span>}
+                {tags[0].trend === 'up' && <ChevronUp className="h-3 w-3 text-[#e60000]" />}
+                {tags[0].trend === 'new' && <span className="text-[8px] font-black text-[#e60000]">NEW</span>}
                 {tags[0].trend === 'down' && <span className="text-[10px] font-black text-stone-300">-</span>}
               </div>
             </div>

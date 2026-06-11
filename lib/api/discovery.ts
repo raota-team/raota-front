@@ -14,6 +14,15 @@ export interface RecentVerifiedShopResponse {
   photoCount: number;
 }
 
+export interface WeekendRecommendationResponse {
+  id: string | number;
+  name: string;
+  title: string;
+  location: string;
+  imageUrl: string;
+  reason: string;
+}
+
 export interface TrendingTagResponse {
   rank: number;
   name: string;
@@ -46,4 +55,14 @@ export const getTrendingTags = async (limit: number = 5): Promise<{ success: boo
 
 export const getHomeTips = async (category: string = "tip", limit: number = 3): Promise<{ success: boolean; data: CommunityHomePostResponse[] }> => {
   return apiClient<{ success: boolean; data: CommunityHomePostResponse[] }>(`/api/v1/community/posts?category=${category}&limit=${limit}`);
+};
+
+export const getWeekendRecommendations = async (): Promise<{ success: boolean; data: WeekendRecommendationResponse[] }> => {
+  return apiClient<{ success: boolean; data: WeekendRecommendationResponse[] }>("/api/v1/discovery/weekend-recommendations");
+};
+
+export const generateWeekendRecommendations = async (): Promise<{ success: boolean; data: WeekendRecommendationResponse[] }> => {
+  return apiClient<{ success: boolean; data: WeekendRecommendationResponse[] }>("/api/v1/discovery/weekend-recommendations/generate", {
+    method: "POST",
+  });
 };

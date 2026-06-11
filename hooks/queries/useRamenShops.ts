@@ -17,6 +17,7 @@ export const useRamenShops = (params: RamenShopsParams) =>
       params.district ?? "",
       params.keyword ?? "",
       params.tag ?? "",
+      params.ramenTypeId ?? "",
       params.sort ?? "POPULAR",
     ],
     queryFn: () => getRamenShops(params),

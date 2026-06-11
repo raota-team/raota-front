@@ -57,16 +57,11 @@ const TYPES = [
   { value: "츠케멘", label: "츠케멘" },
   { value: "이에케라멘", label: "이에케라멘" },
   { value: "돈코츠라멘", label: "돈코츠라멘" },
-  { value: "매운돈코츠라멘", label: "매운돈코츠라멘" },
   { value: "토리파이탄", label: "토리파이탄" },
   { value: "미소라멘", label: "미소라멘" },
   { value: "쇼유파이탄", label: "쇼유파이탄" },
-  { value: "쇼유 라멘", label: "쇼유 라멘" },
-  { value: "블랙쇼유라멘", label: "블랙쇼유라멘" },
   { value: "토마토라멘", label: "토마토라멘" },
   { value: "차슈멘", label: "차슈멘" },
-  { value: "돈코츠 라멘", label: "돈코츠 라멘" },
-  { value: "특선쇼유라멘", label: "특선쇼유라멘" },
   { value: "탄탄멘", label: "탄탄멘" },
   { value: "중화소바", label: "중화소바" },
 ];
@@ -76,10 +71,28 @@ export default function ShopsListPage() {
   const [activeRegion, setActiveRegion] = useState(ALL_FILTER);
   const [activeDistrict, setActiveDistrict] = useState(ALL_FILTER);
   const [activeType, setActiveType] = useState(ALL_TYPE_FILTER);
+  const [activeRamenTypeId, setActiveRamenTypeId] = useState<string | undefined>();
+  const [activeRamenTypeName, setActiveRamenTypeName] = useState<string | undefined>();
   const [sortBy, setSortBy] = useState<(typeof SORT_OPTIONS)[number]["value"]>(DEFAULT_SORT);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [pageWindowStart, setPageWindowStart] = useState(0);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ramenTypeId = params.get("ramenTypeId");
+    const ramenTypeName = params.get("ramenTypeName");
+    const tag = params.get("tag");
+
+    if (tag) {
+      setActiveType(tag);
+    }
+
+    if (ramenTypeId) {
+      setActiveRamenTypeId(ramenTypeId);
+      setActiveRamenTypeName(ramenTypeName || tag || "추천 라멘");
+    }
+  }, []);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -91,11 +104,28 @@ export default function ShopsListPage() {
   useEffect(() => {
     setCurrentPage(0);
     setPageWindowStart(0);
-  }, [activeRegion, activeDistrict, activeType, sortBy, debouncedSearchQuery]);
+  }, [activeRegion, activeDistrict, activeType, activeRamenTypeId, sortBy, debouncedSearchQuery]);
 
   useEffect(() => {
     setActiveDistrict(ALL_FILTER);
   }, [activeRegion]);
+
+  const clearRamenTypeFilter = (resetType = false) => {
+    if (resetType) {
+      setActiveType(ALL_TYPE_FILTER);
+    }
+
+    setActiveRamenTypeId(undefined);
+    setActiveRamenTypeName(undefined);
+
+    const params = new URLSearchParams(window.location.search);
+    params.delete("ramenTypeId");
+    params.delete("ramenTypeName");
+    params.delete("tag");
+
+    const queryString = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${queryString ? `?${queryString}` : ""}`);
+  };
 
   const { data, isLoading, isFetching, isError } = useRamenShops({
     page: currentPage,
@@ -104,6 +134,7 @@ export default function ShopsListPage() {
     district: activeDistrict === ALL_FILTER ? undefined : activeDistrict,
     keyword: debouncedSearchQuery || undefined,
     tag: activeType === ALL_TYPE_FILTER ? undefined : activeType,
+    ramenTypeId: activeRamenTypeId,
     sort: sortBy,
   });
   const regionOptions = REGIONS.map((region) => ({
@@ -207,7 +238,10 @@ export default function ShopsListPage() {
                 label="메뉴"
                 value={activeType}
                 options={TYPES}
-                onChange={setActiveType}
+                onChange={(value) => {
+                  setActiveType(value);
+                  clearRamenTypeFilter(false);
+                }}
               />
               <FilterSelect
                 label="정렬"
@@ -239,10 +273,13 @@ export default function ShopsListPage() {
                 )}
                 {activeType !== ALL_TYPE_FILTER && (
                   <button
-                    onClick={() => setActiveType(ALL_TYPE_FILTER)}
+                    onClick={() => {
+                      setActiveType(ALL_TYPE_FILTER);
+                      clearRamenTypeFilter(false);
+                    }}
                     className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
                   >
-                    {activeType}
+                    {activeRamenTypeName ?? activeType}
                     <X className="h-3 w-3" />
                   </button>
                 )}
@@ -255,16 +292,16 @@ export default function ShopsListPage() {
                     <X className="h-3 w-3" />
                   </button>
                 )}
-                {activeRegion === ALL_FILTER && activeDistrict === ALL_FILTER && activeType === ALL_TYPE_FILTER && sortBy === DEFAULT_SORT && (
+                {activeRegion === ALL_FILTER && activeDistrict === ALL_FILTER && activeType === ALL_TYPE_FILTER && !activeRamenTypeId && sortBy === DEFAULT_SORT && (
                   <p className="shrink-0 text-sm text-stone-400">아직 선택된 필터 조건이 없습니다.</p>
                 )}
               </div>
-              {(activeRegion !== ALL_FILTER || activeDistrict !== ALL_FILTER || activeType !== ALL_TYPE_FILTER || sortBy !== DEFAULT_SORT) && (
+              {(activeRegion !== ALL_FILTER || activeDistrict !== ALL_FILTER || activeType !== ALL_TYPE_FILTER || activeRamenTypeId || sortBy !== DEFAULT_SORT) && (
                 <button
                   onClick={() => {
                     setActiveRegion(ALL_FILTER);
                     setActiveDistrict(ALL_FILTER);
-                    setActiveType(ALL_TYPE_FILTER);
+                    clearRamenTypeFilter(true);
                     setSortBy(DEFAULT_SORT);
                   }}
                   className="shrink-0 whitespace-nowrap text-[11px] font-black uppercase tracking-[0.12em] text-stone-400 transition-colors hover:text-[#e60000]"
