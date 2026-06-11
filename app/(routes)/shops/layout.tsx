@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '라멘 맛집 지도',
+  title: '라멘 맛집 지도 - 전국 라멘 가게 찾기',
   description:
-    '라오타(RAOTA) 라멘 맛집 지도에서 전국 라멘집과 일본라멘 스타일별 맛집을 찾아보세요.',
-  keywords: ['라오타', 'RAOTA', 'raota', '라멘', '일본라멘', '라멘 맛집', '라멘 지도', '라멘집'],
+    '라오타(RAOTA) 라멘 맛집 지도에서 전국 100개 이상의 라멘집과 라멘 스타일별(돈코츠, 쇼유, 츠케멘 등) 맛집을 탐색하세요.',
+  keywords: ['라멘 지도', '라멘 맛집', '라멘집', '라멘 추천', '라오타', '라멘 커뮤니티'],
   alternates: {
     canonical: '/shops',
   },

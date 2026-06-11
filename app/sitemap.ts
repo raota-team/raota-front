@@ -69,8 +69,37 @@ const getShopSitemapEntries = async (): Promise<MetadataRoute.Sitemap> => {
   }
 };
 
+const getCommunitySitemapEntries = async (): Promise<MetadataRoute.Sitemap> => {
+  try {
+    if (!apiBaseUrl) return [];
+
+    // 커뮤니티 글은 최신순으로 가져오며, 검색 엔진 최적화를 위해 전체 글 색인 유도
+    const response = await fetch(`${apiBaseUrl}/community/posts?page=0&size=500`, {
+      next: { revalidate: 3600 },
+    });
+
+    if (!response.ok) return [];
+
+    const payload = await response.json();
+    const posts = payload.data?.items ?? [];
+
+    return posts.map((post: any) => ({
+      url: `${baseUrl}/community/${post.postId}`,
+      lastModified: new Date(post.createdAt || new Date()),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    }));
+  } catch (error) {
+    console.error('Failed to build community sitemap entries:', error);
+    return [];
+  }
+};
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const shopUrls = await getShopSitemapEntries();
+  const [shopUrls, communityUrls] = await Promise.all([
+    getShopSitemapEntries(),
+    getCommunitySitemapEntries(),
+  ]);
 
   return [
     {
@@ -98,5 +127,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     ...shopUrls,
+    ...communityUrls,
   ];
 }

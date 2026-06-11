@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "라멘 추천",
+  title: "라오타 - 라멘 추천, 내 취향에 맞는 완벽한 라멘 찾기",
   description:
-    "라오타(RAOTA) 라멘 추천에서 취향, 기분, 선호하는 국물 스타일에 맞는 라멘 맛집과 일본라멘 메뉴를 찾아보세요.",
+    "라오타(RAOTA) 라멘 추천에서 취향, 기분, 선호하는 국물 스타일에 맞는 라멘 맛집과 라멘 메뉴를 찾아보세요.",
   keywords: [
     "라멘 추천",
     "라멘 맛집 추천",
-    "일본라멘 추천",
     "라멘 취향 추천",
     "라오타",
     "RAOTA",

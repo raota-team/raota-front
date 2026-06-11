@@ -67,6 +67,9 @@ export default function LandingContent() {
 
   return (
     <div className="min-h-screen bg-white pb-6 md:pb-10">
+      {/* SEO용 숨겨진 제목 */}
+      <h1 className="sr-only">라오타 - 라멘 추천 & 맛집 지도 & 전국 라멘 커뮤니티</h1>
+      
       {/* 1. Portal Hero Section - Focus on AI Recommendation */}
       <section ref={heroRef} className="relative h-[430px] min-h-[430px] w-full overflow-hidden bg-[#25282b] md:h-[500px] md:min-h-0">
         <div className="absolute inset-0">

@@ -7,36 +7,37 @@ import "./globals.css";
 
 // 검색 엔진 최적화를 위한 기본 설정
 const SITE_NAME = "라오타 RAOTA";
-const SITE_TITLE = "라오타 - 라멘에 진심인 사람들";
+const SITE_TITLE = "라오타 - 라멘 추천 & 맛집 지도 & 전국 라멘 커뮤니티";
 const SITE_DESCRIPTION =
-  "라오타(RAOTA)는 라멘에 진심인 사람들이 모여 국내 라멘 맛집, 일본라멘 스타일, 솔직한 후기와 라멘 지도를 기록하는 라멘 커뮤니티입니다.";
+  "라오타(RAOTA)는 완벽한 라멘 추천, 전국 라멘 맛집 지도, 매니아들의 솔직한 후기를 제공하는 대한민국 대표 라멘 커뮤니티입니다.";
 const SITE_URL = "https://www.raota.net";
 const GTM_ID = "GTM-WRH3QH6K";
 const SITE_KEYWORDS = [
-  "raota",
-  "RAOTA",
-  "라오타",
-  "라멘",
-  "일본라멘",
-  "라멘 맛집",
-  "라멘맛집",
-  "라멘 지도",
-  "라멘지도",
   "라멘 추천",
+  "라멘",
+  "라멘집",
+  "라멘 맛집",
+  "라멘 지도",
   "라멘 커뮤니티",
-  "라멘 후기",
-  "라멘 맛집 추천",
+  "라멘집 추천",
+  "전국 라멘 지도",
+  "서울 라멘 맛집",
   "돈코츠라멘",
   "쇼유라멘",
   "츠케멘",
   "마제소바",
+  "이에케라멘",
+  "토리파이탄",
+  "라오타",
+  "RAOTA",
+  "raota",
 ];
 
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "RAOTA",
-  alternateName: ["라오타", "raota", SITE_TITLE],
+  name: "RAOTA (라오타)",
+  alternateName: ["라오타", "raota", "라멘 추천", "라멘 지도", "라멘 커뮤니티"],
   url: SITE_URL,
   description: SITE_DESCRIPTION,
   inLanguage: "ko-KR",
@@ -46,6 +47,9 @@ const structuredData = {
     alternateName: "라오타",
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
+    sameAs: [
+      "https://www.instagram.com/raota_official", // 예시 SNS
+    ],
   },
 };
 

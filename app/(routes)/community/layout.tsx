@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '라멘 커뮤니티',
+  title: '라멘 커뮤니티 - 솔직한 후기 및 맛집 꿀팁',
   description:
-    '라오타(RAOTA) 라멘 커뮤니티에서 라멘에 진심인 사람들이 남긴 일본라멘 후기, 맛집 추천, 라멘 꿀팁을 확인하세요.',
-  keywords: ['라오타', 'RAOTA', 'raota', '라멘', '일본라멘', '라멘 후기', '라멘 커뮤니티', '라멘 추천'],
+    '라오타(RAOTA) 라멘 커뮤니티에서 라멘에 진심인 사람들이 남긴 라멘 후기, 맛집 추천, 웨이팅 정보, 라멘 꿀팁을 확인하세요.',
+  keywords: ['라멘 커뮤니티', '라멘 후기', '라멘집 추천', '라멘 추천', '라오타', '라멘 맛집'],
   alternates: {
     canonical: '/community',
   },
