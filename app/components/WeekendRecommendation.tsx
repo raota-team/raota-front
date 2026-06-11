@@ -39,7 +39,7 @@ export default function WeekendRecommendation() {
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2 md:gap-3">
             <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-[#e60000]" />
-            <h2 className="text-xl md:text-2xl font-black text-[#25282b]">이번 주말의 라멘 추천</h2>
+            <h2 className="text-xl md:text-2xl font-black text-[#25282b]">이번 주말, AI가 추천하는 한 그릇</h2>
           </div>
         </div>
 
@@ -70,7 +70,7 @@ export default function WeekendRecommendation() {
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2 md:gap-3">
           <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-[#e60000]" />
-          <h2 className="text-xl md:text-2xl font-black text-[#25282b]">이번 주말의 라멘 추천</h2>
+          <h2 className="text-xl md:text-2xl font-black text-[#25282b]">이번 주말, AI가 추천하는 한 그릇</h2>
         </div>
       </div>
 

@@ -84,7 +84,7 @@ export default function LandingContent() {
 
             <h1 className={`mb-4 md:mb-6 text-[clamp(2rem,8vw,4.5rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-white ${doHyeon.className}`}>
               오늘 당신의 <br />
-              <span className="text-[#e60000]">베스트 한 그릇</span>은?
+              <span>베스트 한 그릇</span>은?
             </h1>
             <p className="mb-10 md:mb-12 max-w-lg text-base md:text-lg font-medium leading-relaxed text-white/80 break-keep">
               취향 분석부터 매장 비교까지, <br className="hidden md:block" />
