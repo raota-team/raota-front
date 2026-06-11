@@ -236,12 +236,12 @@ export default function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <section className="relative h-[10rem] overflow-hidden md:h-[14rem]">
+      <section className="relative h-32 overflow-hidden md:h-[14rem]">
         <div className="absolute inset-0">
           <img src="/header-community-anime.png" alt="Community" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-[#25282b]/55" />
         </div>
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-6 pt-16 pb-4 text-center text-white md:pt-16 md:pb-6">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-6 text-center text-white md:pt-16 md:pb-6">
           <h1 className="vodafone-display mb-3 text-3xl leading-none text-white sm:text-4xl md:text-5xl">
             RAOTA COMMUNITY<span className="text-[#e60000]">.</span>
           </h1>

@@ -350,7 +350,7 @@ export default function RecommendPage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative h-[10rem] overflow-hidden md:h-[14rem]">
+      <section className="relative h-32 overflow-hidden md:h-[14rem]">
         <div className="absolute inset-0">
           <Image
             src="/header-recommend.png"
@@ -361,9 +361,9 @@ export default function RecommendPage() {
           />
           <div className="absolute inset-0 bg-[#25282b]/40" />
         </div>
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-6 pt-16 pb-4 text-center text-white md:pt-16 md:pb-6">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-6 text-center text-white md:pt-16 md:pb-6">
           <div className="max-w-3xl">
-            <h1 className="vodafone-display mb-3 text-3xl leading-none text-white sm:text-4xl md:text-5xl flex items-center justify-center gap-2.5 flex-nowrap whitespace-nowrap">
+            <h1 className="vodafone-display mb-3 flex flex-nowrap items-center justify-center gap-2 text-2xl leading-none text-white whitespace-nowrap sm:gap-2.5 sm:text-4xl md:text-5xl">
               <span className="leading-none">RECOMMENDATION<span className="text-[#e60000]">.</span></span>
               <span className="inline-flex shrink-0 items-center rounded-full bg-[#e60000] px-2 py-0.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-white select-none leading-none">
                 Beta

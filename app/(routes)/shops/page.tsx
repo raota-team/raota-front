@@ -183,12 +183,12 @@ export default function ShopsListPage() {
   return (
     <div className="min-h-screen">
       {/* Header Section */}
-      <section className="relative h-[10rem] overflow-hidden md:h-[14rem]">
+      <section className="relative h-32 overflow-hidden md:h-[14rem]">
         <div className="absolute inset-0">
           <img src="/header-shoplist-anime.png" alt="Ramen Shops" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[#25282b]/45"></div>
         </div>
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-4 pt-16 pb-4 text-center text-white sm:px-6 md:pt-16 md:pb-6 lg:px-8">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-4 text-center text-white sm:px-6 md:pt-16 md:pb-6 lg:px-8">
           <div className="text-center text-white">
             <h1 className="vodafone-display mb-3 text-3xl text-white sm:text-4xl md:text-5xl">
               RAMEN ARCHIVE<span className="text-[#e60000]">.</span>
