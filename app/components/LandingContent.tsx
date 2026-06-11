@@ -98,7 +98,7 @@ export default function LandingContent() {
             <div className="grid grid-cols-2 gap-3 w-full sm:hidden">
               <Link 
                 href="/recommend?mode=taste"
-                className="group relative flex flex-col justify-between overflow-hidden rounded-[0px_6px_0px_0px] bg-[#e60000] p-4 transition-opacity hover:opacity-95 active:opacity-90 min-h-[110px]"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-md bg-[#e60000] p-4 transition-opacity hover:opacity-95 active:opacity-90 min-h-[110px]"
               >
                 <div className="relative z-10 flex flex-col h-full justify-between">
                   <div>
@@ -192,7 +192,7 @@ export default function LandingContent() {
       {/* 2. Portal Main Content Area */}
       <div 
         ref={contentRef}
-        className={`relative z-20 mx-auto -mt-20 md:-mt-12 grid max-w-7xl gap-4 md:gap-8 px-4 lg:grid-cols-[1fr_320px] md:px-12 reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
+        className={`relative z-20 mx-auto -mt-[78px] md:-mt-12 grid max-w-7xl gap-4 md:gap-8 px-4 lg:grid-cols-[1fr_320px] md:px-12 reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
       >
         {/* Mobile: Move Profile Card to top for dashboard feel */}
         <div className="lg:hidden">
