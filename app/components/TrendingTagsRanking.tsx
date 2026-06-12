@@ -44,7 +44,7 @@ export default function TrendingTagsRanking() {
     <div className="rounded-md bg-white p-4 ring-1 ring-[#f2f2f2] md:p-6">
       <div className="mb-3 flex items-center justify-between border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
         <h2 className="font-black text-base md:text-lg text-[#25282b] flex items-center gap-2">
-          실시간 인기 검색어
+          오늘 많이 본 라멘집
         </h2>
       </div>
       
