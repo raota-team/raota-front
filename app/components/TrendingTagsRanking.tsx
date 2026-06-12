@@ -75,7 +75,7 @@ export default function TrendingTagsRanking() {
               style={{ transitionDelay: mounted ? '0ms' : `${i * 100}ms` }}
             >
               <div className="flex items-center gap-3 min-w-0">
-                <span className={`w-4 text-xs md:text-sm font-black transition-colors duration-300 ${tag.rank <= 3 ? 'text-[#e60000]' : 'text-[#bebebe]'}`}>
+                <span className={`w-4 text-xs md:text-sm font-black transition-colors duration-300 ${tag.rank <= 3 ? 'text-[#e60000]' : 'text-[#737373]'}`}>
                   {tag.rank}
                 </span>
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -111,7 +111,7 @@ export default function TrendingTagsRanking() {
           {tags.map((tag) => (
             <div key={`mobile-roll-${tag.name}`} className="flex items-center justify-between h-[36px] px-1">
               <div className="flex items-center gap-3 min-w-0">
-                <span className={`w-4 text-xs md:text-sm font-black ${tag.rank <= 3 ? 'text-[#e60000]' : 'text-[#bebebe]'}`}>
+                <span className={`w-4 text-xs md:text-sm font-black ${tag.rank <= 3 ? 'text-[#e60000]' : 'text-[#737373]'}`}>
                   {tag.rank}
                 </span>
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -132,7 +132,7 @@ export default function TrendingTagsRanking() {
           {tags.length > 0 && (
             <div className="flex items-center justify-between h-[36px] px-1">
               <div className="flex items-center gap-3 min-w-0">
-                <span className={`w-4 text-xs md:text-sm font-black ${tags[0].rank <= 3 ? 'text-[#e60000]' : 'text-[#bebebe]'}`}>
+                <span className={`w-4 text-xs md:text-sm font-black ${tags[0].rank <= 3 ? 'text-[#e60000]' : 'text-[#737373]'}`}>
                   {tags[0].rank}
                 </span>
                 <div className="flex items-center gap-1.5 min-w-0">

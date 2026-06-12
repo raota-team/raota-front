@@ -128,8 +128,6 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <GoogleTagManager gtmId={GTM_ID} />
       <head>
-        <link rel="preconnect" href="https://images.raota.net" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://images.raota.net" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

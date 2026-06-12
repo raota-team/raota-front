@@ -49,7 +49,7 @@ export default function WeekendRecommendation() {
               <p className="mb-2 text-base font-bold text-[#25282b]">
                 {isError ? "추천을 불러오지 못했습니다." : "이번 주말 추천을 준비 중입니다."}
               </p>
-              <p className="text-sm leading-relaxed text-[#7e7e7e]">
+              <p className="text-sm leading-relaxed text-[#666666]">
                 지금은 등록된 주말 추천이 없어요. 가게 목록에서 원하는 라멘을 먼저 둘러보세요.
               </p>
             </div>
@@ -84,6 +84,7 @@ export default function WeekendRecommendation() {
               src={recommendation.imageUrl}
               alt={recommendation.title || recommendation.name}
               fill
+              sizes="(min-width: 1024px) 420px, (min-width: 768px) 42vw, 100vw"
               className="object-cover"
             />
           ) : (
@@ -94,14 +95,14 @@ export default function WeekendRecommendation() {
         </div>
 
         <div className="flex flex-1 flex-col justify-center p-4 md:w-[58%] md:p-6 lg:p-7">
-          <div className="mb-2 flex items-start gap-2 text-xs text-[#7e7e7e] md:text-sm">
+          <div className="mb-2 flex items-start gap-2 text-xs text-[#666666] md:text-sm">
             <UtensilsCrossed className="h-3.5 w-3.5 md:h-4 md:w-4" />
             <span className="font-medium">{recommendation.location}</span>
           </div>
           <h3 className="mb-3 text-lg font-bold leading-snug text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-xl">
             {recommendation.title || recommendation.name}
           </h3>
-          <p className="text-sm leading-relaxed text-[#7e7e7e] md:text-[15px]">
+          <p className="text-sm leading-relaxed text-[#666666] md:text-[15px]">
             {recommendation.reason}
           </p>
           <div className="mt-4 inline-flex items-center gap-1 text-[12px] font-bold text-[#e60000] group-hover:underline">

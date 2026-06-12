@@ -4,12 +4,20 @@ import Link from 'next/link';
 import { Users, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import { useMemberSummary } from '@/hooks/queries/useUser';
+import { getAccessToken } from '@/lib/auth/accessToken';
+import { useEffect, useState } from 'react';
 
 export default function UserProfileCard() {
-  const { data: summaryData, isLoading } = useMemberSummary();
+  const [hasAccessToken, setHasAccessToken] = useState(false);
+
+  useEffect(() => {
+    setHasAccessToken(Boolean(getAccessToken()));
+  }, []);
+
+  const { data: summaryData, isLoading } = useMemberSummary(hasAccessToken);
   const user = summaryData?.data;
 
-  if (isLoading) {
+  if (hasAccessToken && isLoading) {
     return (
       <div className="rounded-md bg-white p-3 md:p-4 ring-1 ring-[#f2f2f2] flex items-center justify-between">
          <div className="flex items-center gap-3 animate-pulse">
@@ -36,7 +44,7 @@ export default function UserProfileCard() {
           </div>
         )}
         <div className="min-w-0 pr-2">
-          <p className="text-[10px] md:text-xs text-[#7e7e7e] flex items-center gap-1">
+          <p className="text-[10px] md:text-xs text-[#666666] flex items-center gap-1">
             어서오세요! <span className="text-[11px] md:text-xs">👋</span>
           </p>
           <p className="text-sm md:text-base font-bold text-[#25282b] truncate">
@@ -48,7 +56,7 @@ export default function UserProfileCard() {
       {user ? (
         <Link 
           href="/mypage"
-          className="flex-shrink-0 flex items-center gap-0.5 text-xs md:text-sm font-medium text-[#7e7e7e] hover:text-[#e60000] transition-colors"
+          className="flex-shrink-0 flex items-center gap-0.5 text-xs md:text-sm font-medium text-[#666666] hover:text-[#e60000] transition-colors"
         >
           최근 활동
           <ChevronRight className="h-4 w-4" />

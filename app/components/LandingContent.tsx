@@ -43,6 +43,8 @@ import { mockCommunityPosts } from '@/app/lib/community-data';
 const doHyeon = Do_Hyeon({
   weight: '400',
   subsets: ['latin'],
+  display: 'swap',
+  preload: false,
 });
 
 export default function LandingContent() {
@@ -74,10 +76,12 @@ export default function LandingContent() {
       <section ref={heroRef} className="relative h-[430px] min-h-[430px] w-full overflow-hidden bg-[#25282b] md:h-[500px] md:min-h-0">
         <div className="absolute inset-0">
           <Image
-            src="/hero-home.jpg"
+            src="/hero-home.webp"
             alt="Ramen Background"
             fill
             priority
+            fetchPriority="high"
+            sizes="100vw"
             className="object-cover opacity-50 saturate-[0.8]"
           />
         </div>
@@ -206,7 +210,7 @@ export default function LandingContent() {
                 <div className="h-6 md:h-8 w-1 md:w-1.5 rounded-full bg-[#e60000]"></div>
                 <h2 className="text-xl md:text-2xl font-black text-[#25282b]">최근 사진 인증된 라멘집</h2>
               </div>
-              <Link href="/shops" className="text-xs md:text-sm font-bold text-[#7e7e7e] hover:text-[#e60000]">
+              <Link href="/shops" className="text-xs md:text-sm font-bold text-[#666666] hover:text-[#e60000]">
                 더보기 +
               </Link>
             </div>
@@ -220,7 +224,13 @@ export default function LandingContent() {
                 >
                   <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-[0px_8px_0px_0px] bg-stone-100 ring-1 ring-stone-100">
                     {shop.imageUrl ? (
-                      <Image src={shop.imageUrl} alt={shop.name} fill className="object-cover" />
+                      <Image
+                        src={shop.imageUrl}
+                        alt={shop.name}
+                        fill
+                        className="object-cover"
+                        sizes="(min-width: 768px) 80px, 64px"
+                      />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-stone-300 group-hover:text-[#e60000] transition-colors">
                         <Store className="h-6 w-6 md:h-8 md:w-8" />
@@ -231,9 +241,9 @@ export default function LandingContent() {
                     <h3 className="mb-1.5 md:mb-2 truncate text-sm md:text-base font-bold text-[#25282b] group-hover:text-[#e60000]">
                       {shop.name}
                     </h3>
-                    <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-xs text-[#7e7e7e]">
+                    <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-xs text-[#666666]">
                       <span className="font-bold text-[#25282b]">{shop.location}</span>
-                      <div className="flex items-center gap-1 text-[#7e7e7e]">
+                      <div className="flex items-center gap-1 text-[#666666]">
                         <Camera className="h-3 w-3" />
                         <span className="font-medium">인증샷 <b className="text-[#25282b]">{shop.photoCount || 0}</b>개</span>
                       </div>
@@ -285,7 +295,7 @@ export default function LandingContent() {
                     길게 읽지 마세요, <br />
                     AI가 3줄 요약해 드립니다.
                   </h2>
-                  <p className="text-sm md:text-base text-white/85">수많은 리뷰 속 핵심 장단점만 쏙쏙!</p>
+                  <p className="text-sm md:text-base text-white/95">수많은 리뷰 속 핵심 장단점만 쏙쏙!</p>
                 </div>
                 <Link 
                   href="/recommend?mode=summary"
@@ -336,16 +346,16 @@ export default function LandingContent() {
                     href={`/community/${tip.id}`}
                     className={`group block py-2 md:py-3 ${i !== quickTips.length - 1 ? 'border-b border-[#f2f2f2]/50' : ''}`}
                   >
-                    <p className="line-clamp-2 text-xs leading-relaxed text-[#7e7e7e] group-hover:text-[#e60000]">
+                    <p className="line-clamp-2 text-xs leading-relaxed text-[#666666] group-hover:text-[#e60000]">
                       {tip.title}
                     </p>
-                    <span className="mt-1 block text-[10px] text-[#bebebe]">{tip.createdAt ? new Date(tip.createdAt).toLocaleDateString() : ''}</span>
+                    <span className="mt-1 block text-[10px] text-[#737373]">{tip.createdAt ? new Date(tip.createdAt).toLocaleDateString() : ''}</span>
                   </Link>
                 ))
               ) : (
                 <div className="flex h-full min-h-[100px] flex-col items-center justify-center text-center">
-                  <p className="text-xs text-[#bebebe]">아직 등록된 꿀팁이 없어요.</p>
-                  <p className="text-[10px] text-[#bebebe] mt-1">첫 번째 꿀팁을 남겨보세요!</p>
+                  <p className="text-xs text-[#737373]">아직 등록된 꿀팁이 없어요.</p>
+                  <p className="text-[10px] text-[#737373] mt-1">첫 번째 꿀팁을 남겨보세요!</p>
                 </div>
               )}
             </div>
