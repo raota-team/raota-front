@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Image as ImageIcon, X, Store, ChevronDown, Search, Save, Loader2 } from 'lucide-react';
 import { useRamenShops } from '@/hooks/queries/useRamenShops';
 import RichTextEditor from '../../../components/RichTextEditor';
@@ -20,6 +21,7 @@ const categories = [
 
 export default function CommunityWritePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { showToast } = useApp();
   const { data } = useRamenShops({ page: 0, size: 100, sort: "NAME" });
@@ -37,6 +39,7 @@ export default function CommunityWritePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shopSearchQuery, setShopSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [didApplyPrefill, setDidApplyPrefill] = useState(false);
 
   const selectedShop = shops?.find(s => s.id === selectedShopId);
 
@@ -49,6 +52,36 @@ export default function CommunityWritePage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (didApplyPrefill) return;
+
+    const initialCategory = searchParams.get('category');
+    const initialShopId = searchParams.get('shopId');
+    const initialTitle = searchParams.get('title');
+    const initialContent = searchParams.get('content');
+
+    if (initialCategory && categories.some((item) => item.id === initialCategory)) {
+      setCategory(initialCategory);
+    }
+
+    if (initialShopId) {
+      const nextShopId = Number(initialShopId);
+      if (!Number.isNaN(nextShopId)) {
+        setSelectedShopId(nextShopId);
+      }
+    }
+
+    if (initialTitle) {
+      setTitle(initialTitle);
+    }
+
+    if (initialContent) {
+      setContent(initialContent);
+    }
+
+    setDidApplyPrefill(true);
+  }, [didApplyPrefill, searchParams]);
 
   /** 에디터 내부 이미지 업로드 핸들러 */
   const handleEditorImageUpload = async (file: File): Promise<string> => {

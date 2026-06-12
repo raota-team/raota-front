@@ -324,8 +324,8 @@ export default function LandingContent() {
                 <Sparkles className="h-4 w-4 text-[#e60000]" />
                 <h2 className="font-black text-base md:text-lg text-[#25282b]">라멘 꿀팁</h2>
               </div>
-              <Link href="/community" className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500 transition-colors hover:text-[#e60000]">
-                더보기
+              <Link href="/community?category=TIP" className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500 transition-colors hover:text-[#e60000]">
+                더보기 +
               </Link>
             </div>
             <div className="space-y-0 min-h-[180px]">

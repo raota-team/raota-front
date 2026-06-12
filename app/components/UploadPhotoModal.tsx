@@ -163,34 +163,16 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div>
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">메뉴 선택 <span className="text-red-500">*</span></label>
-            <div className="relative">
-              <select
-                value={selectedMenu}
-                onChange={(e) => setSelectedMenu(e.target.value)}
-                className="w-full appearance-none border border-stone-200 bg-white px-4 py-3 pr-8 text-base font-medium text-stone-700 outline-none transition-colors focus:border-[#e60000]"
-              >
-                <option value="" disabled>어떤 메뉴를 드셨나요?</option>
-                {menuList?.map((menu) => (
-                  <option key={menu.name} value={menu.name}>
-                    {menu.name}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-500">
-                <ChevronDown className="w-4 h-4" />
-              </div>
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-[#e60000]">Step 1</span>
+              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">사진 업로드 <span className="text-red-500">*</span></label>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">사진 업로드 <span className="text-red-500">*</span></label>
             <div className="group relative aspect-video cursor-pointer overflow-hidden rounded-sm border border-dashed border-stone-300 bg-white transition-colors hover:border-[#e60000] hover:bg-stone-50">
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
               />
               {previewUrl ? (
                 <div className="absolute inset-0">
@@ -206,15 +188,40 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
                   <div className="mb-3 rounded-sm border border-stone-200 bg-stone-100 p-3 transition-colors group-hover:border-[#e60000] group-hover:text-[#e60000]">
                     <Upload className="w-6 h-6" />
                   </div>
-                  <span className="text-sm font-medium">여기를 클릭하여 사진 선택</span>
-                  <span className="text-xs mt-1">또는 파일을 드래그하세요</span>
+                  <span className="text-sm font-medium">먼저 사진을 선택해주세요</span>
+                  <span className="text-xs mt-1">업로드 후 메뉴를 고를 수 있어요</span>
                 </div>
               )}
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">한줄평 (선택)</label>
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-[#e60000]">Step 2</span>
+              <label className="text-xs font-bold uppercase tracking-wider text-stone-500">메뉴 선택 <span className="text-red-500">*</span></label>
+            </div>
+            <div className="relative">
+              <select
+                value={selectedMenu}
+                onChange={(e) => setSelectedMenu(e.target.value)}
+                disabled={!selectedFile}
+                className="w-full appearance-none border border-stone-200 bg-white px-4 py-3 pr-8 text-base font-medium text-stone-700 outline-none transition-colors focus:border-[#e60000] disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-400"
+              >
+                <option value="" disabled>{selectedFile ? '어떤 메뉴를 드셨나요?' : '사진을 먼저 선택해주세요'}</option>
+                {menuList?.map((menu) => (
+                  <option key={menu.name} value={menu.name}>
+                    {menu.name}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-500">
+                <ChevronDown className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-stone-100 pt-4">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-stone-500">한줄평 (선택)</label>
             <input
               type="text"
               value={description}

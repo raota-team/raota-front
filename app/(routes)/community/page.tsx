@@ -17,8 +17,9 @@ import {
   UserRound,
   Sparkles,
   MapPinned,
+  ArrowRight,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { getCommunityPosts, getRamenShopOptions, type CommunityPostCard } from '@/lib/api/community';
 import Loading from '@/app/loading';
@@ -148,6 +149,7 @@ function PostListCard({ post }: { post: CommunityPostCard }) {
 }
 
 export default function CommunityPage() {
+  const searchParams = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
@@ -156,6 +158,18 @@ export default function CommunityPage() {
   const [shopSearchQuery, setShopSearchQuery] = useState('');
   const [shopOptions, setShopOptions] = useState<any[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const initialCategory = searchParams.get('category');
+
+    if (initialCategory && categories.some((category) => category.id === initialCategory)) {
+      setSelectedCategory(initialCategory);
+      setCurrentPage(0);
+      return;
+    }
+
+    setSelectedCategory('all');
+  }, [searchParams]);
 
   const { data: postsData, isLoading, isFetching } = useQuery({
     queryKey: ['community-posts', selectedCategory, selectedShopId],
@@ -364,6 +378,25 @@ export default function CommunityPage() {
 
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_20rem] lg:px-8 lg:py-10">
         <main className="min-h-[48rem] min-w-0">
+          <section className="mb-6 rounded-md border border-stone-200 bg-white p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#e60000]">오늘의 질문</p>
+                <h2 className="mt-2 text-lg font-black text-[#25282b]">요즘 가장 자주 생각나는 라멘집은 어디인가요?</h2>
+                <p className="mt-2 text-sm leading-6 text-stone-500">
+                  긴 후기 말고 한두 줄만 남겨도 좋아요. 오늘의 질문으로 가볍게 커뮤니티에 참여해보세요.
+                </p>
+              </div>
+              <Link
+                href={`/community/write?category=FREE&title=${encodeURIComponent('오늘의 질문: 요즘 가장 자주 생각나는 라멘집은 어디인가요?')}&content=${encodeURIComponent('<p>저는 요즘 이 라멘집이 자꾸 생각나요.</p><p>이유는...</p>')}`}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 py-2.5 text-sm font-black text-white transition-opacity hover:opacity-90 sm:w-auto sm:shrink-0"
+              >
+                답변 쓰기
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </section>
+
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#e60000]">

@@ -65,6 +65,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, disab
     });
   };
 
+  const hasComment = Boolean(photo.comment?.trim());
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div
@@ -126,9 +128,11 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, disab
                   </span>
                 </div>
 
-                <p className="text-lg md:text-xl font-medium leading-relaxed text-stone-100">
-                  "{photo.comment || "한줄평이 없습니다."}"
-                </p>
+                {hasComment && (
+                  <p className="text-lg md:text-xl font-medium leading-relaxed text-stone-100">
+                    "{photo.comment}"
+                  </p>
+                )}
               </div>
             </div>
           )}

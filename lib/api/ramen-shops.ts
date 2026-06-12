@@ -102,6 +102,7 @@ export interface RamenShopsResult {
 }
 
 const FALLBACK_IMAGE_URL = "/hero-home.jpg";
+const FALLBACK_MENU_IMAGE_URL = "/menu-no-image.png";
 const DEFAULT_PAGE_SIZE = 12;
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -139,7 +140,7 @@ const normalizeMenuItem = (menu: ApiMenuItem, index: number): MenuItem => ({
   name: menu.name || `메뉴 ${index + 1}`,
   price: toNumber(menu.price, 0),
   is_signature: Boolean(menu.is_signature ?? menu.signature),
-  image_url: menu.image_url || FALLBACK_IMAGE_URL,
+  image_url: menu.image_url || FALLBACK_MENU_IMAGE_URL,
 });
 
 const formatTime = (time: string | null): string | null => {

@@ -631,6 +631,7 @@ export default function RecommendPage() {
                       summaryData={summaryResult?.data}
                     />
                   )}
+
                 </>
               )}
             </div>

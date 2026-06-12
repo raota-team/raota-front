@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
@@ -18,6 +18,7 @@ import {
   Utensils,
   Heart,
   Check,
+  PenSquare,
 } from "lucide-react";
 import { Shop, UserPhoto, MenuItem } from "../../../types";
 import ProgressBar from "../../../components/ProgressBar";
@@ -31,6 +32,7 @@ const PhotoModal = dynamic(() => import("../../../components/PhotoModal"), { ssr
 const ReportModal = dynamic(() => import("../../../components/ReportModal"), { ssr: false });
 const UploadPhotoModal = dynamic(() => import("../../../components/UploadPhotoModal"), { ssr: false });
 const MenuDetailModal = dynamic(() => import("../../../components/MenuDetailModal"), { ssr: false });
+const VoteMenuModal = dynamic(() => import("../../../components/VoteMenuModal"), { ssr: false });
 
 interface ShopDetailClientProps {
   initialShop?: Shop;
@@ -72,6 +74,8 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   const [selectedPhoto, setSelectedPhoto] = useState<UserPhoto | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
+  const photoSectionRef = useRef<HTMLDivElement | null>(null);
 
   const refreshShopData = async () => {
     try {
@@ -157,6 +161,9 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     }
   };
 
+  const reviewWriteUrl = `/community/write?category=REVIEW&shopId=${shopId}&title=${encodeURIComponent(`${shopDetail?.name ?? ""} 후기 남기기`)}&content=${encodeURIComponent(`<p>${shopDetail?.name ?? ""}에서 먹어본 메뉴와 분위기를 공유해볼게요.</p>`)}`;
+  const getMenuImageSrc = (imageUrl?: string) => imageUrl || "/menu-no-image.png";
+
   const shop = shopDetail;
   
   const totalVotes = voteData?.total_votes || 0;
@@ -235,6 +242,46 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                 <span className="break-words leading-relaxed">{shop.type}</span>
               </span>
             </div>
+
+            <div className="mt-6 rounded-sm border border-stone-200 bg-stone-50 p-4">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#e60000]">바로 참여</p>
+              <h2 className="mt-2 text-lg font-black text-[#25282b]">{shop.name}은 어땠나요?</h2>
+              <p className="mt-1 text-sm leading-6 text-stone-500">
+                먹어봤다면 10초면 충분해요. 투표하고, 인증샷 남기고, 후기까지 바로 남겨보세요.
+              </p>
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() => setIsVoteModalOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+                >
+                  <Star className="h-4 w-4" />
+                  메뉴 투표하기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login"));
+                      return;
+                    }
+                    setIsUploadModalOpen(true);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+                >
+                  <Camera className="h-4 w-4" />
+                  인증샷 남기기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push(reviewWriteUrl)}
+                  className="inline-flex items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                >
+                  <PenSquare className="h-4 w-4" />
+                  이 가게 후기 쓰기
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="prose prose-stone mb-10 max-w-none md:mb-12">
@@ -282,7 +329,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                     <div className="flex items-center">
                       <div className="relative mr-3 h-10 w-10 flex-shrink-0 overflow-hidden rounded-sm bg-stone-100 md:mr-4 md:h-12 md:w-12">
                         <Image
-                          src={menu.image_url} 
+                          src={getMenuImageSrc(menu.image_url)} 
                           alt={menu.name} 
                           fill
                           sizes="48px"
@@ -301,7 +348,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
             </div>
           )}
 
-          <div className="mt-10 border-t border-stone-200 pt-6 md:mt-12 md:pt-8">
+          <div ref={photoSectionRef} className="mt-10 border-t border-stone-200 pt-6 md:mt-12 md:pt-8">
             <div className="mb-4 flex items-end justify-between md:mb-6">
               <h2 className="flex items-center text-lg font-bold text-[#25282b] md:text-xl"><ImageIcon className="mr-2 h-5 w-5 text-[#e60000]" /> 유저 메뉴 인증</h2>
               <span className="text-xs text-stone-600 font-mono">{shopPhotos.length}개 사진</span>
@@ -358,6 +405,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
           <div className="sticky top-24 space-y-6 md:space-y-8">
             <div className="rounded-md border border-stone-200 bg-white p-4 md:p-6">
               <h2 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Award className="mr-2 h-5 w-5 text-[#e60000]" /> 베스트 메뉴 투표</h2>
+              <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#e60000]">실시간 투표</p>
               <p className="mb-6 text-sm leading-relaxed text-stone-700 md:mb-8">이 가게에서 제일 맛있었던 메뉴는?</p>
               
               <div className="space-y-5 md:space-y-6">
@@ -453,6 +501,16 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
           }}
         />
       )}
+
+      <VoteMenuModal
+        isOpen={isVoteModalOpen}
+        onClose={() => setIsVoteModalOpen(false)}
+        onVote={handleVote}
+        menus={votingMenus}
+        totalVotes={totalVotes}
+        bestMenuId={bestMenuId}
+        shopName={shop.name}
+      />
 
       {selectedMenu && (
         <MenuDetailModal 

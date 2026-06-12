@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import Image from "next/image";
-import { X, Utensils } from "lucide-react";
+import { X } from "lucide-react";
 import { MenuItem } from "../types";
+
+const getMenuImageSrc = (imageUrl?: string) => imageUrl || "/menu-no-image.png";
 
 interface MenuDetailModalProps {
   menu: MenuItem | null;
@@ -51,17 +52,11 @@ export default function MenuDetailModal({ menu, onClose }: MenuDetailModalProps)
 
         {/* Image */}
         <div className="relative w-full h-72 bg-stone-100 overflow-hidden">
-          {menu.image_url ? (
-            <img
-              src={menu.image_url}
-              alt={menu.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-stone-300">
-              <Utensils className="w-16 h-16" />
-            </div>
-          )}
+          <img
+            src={getMenuImageSrc(menu.image_url)}
+            alt={menu.name}
+            className="w-full h-full object-cover"
+          />
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
