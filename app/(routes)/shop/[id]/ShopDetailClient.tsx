@@ -28,6 +28,7 @@ import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
 import { toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture, deleteProofPicture } from "@/lib/api/ramen-shops";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
+import { ApiClientError } from "@/lib/api/client";
 
 const PhotoModal = dynamic(() => import("../../../components/PhotoModal"), { ssr: false });
 const ReportModal = dynamic(() => import("../../../components/ReportModal"), { ssr: false });
@@ -98,13 +99,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   }, [data]);
 
   const handleVote = async (menu: any) => {
-    if (!isLoggedIn) {
-      showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => {
-        router.push("/login");
-      });
-      return;
-    }
-
     if (!menu?.id || !shopDetail) return;
 
     try {
@@ -119,6 +113,13 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       await refreshShopData();
       queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
     } catch (error: any) {
+      if (error instanceof ApiClientError && (error.status === 401 || error.status === 403)) {
+        showConfirm("현재 메뉴 투표는 로그인 후 이용할 수 있습니다.\n로그인 페이지로 이동하시겠습니까?", () => {
+          router.push("/login");
+        });
+        return;
+      }
+
       console.error("Voting failed:", error);
       showToast("투표 처리 중 오류가 발생했습니다.", "error");
     }
