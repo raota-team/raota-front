@@ -384,7 +384,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
         </div>
 
         <div className="lg:col-span-4">
-          <div className="sticky top-24 space-y-6 md:space-y-8">
+          <div className="space-y-6 md:space-y-8">
             <div className="relative overflow-hidden rounded-md bg-[#25282b] p-5 text-white md:p-8">
               <div className="relative z-10">
                 <h2 className="text-lg font-black mb-4 uppercase tracking-tighter italic">Information</h2>
