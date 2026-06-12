@@ -319,9 +319,14 @@ export default function LandingContent() {
 
           {/* Quick Tips Portal */}
           <div className="rounded-md bg-white p-4 md:p-6">
-            <div className="mb-3 flex items-center gap-2 border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
-              <Sparkles className="h-4 w-4 text-[#e60000]" />
-              <h2 className="font-black text-base md:text-lg text-[#25282b]">라멘 꿀팁</h2>
+            <div className="mb-3 flex items-center justify-between gap-3 border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-[#e60000]" />
+                <h2 className="font-black text-base md:text-lg text-[#25282b]">라멘 꿀팁</h2>
+              </div>
+              <Link href="/community" className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500 transition-colors hover:text-[#e60000]">
+                더보기
+              </Link>
             </div>
             <div className="space-y-0 min-h-[180px]">
               {quickTips.length > 0 ? (

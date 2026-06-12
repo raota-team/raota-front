@@ -148,15 +148,15 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="absolute inset-0 bg-black/60" onClick={onClose}></div>
 
-      <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden animate-scale-in">
-        <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center bg-stone-50">
+      <div className="relative w-full max-w-md overflow-hidden rounded-sm border border-stone-200 bg-white animate-scale-in">
+        <div className="flex items-center justify-between border-b border-stone-100 bg-white px-6 py-4">
           <div>
-            <h2 className="text-lg font-bold text-stone-900">사진 올리기</h2>
-            <p className="text-xs text-stone-500 font-mono mt-0.5">{shopName}</p>
+            <h2 className="text-lg font-black text-stone-900">사진 올리기</h2>
+            <p className="mt-0.5 text-xs font-medium text-stone-500">{shopName}</p>
           </div>
-          <button onClick={onClose} className="text-stone-400 hover:text-stone-600 transition-colors p-1 hover:bg-stone-200 rounded-full">
+          <button onClick={onClose} className="rounded-full border border-stone-200 bg-white p-1 text-stone-400 transition-colors hover:border-[#e60000] hover:text-[#e60000]">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -168,7 +168,7 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
               <select
                 value={selectedMenu}
                 onChange={(e) => setSelectedMenu(e.target.value)}
-                className="w-full appearance-none bg-stone-50 border border-stone-200 text-stone-700 py-3 px-4 pr-8 rounded-lg outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all font-medium text-base"
+                className="w-full appearance-none border border-stone-200 bg-white px-4 py-3 pr-8 text-base font-medium text-stone-700 outline-none transition-colors focus:border-[#e60000]"
               >
                 <option value="" disabled>어떤 메뉴를 드셨나요?</option>
                 {menuList?.map((menu) => (
@@ -185,7 +185,7 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
 
           <div>
             <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">사진 업로드 <span className="text-red-500">*</span></label>
-            <div className="relative aspect-video rounded-lg border-2 border-dashed border-stone-300 bg-stone-50 hover:bg-stone-100 hover:border-stone-400 transition-all group cursor-pointer overflow-hidden">
+            <div className="group relative aspect-video cursor-pointer overflow-hidden rounded-sm border border-dashed border-stone-300 bg-white transition-colors hover:border-[#e60000] hover:bg-stone-50">
               <input
                 type="file"
                 accept="image/*"
@@ -195,15 +195,15 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
               {previewUrl ? (
                 <div className="absolute inset-0">
                   <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-white text-sm font-bold flex items-center">
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#25282b]/55 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="flex items-center rounded-sm border border-white/30 bg-[#25282b] px-4 py-2 text-sm font-bold text-white">
                       <Camera className="w-4 h-4 mr-2" /> 사진 변경하기
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-400 group-hover:text-stone-500">
-                  <div className="p-3 bg-stone-200 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                  <div className="mb-3 rounded-sm border border-stone-200 bg-stone-100 p-3 transition-colors group-hover:border-[#e60000] group-hover:text-[#e60000]">
                     <Upload className="w-6 h-6" />
                   </div>
                   <span className="text-sm font-medium">여기를 클릭하여 사진 선택</span>
@@ -220,7 +220,7 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="맛은 어떠셨나요?"
-              className="w-full bg-stone-50 border border-stone-200 text-stone-700 py-3 px-4 rounded-lg outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all font-medium text-sm placeholder:text-stone-400"
+              className="w-full border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-700 outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000]"
               maxLength={100}
             />
             <div className="text-right mt-1">
@@ -231,9 +231,9 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({ isOpen, onClose, sh
           <button
             type="submit"
             disabled={isSubmitting || !selectedMenu || !selectedFile}
-            className={`w-full py-4 rounded-lg font-bold text-white shadow-lg flex items-center justify-center space-x-2 transition-all transform active:scale-[0.98] ${isSubmitting || !selectedMenu || !selectedFile
-                ? 'bg-stone-300 cursor-not-allowed shadow-none'
-                : 'bg-red-600 hover:bg-red-700 hover:shadow-xl'
+            className={`flex w-full items-center justify-center space-x-2 rounded-sm py-4 font-bold text-white transition-opacity active:opacity-90 ${isSubmitting || !selectedMenu || !selectedFile
+                ? 'cursor-not-allowed bg-stone-300'
+                : 'bg-[#e60000] hover:opacity-90'
               }`}
           >
             {isSubmitting ? (

@@ -237,7 +237,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
     );
 
     return (
-      <div className={`${isReply ? 'bg-stone-50 py-3 pl-9 pr-4 md:py-4 md:pl-14 md:pr-6' : 'p-4 md:p-6'} border-t border-stone-100 transition-colors hover:bg-stone-50 first:border-t-0`}>
+      <div className={`${isReply ? 'bg-stone-50 py-3 pl-9 pr-4 md:py-4 md:pl-14 md:pr-6' : 'p-4 md:p-6'} border-t border-stone-100 first:border-t-0`}>
         <div className="flex gap-3 md:gap-4">
           {isReply && <CornerDownRight className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-stone-300 md:h-4 md:w-4" />}
           {!isReply && (

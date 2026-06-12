@@ -209,7 +209,7 @@ export default function CommunityWritePage() {
           <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">대표 이미지 (선택)</label>
           {imagePreview ? (
             <div className="relative inline-block mt-2">
-              <img src={imagePreview} alt="Preview" className="h-48 max-w-full rounded-md border border-stone-200 object-cover" />
+              <img src={imagePreview} alt="Preview" className="h-48 max-w-full rounded-sm border border-stone-200 object-cover" />
               <button type="button" onClick={() => { setImagePreview(null); setSelectedFile(null); }} className="absolute -right-2 -top-2 rounded-full bg-[#25282b] p-1 text-white transition-opacity hover:opacity-90"><X className="w-4 h-4" /></button>
             </div>
           ) : (

@@ -156,7 +156,7 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
         <button onClick={() => router.back()} className="flex items-center text-sm font-bold uppercase tracking-wider text-[#7e7e7e] transition-colors hover:text-[#e60000]">
           <ArrowLeft className="w-4 h-4 mr-2" /> 취소
         </button>
-        <h1 className="text-xl font-black text-[#25282b]">글 수정하기</h1>
+        <h1 className="text-3xl font-black text-[#25282b]">글 수정하기</h1>
         <div className="w-16"></div>
       </div>
 
@@ -221,7 +221,7 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
           <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">대표 이미지 (선택)</label>
           {imagePreview ? (
             <div className="relative inline-block mt-2">
-              <img src={imagePreview} alt="Preview" className="h-48 max-w-full rounded-md border border-stone-200 object-cover" />
+              <img src={imagePreview} alt="Preview" className="h-48 max-w-full rounded-sm border border-stone-200 object-cover" />
               <button
                 type="button"
                 onClick={() => {
