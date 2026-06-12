@@ -19,6 +19,7 @@ import {
   Heart,
   Check,
   PenSquare,
+  ChevronDown,
 } from "lucide-react";
 import { Shop, UserPhoto, MenuItem } from "../../../types";
 import ProgressBar from "../../../components/ProgressBar";
@@ -31,7 +32,6 @@ import { useApp } from "@/app/context/AppContext";
 const PhotoModal = dynamic(() => import("../../../components/PhotoModal"), { ssr: false });
 const ReportModal = dynamic(() => import("../../../components/ReportModal"), { ssr: false });
 const UploadPhotoModal = dynamic(() => import("../../../components/UploadPhotoModal"), { ssr: false });
-const MenuDetailModal = dynamic(() => import("../../../components/MenuDetailModal"), { ssr: false });
 const VoteMenuModal = dynamic(() => import("../../../components/VoteMenuModal"), { ssr: false });
 
 interface ShopDetailClientProps {
@@ -70,11 +70,11 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   const [voteData, setVoteStatus] = useState<any>(null);
   const [shopPhotos, setShopPhotos] = useState<UserPhoto[]>([]);
 
-  const [selectedMenu, setSelectedMenu] = useState<MenuItem | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<UserPhoto | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
+  const [isVoteAccordionOpen, setIsVoteAccordionOpen] = useState(false);
   const photoSectionRef = useRef<HTMLDivElement | null>(null);
 
   const refreshShopData = async () => {
@@ -162,7 +162,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   };
 
   const reviewWriteUrl = `/community/write?category=REVIEW&shopId=${shopId}&title=${encodeURIComponent(`${shopDetail?.name ?? ""} 후기 남기기`)}&content=${encodeURIComponent(`<p>${shopDetail?.name ?? ""}에서 먹어본 메뉴와 분위기를 공유해볼게요.</p>`)}`;
-  const getMenuImageSrc = (imageUrl?: string) => imageUrl || "/menu-no-image.png";
 
   const shop = shopDetail;
   
@@ -245,7 +244,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
             <div className="mt-6 rounded-sm border border-stone-200 bg-stone-50 p-4">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#e60000]">바로 참여</p>
-              <h2 className="mt-2 text-lg font-black text-[#25282b]">{shop.name}은 어땠나요?</h2>
+              <h2 className="mt-2 text-lg font-black text-[#25282b]">{shop.name}는(은) 어땠나요?</h2>
               <p className="mt-1 text-sm leading-6 text-stone-500">
                 먹어봤다면 10초면 충분해요. 투표하고, 인증샷 남기고, 후기까지 바로 남겨보세요.
               </p>
@@ -296,20 +295,13 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               <h2 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Sparkles className="mr-2 h-5 w-5 text-[#e60000]" /> 이벤트 메뉴</h2>
               <div className="grid grid-cols-1 gap-4 md:gap-6">
                 {shop.event_menus.map((event) => (
-                  <div key={event.id} className="group flex flex-col overflow-hidden rounded-md border border-stone-200 bg-white transition-colors hover:border-[#e60000] md:flex-row">
-                    <div className="relative h-40 overflow-hidden md:min-h-48 md:w-1/3">
-                      <Image
-                        src={event.image_url} 
-                        alt={event.name} 
-                        fill
-                        sizes="(min-width: 768px) 280px, calc(100vw - 32px)"
-                        className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                      />
-                      <div className="absolute left-2 top-2"><span className="rounded-sm bg-[#e60000] px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">{event.badge_text}</span></div>
-                    </div>
-                    <div className="flex flex-col justify-center p-4 md:w-2/3 md:p-6">
+                  <div key={event.id} className="group flex flex-col overflow-hidden rounded-md border border-stone-200 bg-white transition-colors hover:border-[#e60000] p-4 md:p-6">
+                    <div className="flex flex-col justify-center">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-lg font-black text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-xl">{event.name}</h3>
+                        <div className="flex items-center">
+                          <h3 className="text-lg font-black text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-xl">{event.name}</h3>
+                          <span className="ml-2 rounded-sm bg-[#e60000] px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">{event.badge_text}</span>
+                        </div>
                         <span className="font-mono text-base font-bold text-[#25282b] md:text-lg">{event.price.toLocaleString()}원</span>
                       </div>
                       <p className="text-sm leading-relaxed text-stone-700">{event.description}</p>
@@ -325,20 +317,10 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               <h2 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Utensils className="mr-2 h-5 w-5 text-stone-500" /> 일반 메뉴</h2>
               <div className="rounded-md border border-stone-200 bg-white p-2">
                 {shop.menu_list.map((menu, idx) => (
-                  <div key={menu.id} onClick={() => setSelectedMenu(menu)} className={`flex cursor-pointer items-center justify-between border-l-4 border-l-transparent p-3 transition-colors hover:border-l-[#e60000] hover:bg-stone-50 md:p-4 ${idx !== shop.menu_list.length - 1 ? "border-b border-stone-200" : ""}`}>
+                  <div key={menu.id} className={`flex items-center justify-between border-l-4 border-l-transparent p-3 md:p-4 ${idx !== shop.menu_list.length - 1 ? "border-b border-stone-200" : ""}`}>
                     <div className="flex items-center">
-                      <div className="relative mr-3 h-10 w-10 flex-shrink-0 overflow-hidden rounded-sm bg-stone-100 md:mr-4 md:h-12 md:w-12">
-                        <Image
-                          src={getMenuImageSrc(menu.image_url)} 
-                          alt={menu.name} 
-                          fill
-                          sizes="48px"
-                          className="object-cover transition-transform duration-300 hover:scale-110"
-                        />
-                      </div>
                       <div>
                         <div className="flex items-center"><span className="mr-2 text-sm font-bold text-[#25282b] md:text-base">{menu.name}</span>{menu.is_signature && <span className="rounded-sm bg-[#e60000] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter text-white">SIG</span>}</div>
-                        <span className="text-xs text-stone-600 hidden sm:inline-block">클릭하면 자세히 보기</span>
                       </div>
                     </div>
                     <div className="font-mono text-sm font-bold text-stone-700 md:text-base">{menu.price.toLocaleString()}원</div>
@@ -403,46 +385,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
         <div className="lg:col-span-4">
           <div className="sticky top-24 space-y-6 md:space-y-8">
-            <div className="rounded-md border border-stone-200 bg-white p-4 md:p-6">
-              <h2 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Award className="mr-2 h-5 w-5 text-[#e60000]" /> 베스트 메뉴 투표</h2>
-              <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#e60000]">실시간 투표</p>
-              <p className="mb-6 text-sm leading-relaxed text-stone-700 md:mb-8">이 가게에서 제일 맛있었던 메뉴는?</p>
-              
-              <div className="space-y-5 md:space-y-6">
-                {votingMenus.map((menu) => (
-                  <div key={menu.id || menu.name} className="relative">
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center">
-                        {menu.id === bestMenuId && <span className="mr-2 text-yellow-500 animate-pulse"><Star className="w-4 h-4" fill="currentColor" /></span>}
-                        <span className={`transition-colors font-bold ${menu.id === bestMenuId ? "text-stone-950 scale-105 inline-block" : "text-stone-700"}`}>
-                          {menu.name}
-                        </span>
-                      </div>
-                      <button 
-                        onClick={() => handleVote(menu)} 
-                        aria-label={`${menu.name} 메뉴에 투표하기`}
-                        className={`flex items-center gap-1 rounded-sm px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
-                          menu.isVoted 
-                            ? "bg-[#e60000] text-white" 
-                            : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                        }`}
-                      >
-                        {menu.isVoted && <Check className="w-3 h-3" />}
-                        {menu.isVoted ? "내 투표" : "투표"}
-                      </button>
-                    </div>
-                    <ProgressBar votes={menu.votes} totalVotes={totalVotes} isSelected={menu.id === bestMenuId} />
-                    <div className="flex justify-between items-center mt-1">
-                      <span className={`text-[10px] font-black ${menu.id === bestMenuId ? "text-[#e60000]" : "text-stone-600"}`}>
-                        {menu.id === bestMenuId ? "가장 많은 투표" : ""}
-                      </span>
-                      <div className="text-right text-[10px] font-mono font-bold text-stone-600">{menu.votes} 표</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div className="relative overflow-hidden rounded-md bg-[#25282b] p-5 text-white md:p-8">
               <div className="relative z-10">
                 <h2 className="text-lg font-black mb-4 uppercase tracking-tighter italic">Information</h2>
@@ -458,6 +400,57 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                   {shop.catchTableUrl && <a href={shop.catchTableUrl} target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 p-3 text-xs font-bold transition-colors hover:bg-white hover:text-[#25282b]"><Utensils className="h-4 w-4" /> CatchTable</a>}
                 </div>
               </div>
+            </div>
+
+            <div className="rounded-md border border-stone-200 bg-white p-4 md:p-6">
+              <button 
+                onClick={() => setIsVoteAccordionOpen(!isVoteAccordionOpen)}
+                className="flex w-full items-center justify-between"
+              >
+                <h2 className="flex items-center text-lg font-bold text-[#25282b] md:text-xl"><Award className="mr-2 h-5 w-5 text-[#e60000]" /> 베스트 메뉴 투표</h2>
+                <ChevronDown className={`h-5 w-5 transition-transform ${isVoteAccordionOpen ? "rotate-180" : ""}`} />
+              </button>
+              
+              {isVoteAccordionOpen && (
+                <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#e60000]">실시간 투표</p>
+                  <p className="mb-6 text-sm leading-relaxed text-stone-700 md:mb-8">이 가게에서 제일 맛있었던 메뉴는?</p>
+                  
+                  <div className="space-y-5 md:space-y-6">
+                    {votingMenus.map((menu) => (
+                      <div key={menu.id || menu.name} className="relative">
+                        <div className="flex justify-between items-center mb-2">
+                          <div className="flex items-center">
+                            {menu.id === bestMenuId && <span className="mr-2 text-yellow-500 animate-pulse"><Star className="w-4 h-4" fill="currentColor" /></span>}
+                            <span className={`transition-colors font-bold ${menu.id === bestMenuId ? "text-stone-950 scale-105 inline-block" : "text-stone-700"}`}>
+                              {menu.name}
+                            </span>
+                          </div>
+                          <button 
+                            onClick={() => handleVote(menu)} 
+                            aria-label={`${menu.name} 메뉴에 투표하기`}
+                            className={`flex items-center gap-1 rounded-sm px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
+                              menu.isVoted 
+                                ? "bg-[#e60000] text-white" 
+                                : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                            }`}
+                          >
+                            {menu.isVoted && <Check className="w-3 h-3" />}
+                            {menu.isVoted ? "내 투표" : "투표"}
+                          </button>
+                        </div>
+                        <ProgressBar votes={menu.votes} totalVotes={totalVotes} isSelected={menu.id === bestMenuId} />
+                        <div className="flex justify-between items-center mt-1">
+                          <span className={`text-[10px] font-black ${menu.id === bestMenuId ? "text-[#e60000]" : "text-stone-600"}`}>
+                            {menu.id === bestMenuId ? "가장 많은 투표" : ""}
+                          </span>
+                          <div className="text-right text-[10px] font-mono font-bold text-stone-600">{menu.votes} 표</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="text-center">
@@ -511,13 +504,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
         bestMenuId={bestMenuId}
         shopName={shop.name}
       />
-
-      {selectedMenu && (
-        <MenuDetailModal 
-          menu={selectedMenu} 
-          onClose={() => setSelectedMenu(null)} 
-        />
-      )}
 
       {selectedPhoto && (
         <PhotoModal 
