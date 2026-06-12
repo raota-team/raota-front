@@ -411,46 +411,48 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                 <ChevronDown className={`h-5 w-5 transition-transform ${isVoteAccordionOpen ? "rotate-180" : ""}`} />
               </button>
               
-              {isVoteAccordionOpen && (
-                <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#e60000]">실시간 투표</p>
-                  <p className="mb-6 text-sm leading-relaxed text-stone-700 md:mb-8">이 가게에서 제일 맛있었던 메뉴는?</p>
-                  
-                  <div className="space-y-5 md:space-y-6">
-                    {votingMenus.map((menu) => (
-                      <div key={menu.id || menu.name} className="relative">
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="flex items-center">
-                            {menu.id === bestMenuId && <span className="mr-2 text-yellow-500 animate-pulse"><Star className="w-4 h-4" fill="currentColor" /></span>}
-                            <span className={`transition-colors font-bold ${menu.id === bestMenuId ? "text-stone-950 scale-105 inline-block" : "text-stone-700"}`}>
-                              {menu.name}
-                            </span>
+              <div className="mt-6">
+                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#e60000]">실시간 투표</p>
+                <p className="mb-6 text-sm leading-relaxed text-stone-700 md:mb-8">이 가게에서 제일 맛있었던 메뉴는?</p>
+                
+                {isVoteAccordionOpen && (
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="space-y-5 md:space-y-6">
+                      {votingMenus.map((menu) => (
+                        <div key={menu.id || menu.name} className="relative">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="flex items-center">
+                              {menu.id === bestMenuId && <span className="mr-2 text-yellow-500 animate-pulse"><Star className="w-4 h-4" fill="currentColor" /></span>}
+                              <span className={`transition-colors font-bold ${menu.id === bestMenuId ? "text-stone-950 scale-105 inline-block" : "text-stone-700"}`}>
+                                {menu.name}
+                              </span>
+                            </div>
+                            <button 
+                              onClick={() => handleVote(menu)} 
+                              aria-label={`${menu.name} 메뉴에 투표하기`}
+                              className={`flex items-center gap-1 rounded-sm px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
+                                menu.isVoted 
+                                  ? "bg-[#e60000] text-white" 
+                                  : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                              }`}
+                            >
+                              {menu.isVoted && <Check className="w-3 h-3" />}
+                              {menu.isVoted ? "내 투표" : "투표"}
+                            </button>
                           </div>
-                          <button 
-                            onClick={() => handleVote(menu)} 
-                            aria-label={`${menu.name} 메뉴에 투표하기`}
-                            className={`flex items-center gap-1 rounded-sm px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
-                              menu.isVoted 
-                                ? "bg-[#e60000] text-white" 
-                                : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                            }`}
-                          >
-                            {menu.isVoted && <Check className="w-3 h-3" />}
-                            {menu.isVoted ? "내 투표" : "투표"}
-                          </button>
+                          <ProgressBar votes={menu.votes} totalVotes={totalVotes} isSelected={menu.id === bestMenuId} />
+                          <div className="flex justify-between items-center mt-1">
+                            <span className={`text-[10px] font-black ${menu.id === bestMenuId ? "text-[#e60000]" : "text-stone-600"}`}>
+                              {menu.id === bestMenuId ? "가장 많은 투표" : ""}
+                            </span>
+                            <div className="text-right text-[10px] font-mono font-bold text-stone-600">{menu.votes} 표</div>
+                          </div>
                         </div>
-                        <ProgressBar votes={menu.votes} totalVotes={totalVotes} isSelected={menu.id === bestMenuId} />
-                        <div className="flex justify-between items-center mt-1">
-                          <span className={`text-[10px] font-black ${menu.id === bestMenuId ? "text-[#e60000]" : "text-stone-600"}`}>
-                            {menu.id === bestMenuId ? "가장 많은 투표" : ""}
-                          </span>
-                          <div className="text-right text-[10px] font-mono font-bold text-stone-600">{menu.votes} 표</div>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             <div className="text-center">
