@@ -244,7 +244,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
             <div className="mt-6 rounded-sm border border-stone-200 bg-stone-50 p-4">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#e60000]">바로 참여</p>
-              <h2 className="mt-2 text-lg font-black text-[#25282b]">{shop.name}는(은) 어땠나요?</h2>
+              <h2 className="mt-2 text-lg font-black text-[#25282b]">{shop.name} 방문 후기를 들려주세요!</h2>
               <p className="mt-1 text-sm leading-6 text-stone-500">
                 먹어봤다면 10초면 충분해요. 투표하고, 인증샷 남기고, 후기까지 바로 남겨보세요.
               </p>
