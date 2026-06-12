@@ -411,9 +411,9 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                 <ChevronDown className={`h-5 w-5 transition-transform ${isVoteAccordionOpen ? "rotate-180" : ""}`} />
               </button>
               
-              <div className="mt-6">
-                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#e60000]">실시간 투표</p>
-                <p className="mb-6 text-sm leading-relaxed text-stone-700 md:mb-8">이 가게에서 제일 맛있었던 메뉴는?</p>
+              <div className={isVoteAccordionOpen ? "mt-6" : "mt-4"}>
+                <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#e60000]">실시간 투표</p>
+                <p className={`text-sm leading-relaxed text-stone-700 ${isVoteAccordionOpen ? "mb-6 md:mb-8" : "mb-0"}`}>이 가게에서 제일 맛있었던 메뉴는?</p>
                 
                 {isVoteAccordionOpen && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
