@@ -475,20 +475,12 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         {isLoading && pageMeta && pageMeta.number > 0 && <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-[#e60000]" /></div>}
       </div>
       {isOwnProfile && (
-        <section className="border-t border-stone-200 pt-8">
-          <div className="flex flex-col gap-4 rounded-sm border border-stone-200 bg-stone-50 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="text-sm font-black text-[#25282b]">계정 관리</h3>
-              <p className="mt-1 text-sm font-medium leading-6 text-stone-500">
-                계정을 더 이상 사용하지 않는 경우 회원 탈퇴를 진행할 수 있습니다.
-              </p>
-            </div>
-            <Link href="/mypage/withdraw" className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-300 bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000]">
-              <Trash2 className="h-3.5 w-3.5" />
-              회원 탈퇴
-            </Link>
-          </div>
-        </section>
+        <div className="flex justify-end border-t border-stone-200 pt-6">
+          <Link href="/mypage/withdraw" className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-400 transition-colors hover:text-[#e60000]">
+            <Trash2 className="h-3.5 w-3.5" />
+            회원 탈퇴
+          </Link>
+        </div>
       )}
       {selectedPhoto && <PhotoModal photo={{ id: selectedPhoto.photo_id || selectedPhoto.id, imageUrl: selectedPhoto.image_url, menuName: selectedPhoto.menuName || '이미지 보기', restaurantName: selectedPhoto.restaurant_name || '사용자 프로필', restaurantId: selectedPhoto.restaurant_id, date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-', comment: selectedPhoto.description || '', isUserPhoto: selectedPhoto.isUserPhoto }} onClose={() => setSelectedPhoto(null)} disableNavigation={false} />}
     </div>
