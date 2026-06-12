@@ -40,6 +40,12 @@ export interface UserProfileResponse {
   data: MyProfileData;
 }
 
+export interface DeleteMyAccountResponse {
+  status: string;
+  message: string;
+  data: null;
+}
+
 export interface MemberSummaryResponse {
   id: number;
   nickname: string;
@@ -174,5 +180,12 @@ export const updateUserProfile = async (params: UserProfileUpdateParams): Promis
   return await apiClient<UserProfileResponse>(`/users/me/profile`, {
     method: "PATCH",
     body: params,
+  });
+};
+
+/** 회원 탈퇴 */
+export const deleteMyAccount = async (): Promise<DeleteMyAccountResponse> => {
+  return await apiClient<DeleteMyAccountResponse>(`/users/me`, {
+    method: "DELETE",
   });
 };

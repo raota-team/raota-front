@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, User as UserIcon, Check, Edit3, AlertCircle, RefreshCcw } from 'lucide-react';
+import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2 } from 'lucide-react';
 import PhotoModal from '../../../components/PhotoModal';
 import { useApp } from '../../../context/AppContext';
 import { 
@@ -395,12 +395,18 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             )}
           </div>
 
-          <div className="mt-4 md:mt-0 relative z-10">
+          <div className="mt-4 md:mt-0 relative z-10 flex flex-col gap-2 sm:flex-row">
             {isOwnProfile && !isEditing && (
-              <button onClick={handleEditStart} className="inline-flex items-center gap-2 rounded-sm border border-[#e60000] bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:bg-[#e60000] hover:text-white">
-                <Edit3 className="h-3.5 w-3.5" />
-                프로필 수정
-              </button>
+              <>
+                <button onClick={handleEditStart} className="inline-flex items-center justify-center gap-2 rounded-sm border border-[#e60000] bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:bg-[#e60000] hover:text-white">
+                  <Edit3 className="h-3.5 w-3.5" />
+                  프로필 수정
+                </button>
+                <Link href="/mypage/withdraw" className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-stone-50 px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-stone-500 transition-colors hover:border-[#e60000] hover:bg-white hover:text-[#e60000]">
+                  <Trash2 className="h-3.5 w-3.5" />
+                  회원 탈퇴
+                </Link>
+              </>
             )}
           </div>
         </div>
