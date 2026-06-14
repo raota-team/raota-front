@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { Sparkles, Star, ArrowRight, Bookmark } from "lucide-react";
+import { useShopBookmark } from "./useShopBookmark";
 type TasteShop = {
   id: number;
   name: string;
@@ -56,18 +57,13 @@ export function TasteResults({
 }
 
 function ShopCard({ shop, index, selectedTags }: { shop: TasteShop; index: number; selectedTags: string[] }) {
-  const [isBookmarked, setIsBookmarked] = useState(shop.isBookmarked);
+  const { isBookmarked, isBookmarkPending, handleBookmark } = useShopBookmark(shop.id, shop.isBookmarked);
   const tags = buildUniqueTags(selectedTags);
-
-  const handleBookmark = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent Link navigation
-    setIsBookmarked(!isBookmarked);
-  };
 
   return (
     <Link href={`/shop/${shop.id}`} className="group relative flex min-h-32 w-full min-w-0 overflow-hidden rounded-[6px] bg-white border border-stone-200">
-      <div className="relative min-h-32 w-28 shrink-0 overflow-hidden rounded-[6px]">
-        <img src={getShopImage(shop.imageUrl)} alt={shop.name} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
+      <div className="relative min-h-32 w-28 shrink-0 overflow-hidden rounded-[6px] bg-stone-100">
+        <img src={getShopImage(shop.imageUrl)} alt={shop.name} className="absolute inset-0 h-full w-full object-cover" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
         <div className="min-w-0">
@@ -78,7 +74,7 @@ function ShopCard({ shop, index, selectedTags }: { shop: TasteShop; index: numbe
               </span>
               <span className="truncate text-[11px] font-bold text-[#7e7e7e]">{shop.location}</span>
             </div>
-            <button onClick={handleBookmark} className="shrink-0 p-1 -mr-1 text-[#25282b] hover:text-[#e60000] transition-colors z-20">
+            <button type="button" onClick={handleBookmark} disabled={isBookmarkPending} className="shrink-0 p-1 -mr-1 text-[#25282b] hover:text-[#e60000] transition-colors z-20 disabled:cursor-not-allowed disabled:opacity-60">
               <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-[#e60000] text-[#e60000]" : ""}`} />
             </button>
           </div>
@@ -102,19 +98,14 @@ function ShopCard({ shop, index, selectedTags }: { shop: TasteShop; index: numbe
 }
 
 function ShopCardDesktop({ shop, index, selectedTags }: { shop: TasteShop; index: number; selectedTags: string[] }) {
-  const [isBookmarked, setIsBookmarked] = useState(shop.isBookmarked);
+  const { isBookmarked, isBookmarkPending, handleBookmark } = useShopBookmark(shop.id, shop.isBookmarked);
   const tags = buildUniqueTags(selectedTags);
-
-  const handleBookmark = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent Link navigation
-    setIsBookmarked(!isBookmarked);
-  };
 
   return (
     <article className="group overflow-hidden bg-white relative transition-colors">
-      <div className="relative aspect-[16/9] overflow-hidden rounded-[6px]">
-        <img src={getShopImage(shop.imageUrl)} alt={shop.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
-        <button onClick={handleBookmark} className="absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#25282b] shadow-sm transition-colors hover:text-[#e60000] hover:bg-white backdrop-blur-sm">
+      <div className="relative aspect-[16/9] overflow-hidden rounded-[6px] bg-stone-100">
+        <img src={getShopImage(shop.imageUrl)} alt={shop.name} className="h-full w-full object-cover" />
+        <button type="button" onClick={handleBookmark} disabled={isBookmarkPending} className="absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#25282b] shadow-sm transition-colors hover:text-[#e60000] hover:bg-white backdrop-blur-sm disabled:cursor-not-allowed disabled:opacity-60">
           <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-[#e60000] text-[#e60000]" : ""}`} />
         </button>
       </div>

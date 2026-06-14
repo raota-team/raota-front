@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, MapPin, ThumbsUp, ThumbsDown, Star, Bookmark, Map, Share2, type LucideIcon } from "lucide-react";
@@ -6,6 +6,7 @@ import { FocusCard } from "./SharedComponents";
 import { AIFollowUpChat } from "./AIFollowUpChat";
 import { getKakaoMapSearchUrl, shareResult } from "../utils";
 import type { Shop } from "@/app/types";
+import { useShopBookmark } from "./useShopBookmark";
 
 type SummaryApiData = {
   shopInfo?: {
@@ -319,8 +320,8 @@ export function SummaryResults({
   focus: string;
   summaryData?: SummaryApiData;
 }) {
-  const [isBookmarked, setIsBookmarked] = useState(shop.isBookmarked);
   const displayShop = getDisplayShop(shop, summaryData?.shopInfo);
+  const { isBookmarked, isBookmarkPending, handleBookmark } = useShopBookmark(displayShop.id, displayShop.isBookmarked);
 
   const perspectiveTitle = focus || "기본 요약";
   const perspectiveCopy = focus
@@ -357,8 +358,10 @@ export function SummaryResults({
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex gap-2">
               <button
-                onClick={() => setIsBookmarked(!isBookmarked)}
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 hover:text-[#e60000]"
+                type="button"
+                onClick={handleBookmark}
+                disabled={isBookmarkPending}
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 hover:text-[#e60000] disabled:cursor-not-allowed disabled:opacity-60"
                 aria-label="북마크"
               >
                 <Bookmark className={`h-5 w-5 ${isBookmarked ? "fill-[#e60000] text-[#e60000]" : ""}`} />

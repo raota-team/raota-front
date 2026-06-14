@@ -1,8 +1,9 @@
-import React, { type ReactNode, useState } from "react";
+import React, { type ReactNode } from "react";
 import Image from "next/image";
 import { UtensilsCrossed, MapPin, Bookmark, Map } from "lucide-react";
 import type { Shop } from "@/app/types";
 import { getKakaoMapSearchUrl } from "../utils";
+import { useShopBookmark } from "./useShopBookmark";
 
 export function QuestionCard({
   step,
@@ -80,7 +81,7 @@ export function FocusCard({ label, title, body }: { label: string; title: string
 }
 
 export function CompareShopCard({ shop, label, accent }: { shop: Shop; label: string; accent: string }) {
-  const [isBookmarked, setIsBookmarked] = useState(shop.isBookmarked);
+  const { isBookmarked, isBookmarkPending, handleBookmark } = useShopBookmark(shop.id, shop.isBookmarked);
   
   const primaryMenu = shop.menu_list.find((menu) => menu.is_signature)?.name ||
   shop.menus[0]?.name ||
@@ -103,8 +104,10 @@ export function CompareShopCard({ shop, label, accent }: { shop: Shop; label: st
             <Map className="h-4 w-4" />
           </a>
           <button 
-            onClick={() => setIsBookmarked(!isBookmarked)}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-50 text-[#7e7e7e] transition-colors hover:bg-stone-100 hover:text-[#e60000]"
+            type="button"
+            onClick={handleBookmark}
+            disabled={isBookmarkPending}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-50 text-[#7e7e7e] transition-colors hover:bg-stone-100 hover:text-[#e60000] disabled:cursor-not-allowed disabled:opacity-60"
             aria-label="북마크"
           >
             <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-[#e60000] text-[#e60000]" : ""}`} />
