@@ -9,7 +9,7 @@ import "./globals.css";
 const SITE_NAME = "라오타 RAOTA";
 const SITE_TITLE = "라오타 - 라멘 추천 & 맛집 지도 & 전국 라멘 커뮤니티";
 const SITE_DESCRIPTION =
-  "라오타(RAOTA)는 완벽한 라멘 추천, 전국 라멘 맛집 지도, 매니아들의 솔직한 후기를 제공하는 대한민국 대표 라멘 커뮤니티입니다.";
+  "라오타(RAOTA)는 전국 라멘 맛집 지도와 라멘집 추천, 실제 방문 후기를 제공하는 라멘 커뮤니티입니다. 내 취향에 맞는 라멘 맛집을 찾아보세요.";
 const SITE_URL = "https://www.raota.net";
 const GTM_ID = "GTM-WRH3QH6K";
 const SITE_KEYWORDS = [

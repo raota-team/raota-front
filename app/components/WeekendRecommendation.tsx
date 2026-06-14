@@ -35,7 +35,7 @@ export default function WeekendRecommendation() {
 
   if (!recommendation) {
     return (
-      <section className="rounded-md bg-white p-4 md:p-6">
+      <section className="rounded-md bg-white p-4 md:p-6" data-nosnippet>
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2 md:gap-3">
             <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-[#e60000]" />
@@ -66,7 +66,7 @@ export default function WeekendRecommendation() {
   }
 
   return (
-    <section className="rounded-md bg-white p-4 md:p-6">
+    <section className="rounded-md bg-white p-4 md:p-6" data-nosnippet>
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2 md:gap-3">
           <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-[#e60000]" />
