@@ -2,11 +2,12 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Sparkles, X, Search } from "lucide-react";
+import { ArrowRight, ArrowUp, ChevronDown, ChevronLeft, ChevronRight, Sparkles, X, Search } from "lucide-react";
 import ShopCard from "../../components/ShopCard";
 import { useRamenShops } from "@/hooks/queries/useRamenShops";
 
 const PAGE_SIZE = 12;
+const MAX_VISIBLE_PAGES = 5;
 const ALL_FILTER = "전체";
 const ALL_TYPE_FILTER = "전체";
 const SORT_OPTIONS = [
@@ -14,6 +15,7 @@ const SORT_OPTIONS = [
   { value: "NAME", label: "이름순" },
   { value: "VISITS", label: "방문순" },
 ] as const;
+type SortOption = (typeof SORT_OPTIONS)[number]["value"];
 const DEFAULT_SORT = "POPULAR";
 const REGIONS = [
   ALL_FILTER,
@@ -66,33 +68,58 @@ const TYPES = [
   { value: "중화소바", label: "중화소바" },
 ];
 
+const isSortOption = (value: string | null): value is SortOption =>
+  SORT_OPTIONS.some((option) => option.value === value);
+
+const getInitialSearchParams = () => {
+  if (typeof window === "undefined") {
+    return new URLSearchParams();
+  }
+
+  return new URLSearchParams(window.location.search);
+};
+
+const getInitialPage = (params: URLSearchParams) => {
+  const page = Number(params.get("page"));
+  return Number.isInteger(page) && page > 0 ? page - 1 : 0;
+};
+
+const getInitialRegion = (params: URLSearchParams) => {
+  const city = params.get("city");
+  return city && REGIONS.includes(city) ? city : ALL_FILTER;
+};
+
+const getInitialDistrict = (params: URLSearchParams, region: string) => {
+  const district = params.get("district");
+  if (!district || region === ALL_FILTER) return ALL_FILTER;
+  return DISTRICTS_BY_REGION[region]?.includes(district) ? district : ALL_FILTER;
+};
+
+const getInitialType = (params: URLSearchParams) => {
+  const tag = params.get("tag");
+  return tag && TYPES.some((type) => type.value === tag) ? tag : ALL_TYPE_FILTER;
+};
+
 export default function ShopsListPage() {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [activeRegion, setActiveRegion] = useState(ALL_FILTER);
-  const [activeDistrict, setActiveDistrict] = useState(ALL_FILTER);
-  const [activeType, setActiveType] = useState(ALL_TYPE_FILTER);
-  const [activeRamenTypeId, setActiveRamenTypeId] = useState<string | undefined>();
-  const [activeRamenTypeName, setActiveRamenTypeName] = useState<string | undefined>();
-  const [sortBy, setSortBy] = useState<(typeof SORT_OPTIONS)[number]["value"]>(DEFAULT_SORT);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [pageWindowStart, setPageWindowStart] = useState(0);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const ramenTypeId = params.get("ramenTypeId");
-    const ramenTypeName = params.get("ramenTypeName");
-    const tag = params.get("tag");
-
-    if (tag) {
-      setActiveType(tag);
-    }
-
-    if (ramenTypeId) {
-      setActiveRamenTypeId(ramenTypeId);
-      setActiveRamenTypeName(ramenTypeName || tag || "추천 라멘");
-    }
-  }, []);
+  const initialParamsRef = useRef(getInitialSearchParams());
+  const initialRegion = getInitialRegion(initialParamsRef.current);
+  const [currentPage, setCurrentPage] = useState(() => getInitialPage(initialParamsRef.current));
+  const [activeRegion, setActiveRegion] = useState(initialRegion);
+  const [activeDistrict, setActiveDistrict] = useState(() => getInitialDistrict(initialParamsRef.current, initialRegion));
+  const [activeType, setActiveType] = useState(() => getInitialType(initialParamsRef.current));
+  const [activeRamenTypeId, setActiveRamenTypeId] = useState<string | undefined>(() => initialParamsRef.current.get("ramenTypeId") ?? undefined);
+  const [activeRamenTypeName, setActiveRamenTypeName] = useState<string | undefined>(() => {
+    const ramenTypeId = initialParamsRef.current.get("ramenTypeId");
+    return ramenTypeId ? initialParamsRef.current.get("ramenTypeName") ?? initialParamsRef.current.get("tag") ?? "추천 라멘" : undefined;
+  });
+  const [sortBy, setSortBy] = useState<SortOption>(() => {
+    const sort = initialParamsRef.current.get("sort");
+    return isSortOption(sort) ? sort : DEFAULT_SORT;
+  });
+  const [searchQuery, setSearchQuery] = useState(() => initialParamsRef.current.get("keyword") ?? initialParamsRef.current.get("q") ?? "");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(() => initialParamsRef.current.get("keyword") ?? initialParamsRef.current.get("q") ?? "");
+  const [pageWindowStart, setPageWindowStart] = useState(() => Math.floor(getInitialPage(initialParamsRef.current) / MAX_VISIBLE_PAGES) * MAX_VISIBLE_PAGES);
+  const isFirstFilterSyncRef = useRef(true);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -102,13 +129,35 @@ export default function ShopsListPage() {
   }, [searchQuery]);
 
   useEffect(() => {
+    if (isFirstFilterSyncRef.current) {
+      isFirstFilterSyncRef.current = false;
+      return;
+    }
+
     setCurrentPage(0);
     setPageWindowStart(0);
   }, [activeRegion, activeDistrict, activeType, activeRamenTypeId, sortBy, debouncedSearchQuery]);
 
   useEffect(() => {
-    setActiveDistrict(ALL_FILTER);
-  }, [activeRegion]);
+    const params = new URLSearchParams();
+
+    if (currentPage > 0) params.set("page", String(currentPage + 1));
+    if (debouncedSearchQuery) params.set("keyword", debouncedSearchQuery);
+    if (activeRegion !== ALL_FILTER) params.set("city", activeRegion);
+    if (activeDistrict !== ALL_FILTER) params.set("district", activeDistrict);
+    if (activeType !== ALL_TYPE_FILTER) params.set("tag", activeType);
+    if (activeRamenTypeId) params.set("ramenTypeId", activeRamenTypeId);
+    if (activeRamenTypeId && activeRamenTypeName) params.set("ramenTypeName", activeRamenTypeName);
+    if (sortBy !== DEFAULT_SORT) params.set("sort", sortBy);
+
+    const queryString = params.toString();
+    const nextUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ""}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState(null, "", nextUrl);
+    }
+  }, [activeDistrict, activeRamenTypeId, activeRamenTypeName, activeRegion, activeType, currentPage, debouncedSearchQuery, sortBy]);
 
   const clearRamenTypeFilter = (resetType = false) => {
     if (resetType) {
@@ -117,14 +166,6 @@ export default function ShopsListPage() {
 
     setActiveRamenTypeId(undefined);
     setActiveRamenTypeName(undefined);
-
-    const params = new URLSearchParams(window.location.search);
-    params.delete("ramenTypeId");
-    params.delete("ramenTypeName");
-    params.delete("tag");
-
-    const queryString = params.toString();
-    window.history.replaceState(null, "", `${window.location.pathname}${queryString ? `?${queryString}` : ""}`);
   };
 
   const { data, isLoading, isFetching, isError } = useRamenShops({
@@ -151,15 +192,24 @@ export default function ShopsListPage() {
   const shops = data?.shops ?? [];
   const totalPages = Math.max(data?.page?.totalPages ?? 1, 1);
   const totalElements = data?.page?.totalElements ?? 0;
-  const maxVisiblePages = 5;
   const visiblePageNumbers = useMemo(() => {
-    const pageCount = Math.min(maxVisiblePages, totalPages - pageWindowStart);
+    const pageCount = Math.min(MAX_VISIBLE_PAGES, totalPages - pageWindowStart);
     return Array.from({ length: pageCount }, (_, index) => pageWindowStart + index);
   }, [pageWindowStart, totalPages]);
 
   useEffect(() => {
-    setPageWindowStart((prev) => Math.min(prev, Math.max(totalPages - maxVisiblePages, 0)));
+    setPageWindowStart((prev) => Math.min(prev, Math.max(totalPages - MAX_VISIBLE_PAGES, 0)));
   }, [totalPages]);
+
+  useEffect(() => {
+    setPageWindowStart(Math.floor(currentPage / MAX_VISIBLE_PAGES) * MAX_VISIBLE_PAGES);
+  }, [currentPage]);
+
+  useEffect(() => {
+    if (data?.page && currentPage >= totalPages) {
+      setCurrentPage(Math.max(totalPages - 1, 0));
+    }
+  }, [currentPage, data?.page, totalPages]);
   
   const goToShopsPage = (page: number) => {
     if (page < 0 || page >= totalPages) return;
@@ -168,12 +218,12 @@ export default function ShopsListPage() {
   };
 
   const showPreviousPageGroup = () => {
-    setPageWindowStart((prev) => Math.max(prev - maxVisiblePages, 0));
+    setPageWindowStart((prev) => Math.max(prev - MAX_VISIBLE_PAGES, 0));
   };
 
   const showNextPageGroup = () => {
     setPageWindowStart((prev) => {
-      const next = prev + maxVisiblePages;
+      const next = prev + MAX_VISIBLE_PAGES;
       return next >= totalPages ? prev : next;
     });
   };
@@ -225,7 +275,10 @@ export default function ShopsListPage() {
                 label="지역"
                 value={activeRegion}
                 options={regionOptions}
-                onChange={setActiveRegion}
+                onChange={(value) => {
+                  setActiveRegion(value);
+                  setActiveDistrict(ALL_FILTER);
+                }}
               />
               <FilterSelect
                 label="구/시"
@@ -247,15 +300,30 @@ export default function ShopsListPage() {
                 label="정렬"
                 value={sortBy}
                 options={SORT_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
-                onChange={(value) => setSortBy(value as (typeof SORT_OPTIONS)[number]["value"])}
+                onChange={(value) => setSortBy(value as SortOption)}
               />
             </div>
 
             <div className="flex min-h-[2.75rem] items-center gap-2 border-t border-stone-100 pt-4">
               <div className="flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap">
+                {debouncedSearchQuery && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setDebouncedSearchQuery("");
+                    }}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
+                  >
+                    검색: {debouncedSearchQuery}
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
                 {activeRegion !== ALL_FILTER && (
                   <button
-                    onClick={() => setActiveRegion(ALL_FILTER)}
+                    onClick={() => {
+                      setActiveRegion(ALL_FILTER);
+                      setActiveDistrict(ALL_FILTER);
+                    }}
                     className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
                   >
                     {activeRegion}
@@ -283,6 +351,15 @@ export default function ShopsListPage() {
                     <X className="h-3 w-3" />
                   </button>
                 )}
+                {activeType === ALL_TYPE_FILTER && activeRamenTypeId && (
+                  <button
+                    onClick={() => clearRamenTypeFilter(false)}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
+                  >
+                    {activeRamenTypeName ?? "추천 라멘"}
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
                 {sortBy !== DEFAULT_SORT && (
                   <button
                     onClick={() => setSortBy(DEFAULT_SORT)}
@@ -292,13 +369,15 @@ export default function ShopsListPage() {
                     <X className="h-3 w-3" />
                   </button>
                 )}
-                {activeRegion === ALL_FILTER && activeDistrict === ALL_FILTER && activeType === ALL_TYPE_FILTER && !activeRamenTypeId && sortBy === DEFAULT_SORT && (
+                {debouncedSearchQuery === "" && activeRegion === ALL_FILTER && activeDistrict === ALL_FILTER && activeType === ALL_TYPE_FILTER && !activeRamenTypeId && sortBy === DEFAULT_SORT && (
                   <p className="shrink-0 text-sm text-stone-400">아직 선택된 필터 조건이 없습니다.</p>
                 )}
               </div>
-              {(activeRegion !== ALL_FILTER || activeDistrict !== ALL_FILTER || activeType !== ALL_TYPE_FILTER || activeRamenTypeId || sortBy !== DEFAULT_SORT) && (
+              {(debouncedSearchQuery || activeRegion !== ALL_FILTER || activeDistrict !== ALL_FILTER || activeType !== ALL_TYPE_FILTER || activeRamenTypeId || sortBy !== DEFAULT_SORT) && (
                 <button
                   onClick={() => {
+                    setSearchQuery("");
+                    setDebouncedSearchQuery("");
                     setActiveRegion(ALL_FILTER);
                     setActiveDistrict(ALL_FILTER);
                     clearRamenTypeFilter(true);
@@ -318,7 +397,6 @@ export default function ShopsListPage() {
               검색 결과: <span className="text-stone-900">{totalElements}</span>
             </p>
             <div className="h-[1px] flex-1 mx-6 bg-stone-200 hidden md:block"></div>
-            <Link href="/" className="text-[10px] font-black text-stone-400 hover:text-stone-900 transition-colors uppercase tracking-[0.2em]">← 홈으로 돌아가기</Link>
           </div>
 
           <section className="relative min-h-[360px]">
@@ -382,7 +460,7 @@ export default function ShopsListPage() {
                   <button
                     type="button"
                     aria-label="다음 페이지 묶음 보기"
-                    disabled={pageWindowStart + maxVisiblePages >= totalPages}
+                    disabled={pageWindowStart + MAX_VISIBLE_PAGES >= totalPages}
                     onClick={showNextPageGroup}
                     className="rounded-sm border border-stone-200 p-3 text-stone-400 transition-colors hover:border-[#25282b] hover:text-[#25282b] disabled:cursor-not-allowed disabled:opacity-20"
                   >
@@ -392,6 +470,17 @@ export default function ShopsListPage() {
               </div>
             )}
           </section>
+
+          <div className="flex justify-center border-t border-stone-200 pt-6">
+            <button
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="inline-flex items-center gap-2 rounded-sm border border-stone-200 bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+            >
+              <ArrowUp className="h-4 w-4" />
+              맨 위로
+            </button>
+          </div>
         </div>
       </div>
 
