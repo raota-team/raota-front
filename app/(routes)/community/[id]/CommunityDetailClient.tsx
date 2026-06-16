@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, use, useEffect, useMemo, useRef } from 'react';
+import { memo, useState, use, useEffect, useMemo, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -43,6 +43,171 @@ const enhanceContentImages = (html: string, title: string) => {
   });
 };
 
+const CommentItem = memo(function CommentItem({
+  comment,
+  isReply = false,
+  currentUser,
+  editingCommentId,
+  onStartEdit,
+  onCancelEdit,
+  onUpdate,
+  onDelete,
+  onReply,
+}: {
+  comment: any;
+  isReply?: boolean;
+  currentUser: any;
+  editingCommentId: number | null;
+  onStartEdit: (commentId: number) => void;
+  onCancelEdit: () => void;
+  onUpdate: (commentId: number, content: string) => void;
+  onDelete: (commentId: number) => void;
+  onReply: (commentId: number, authorNickname: string) => void;
+}) {
+  const isEditing = editingCommentId === comment.commentId;
+  const [draftContent, setDraftContent] = useState(comment.content ?? '');
+  const currentUserId = currentUser?.user_id || currentUser?.id;
+  const isCommentAuthor = currentUser && (
+    (comment.authorId && (String(currentUserId) === String(comment.authorId))) ||
+    (currentUser.nickname === comment.authorNickname)
+  );
+
+  useEffect(() => {
+    if (isEditing) {
+      setDraftContent(comment.content ?? '');
+    }
+  }, [comment.content, isEditing]);
+
+  return (
+    <div className={`${isReply ? 'bg-stone-50 py-3 pl-9 pr-4 md:py-4 md:pl-14 md:pr-6' : 'p-4 md:p-6'} border-t border-stone-100 first:border-t-0`}>
+      <div className="flex gap-3 md:gap-4">
+        {isReply && <CornerDownRight className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-stone-300 md:h-4 md:w-4" />}
+        {!isReply && (
+          <Link href={`/user/${comment.authorId}`} className="flex-shrink-0">
+            <div className="relative h-9 w-9 overflow-hidden rounded-full border border-stone-200 bg-stone-100 md:h-10 md:w-10">
+              {comment.authorImageUrl ? (
+                <Image
+                  src={comment.authorImageUrl}
+                  alt={comment.authorNickname}
+                  fill
+                  sizes="40px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-stone-200 text-lg text-stone-400 md:text-xl">🍜</div>
+              )}
+            </div>
+          </Link>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="mb-2 flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-center md:gap-3">
+              <Link href={`/user/${comment.authorId}`} className="truncate font-bold text-[#25282b] transition-colors hover:text-[#e60000]">
+                <span className={isReply ? 'text-xs' : 'text-sm'}>{comment.authorNickname}</span>
+              </Link>
+              <span className="font-mono text-[10px] text-stone-600">{new Date(comment.createdAt).toLocaleString()}</span>
+            </div>
+            {isCommentAuthor && !comment.isDeleted && (
+              <div className="flex gap-2">
+                <button type="button" onClick={() => onStartEdit(comment.commentId)} className="text-[10px] font-bold text-stone-600 transition-colors hover:text-[#25282b]">수정</button>
+                <button type="button" onClick={() => onDelete(comment.commentId)} className="text-[10px] font-bold text-stone-600 transition-colors hover:text-[#e60000]">삭제</button>
+              </div>
+            )}
+          </div>
+
+          {isEditing ? (
+            <div className="mt-2 space-y-2">
+              <textarea value={draftContent} onChange={(e) => setDraftContent(e.target.value)} className="w-full rounded-sm border border-stone-200 p-3 text-sm outline-none focus:border-[#e60000]" rows={3} autoFocus />
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={onCancelEdit} className="px-3 py-1.5 text-xs font-bold text-stone-600 hover:text-stone-800">취소</button>
+                <button type="button" onClick={() => onUpdate(comment.commentId, draftContent)} className="rounded-sm bg-[#25282b] px-3 py-1.5 text-xs font-bold text-white">수정 완료</button>
+              </div>
+            </div>
+          ) : (
+            <div className="relative">
+              {comment.isDeleted ? (
+                <p className="py-1 text-sm text-stone-600" style={{ fontStyle: 'italic' }}>
+                  {comment.content}
+                </p>
+              ) : (
+                <>
+                  <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#25282b] md:text-sm">
+                    {comment.taggedParentAuthorNickname && (
+                      <span className="vertical-middle mr-2 rounded-sm bg-stone-100 px-1.5 py-0.5 text-[11px] font-black text-[#25282b]">
+                        @{comment.taggedParentAuthorNickname}
+                      </span>
+                    )}
+                    {comment.content}
+                  </p>
+                  {!isReply && (
+                    <button type="button" onClick={() => onReply(comment.commentId, comment.authorNickname)} className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#b80000] hover:text-[#e60000]">답글 달기</button>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const CommentForm = memo(function CommentForm({
+  isLoggedIn,
+  replyTo,
+  isPending,
+  onSubmit,
+  onCancelReply,
+}: {
+  isLoggedIn: boolean;
+  replyTo: { id: number; name: string } | null;
+  isPending: boolean;
+  onSubmit: (content: string, parentCommentId?: number | null) => void;
+  onCancelReply: () => void;
+}) {
+  const [content, setContent] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!content.trim() || isPending || !isLoggedIn) return;
+    onSubmit(content.trim(), replyTo?.id);
+    setContent('');
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="border-t border-stone-100 bg-stone-50 p-4 md:p-6">
+      {replyTo && (
+        <div className="animate-in slide-in-from-top-2 mb-3 flex items-center justify-between rounded-sm border border-[#e60000] bg-white px-3 py-2">
+          <span className="flex items-center gap-2 text-xs font-bold text-[#e60000]">
+            <CornerDownRight className="h-3 w-3" /> @{replyTo.name} 님에게 답글 남기는 중
+          </span>
+          <button type="button" onClick={onCancelReply} className="text-[#b80000] hover:text-[#e60000]" aria-label="답글 입력 취소"><X className="h-3.5 w-3.5" /></button>
+        </div>
+      )}
+      <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex flex-1 gap-2">
+          <input
+            type="text"
+            placeholder={isLoggedIn ? (replyTo ? "답글을 입력하세요..." : "댓글을 입력하세요...") : "로그인 후 이용 가능합니다."}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            disabled={!isLoggedIn || isPending}
+            className="min-w-0 flex-1 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm font-medium transition-colors focus:border-[#e60000] focus:outline-none"
+          />
+          <button
+            type="submit"
+            aria-label={replyTo ? '답글 등록하기' : '댓글 등록하기'}
+            disabled={!content.trim() || isPending || !isLoggedIn}
+            className="flex flex-shrink-0 items-center justify-center rounded-sm bg-[#e60000] px-4 text-white transition-opacity hover:opacity-90 disabled:opacity-50 md:px-6"
+          >
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+});
+
 export default function CommunityDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
@@ -50,10 +215,8 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
   const { showToast, showConfirm, isLoggedIn, currentUser } = useApp();
   const postId = Number(resolvedParams.id);
 
-  const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState<{ id: number; name: string } | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editContent, setEditingContent] = useState('');
   const hotPostsRef = useRef<HTMLDivElement>(null);
 
   // 1. 게시글 상세 조회
@@ -147,7 +310,6 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
   const commentMutation = useMutation({
     mutationFn: (data: { content: string; parentCommentId?: number | null }) => createComment(postId, data),
     onSuccess: () => {
-      setNewComment('');
       setReplyTo(null);
       showToast('댓글이 작성되었습니다!', 'success');
       queryClient.invalidateQueries({ queryKey: ['community-comments', postId] });
@@ -185,20 +347,39 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
     showConfirm('이 게시글을 정말 삭제하시겠습니까?', () => deletePostMutation.mutate());
   };
 
-  const handleSubmitComment = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitComment = useCallback((content: string, parentCommentId?: number | null) => {
     if (!isLoggedIn) {
       showConfirm('로그인이 필요한 기능입니다. 로그인하시겠습니까?', () => router.push('/login'));
       return;
     }
-    if (!newComment.trim() || commentMutation.isPending) return;
-    commentMutation.mutate({ content: newComment.trim(), parentCommentId: replyTo?.id });
-  };
+    if (!content.trim() || commentMutation.isPending) return;
+    commentMutation.mutate({ content: content.trim(), parentCommentId });
+  }, [commentMutation, isLoggedIn, router, showConfirm]);
 
-  const handleUpdateComment = (id: number) => {
-    if (!editContent.trim()) return;
-    updateCommentMutation.mutate({ id, content: editContent.trim() });
-  };
+  const handleStartEditComment = useCallback((id: number) => {
+    setEditingCommentId(id);
+  }, []);
+
+  const handleCancelEditComment = useCallback(() => {
+    setEditingCommentId(null);
+  }, []);
+
+  const handleUpdateComment = useCallback((id: number, content: string) => {
+    if (!content.trim() || updateCommentMutation.isPending) return;
+    updateCommentMutation.mutate({ id, content: content.trim() });
+  }, [updateCommentMutation]);
+
+  const handleDeleteComment = useCallback((id: number) => {
+    showConfirm('정말 삭제하시겠습니까?', () => deleteCommentMutation.mutate(id));
+  }, [deleteCommentMutation, showConfirm]);
+
+  const handleReplyComment = useCallback((id: number, name: string) => {
+    setReplyTo({ id, name });
+  }, []);
+
+  const handleCancelReply = useCallback(() => {
+    setReplyTo(null);
+  }, []);
 
   const scrollHotPosts = (direction: 'prev' | 'next') => {
     const scrollAmount = hotPostsRef.current?.clientWidth || 320;
@@ -220,88 +401,6 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
 
   if (isPostLoading) return <Loading />;
   if (isPostError || !post) return <div className="text-center py-20 font-bold">게시글을 찾을 수 없습니다.</div>;
-
-  const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boolean }) => {
-    const isEditing = editingCommentId === comment.commentId;
-    const currentUserId = currentUser?.user_id || currentUser?.id;
-    const isCommentAuthor = currentUser && (
-      (comment.authorId && (String(currentUserId) === String(comment.authorId))) ||
-      (currentUser.nickname === comment.authorNickname)
-    );
-
-    return (
-      <div className={`${isReply ? 'bg-stone-50 py-3 pl-9 pr-4 md:py-4 md:pl-14 md:pr-6' : 'p-4 md:p-6'} border-t border-stone-100 first:border-t-0`}>
-        <div className="flex gap-3 md:gap-4">
-          {isReply && <CornerDownRight className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-stone-300 md:h-4 md:w-4" />}
-          {!isReply && (
-            <Link href={`/user/${comment.authorId}`} className="flex-shrink-0">
-              <div className="relative h-9 w-9 overflow-hidden rounded-full border border-stone-200 bg-stone-100 md:h-10 md:w-10">
-                {comment.authorImageUrl ? (
-                  <Image
-                    src={comment.authorImageUrl}
-                    alt={comment.authorNickname}
-                    fill
-                    sizes="40px"
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-stone-200 text-lg text-stone-400 md:text-xl">🍜</div>
-                )}
-              </div>
-            </Link>
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="mb-2 flex items-start justify-between gap-3">
-              <div className="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-center md:gap-3">
-                <Link href={`/user/${comment.authorId}`} className="truncate font-bold text-[#25282b] transition-colors hover:text-[#e60000]">
-                  <span className={isReply ? 'text-xs' : 'text-sm'}>{comment.authorNickname}</span>
-                </Link>
-                <span className="text-[10px] text-stone-600 font-mono">{new Date(comment.createdAt).toLocaleString()}</span>
-              </div>
-              {isCommentAuthor && !comment.isDeleted && (
-                <div className="flex gap-2">
-                  <button onClick={() => { setEditingCommentId(comment.commentId); setEditingContent(comment.content); }} className="text-[10px] font-bold text-stone-600 transition-colors hover:text-[#25282b]">수정</button>
-                  <button onClick={() => showConfirm('정말 삭제하시겠습니까?', () => deleteCommentMutation.mutate(comment.commentId))} className="text-[10px] font-bold text-stone-600 transition-colors hover:text-[#e60000]">삭제</button>
-                </div>
-              )}
-            </div>
-            
-            {isEditing ? (
-              <div className="mt-2 space-y-2">
-                <textarea value={editContent} onChange={(e) => setEditingContent(e.target.value)} className="w-full rounded-sm border border-stone-200 p-3 text-sm outline-none focus:border-[#e60000]" rows={3} autoFocus />
-                <div className="flex justify-end gap-2">
-                  <button onClick={() => setEditingCommentId(null)} className="px-3 py-1.5 text-xs font-bold text-stone-600 hover:text-stone-800">취소</button>
-                  <button onClick={() => handleUpdateComment(comment.commentId)} className="rounded-sm bg-[#25282b] px-3 py-1.5 text-xs font-bold text-white">수정 완료</button>
-                </div>
-              </div>
-            ) : (
-              <div className="relative">
-                {comment.isDeleted ? (
-                  <p className="text-stone-600 text-sm py-1" style={{ fontStyle: 'italic' }}>
-                    {comment.content}
-                  </p>
-                ) : (
-                  <>
-                    <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#25282b] md:text-sm">
-                      {comment.taggedParentAuthorNickname && (
-                        <span className="vertical-middle mr-2 rounded-sm bg-stone-100 px-1.5 py-0.5 text-[11px] font-black text-[#25282b]">
-                          @{comment.taggedParentAuthorNickname}
-                        </span>
-                      )}
-                      {comment.content}
-                    </p>
-                    {!isReply && (
-                      <button onClick={() => setReplyTo({ id: comment.commentId, name: comment.authorNickname })} className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#b80000] hover:text-[#e60000]">답글 달기</button>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-20 sm:px-0">
@@ -410,9 +509,29 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
           ) : (
             comments.map((comment: any) => (
               <div key={comment.commentId}>
-                <CommentItem comment={comment} />
+                <CommentItem
+                  comment={comment}
+                  currentUser={currentUser}
+                  editingCommentId={editingCommentId}
+                  onStartEdit={handleStartEditComment}
+                  onCancelEdit={handleCancelEditComment}
+                  onUpdate={handleUpdateComment}
+                  onDelete={handleDeleteComment}
+                  onReply={handleReplyComment}
+                />
                 {comment.replies && comment.replies.map((reply: any) => (
-                  <CommentItem key={reply.commentId} comment={reply} isReply={true} />
+                  <CommentItem
+                    key={reply.commentId}
+                    comment={reply}
+                    isReply={true}
+                    currentUser={currentUser}
+                    editingCommentId={editingCommentId}
+                    onStartEdit={handleStartEditComment}
+                    onCancelEdit={handleCancelEditComment}
+                    onUpdate={handleUpdateComment}
+                    onDelete={handleDeleteComment}
+                    onReply={handleReplyComment}
+                  />
                 ))}
               </div>
             ))
@@ -420,36 +539,13 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
         </div>
 
         {/* Comment Form */}
-        <form onSubmit={handleSubmitComment} className="p-4 md:p-6 border-t border-stone-100 bg-stone-50">
-          {replyTo && (
-            <div className="mb-3 flex items-center justify-between rounded-sm border border-[#e60000] bg-white px-3 py-2 animate-in slide-in-from-top-2">
-              <span className="flex items-center gap-2 text-xs font-bold text-[#e60000]">
-                <CornerDownRight className="w-3 h-3" /> @{replyTo.name} 님에게 답글 남기는 중
-              </span>
-              <button type="button" onClick={() => setReplyTo(null)} className="text-[#b80000] hover:text-[#e60000]" aria-label="답글 입력 취소"><X className="w-3.5 h-3.5" /></button>
-            </div>
-          )}
-          <div className="flex gap-2 md:gap-4 items-center">
-            <div className="flex-1 flex gap-2">
-              <input
-                type="text"
-                placeholder={isLoggedIn ? (replyTo ? "답글을 입력하세요..." : "댓글을 입력하세요...") : "로그인 후 이용 가능합니다."}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                disabled={!isLoggedIn || commentMutation.isPending}
-                className="min-w-0 flex-1 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm font-medium transition-colors focus:border-[#e60000] focus:outline-none"
-              />
-              <button
-                type="submit"
-                aria-label={replyTo ? '답글 등록하기' : '댓글 등록하기'}
-                disabled={!newComment.trim() || commentMutation.isPending || !isLoggedIn}
-                className="flex flex-shrink-0 items-center justify-center rounded-sm bg-[#e60000] px-4 text-white transition-opacity hover:opacity-90 disabled:opacity-50 md:px-6"
-              >
-                {commentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-        </form>
+        <CommentForm
+          isLoggedIn={isLoggedIn}
+          replyTo={replyTo}
+          isPending={commentMutation.isPending}
+          onSubmit={handleSubmitComment}
+          onCancelReply={handleCancelReply}
+        />
       </div>
 
       <div className="mt-8 flex justify-center">
