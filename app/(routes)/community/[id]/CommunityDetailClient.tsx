@@ -24,29 +24,22 @@ const hotPostCardClass = "flex h-24 w-[13.5rem] flex-shrink-0 snap-start gap-2.5
 
 const enhanceContentImages = (html: string, title: string) => {
   let imageIndex = 0;
+  const escapedTitle = title.replace(/"/g, '&quot;');
 
   return html.replace(/<img\b([^>]*)>/gi, (match, attributes: string) => {
     const isFirstImage = imageIndex === 0;
     imageIndex += 1;
-    const srcMatch = attributes.match(/\ssrc=(["'])(.*?)\1/i);
-    const optimizedAttributes =
-      srcMatch && srcMatch[2].startsWith('https://images.raota.net')
-        ? attributes.replace(
-            srcMatch[0],
-            ` src="/_next/image?url=${encodeURIComponent(srcMatch[2])}&w=828&q=70"`,
-          )
-        : attributes;
 
     const additions = [
-      /\salt=/i.test(optimizedAttributes) ? '' : ` alt="${title} 이미지 ${imageIndex}"`,
-      /\sloading=/i.test(optimizedAttributes) || isFirstImage ? '' : ' loading="lazy"',
-      /\sdecoding=/i.test(optimizedAttributes) ? '' : ' decoding="async"',
-      /\sfetchpriority=/i.test(optimizedAttributes) || !isFirstImage ? '' : ' fetchpriority="high"',
-      /\swidth=/i.test(optimizedAttributes) ? '' : ' width="800"',
-      /\sheight=/i.test(optimizedAttributes) ? '' : ' height="600"',
+      /\salt=/i.test(attributes) ? '' : ` alt="${escapedTitle} 이미지 ${imageIndex}"`,
+      /\sloading=/i.test(attributes) || isFirstImage ? '' : ' loading="lazy"',
+      /\sdecoding=/i.test(attributes) ? '' : ' decoding="async"',
+      /\sfetchpriority=/i.test(attributes) || !isFirstImage ? '' : ' fetchpriority="high"',
+      /\swidth=/i.test(attributes) ? '' : ' width="800"',
+      /\sheight=/i.test(attributes) ? '' : ' height="600"',
     ].join('');
 
-    return `<img${optimizedAttributes}${additions}>`;
+    return `<img${attributes}${additions}>`;
   });
 };
 
