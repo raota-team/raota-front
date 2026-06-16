@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Image as ImageIcon, X, Store, ChevronDown, Search, Save, Loader2 } from 'lucide-react';
 import { useRamenShops } from '@/hooks/queries/useRamenShops';
+import { useRamenShopDetail } from '@/hooks/queries/useRamenShopDetail';
 import RichTextEditor from '../../../components/RichTextEditor';
 import { useApp } from '@/app/context/AppContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -23,9 +24,9 @@ export default function CommunityWritePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const { showToast } = useApp();
+  const { showToast, showConfirm, isLoggedIn, isAuthChecking } = useApp();
   const { data } = useRamenShops({ page: 0, size: 100, sort: "NAME" });
-  const shops = data?.shops ?? [];
+  const listShops = data?.shops ?? [];
 
   const [category, setCategory] = useState('REVIEW');
   const [title, setTitle] = useState('');
@@ -41,7 +42,15 @@ export default function CommunityWritePage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [didApplyPrefill, setDidApplyPrefill] = useState(false);
 
-  const selectedShop = shops?.find(s => s.id === selectedShopId);
+  const { data: selectedShopDetail } = useRamenShopDetail(selectedShopId ?? Number.NaN);
+  const shops = useMemo(() => {
+    if (!selectedShopDetail || listShops.some((shop) => shop.id === selectedShopDetail.id)) {
+      return listShops;
+    }
+
+    return [selectedShopDetail, ...listShops];
+  }, [listShops, selectedShopDetail]);
+  const selectedShop = shops.find(s => s.id === selectedShopId);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -83,6 +92,14 @@ export default function CommunityWritePage() {
     setDidApplyPrefill(true);
   }, [didApplyPrefill, searchParams]);
 
+  useEffect(() => {
+    if (isAuthChecking || isLoggedIn) return;
+
+    showConfirm('로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?', () => {
+      router.replace('/login');
+    });
+  }, [isAuthChecking, isLoggedIn, router, showConfirm]);
+
   /** 에디터 내부 이미지 업로드 핸들러 */
   const handleEditorImageUpload = async (file: File): Promise<string> => {
     // 1. 압축
@@ -114,6 +131,13 @@ export default function CommunityWritePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLoggedIn) {
+      showConfirm('로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?', () => {
+        router.replace('/login');
+      });
+      return;
+    }
+
     if (!title.trim() || !content.trim()) {
       showToast('제목과 내용을 입력해주세요.', 'error');
       return;
@@ -157,6 +181,14 @@ export default function CommunityWritePage() {
       setIsSubmitting(false);
     }
   };
+
+  if (isAuthChecking || !isLoggedIn) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-[#e60000]" />
+      </div>
+    );
+  }
 
   const getCategoryStyle = (_categoryId: string, isSelected: boolean) => {
     const baseStyle = 'px-4 py-3 rounded-sm border text-sm font-bold transition-colors flex items-center';

@@ -23,6 +23,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { getCommunityPosts, getRamenShopOptions, type CommunityPostCard } from '@/lib/api/community';
 import Loading from '@/app/loading';
+import { useApp } from '@/app/context/AppContext';
 
 const getCategoryLabel = (category: string) => {
   switch (category) {
@@ -149,7 +150,9 @@ function PostListCard({ post }: { post: CommunityPostCard }) {
 }
 
 export default function CommunityPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const { isLoggedIn, isAuthChecking, showConfirm } = useApp();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
@@ -243,6 +246,19 @@ export default function CommunityPage() {
     setCurrentPage(0);
   };
 
+  const goToWrite = (href: string) => {
+    if (isAuthChecking) return;
+
+    if (!isLoggedIn) {
+      showConfirm('로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?', () => {
+        router.push('/login');
+      });
+      return;
+    }
+
+    router.push(href);
+  };
+
   if (isLoading && posts.length === 0) {
     // Return empty here so we can show skeleton cards inside the main layout
     // instead of a blocking full-screen loading spinner
@@ -284,13 +300,14 @@ export default function CommunityPage() {
                 </button>
               ))}
             </div>
-            <Link
-              href="/community/write"
+            <button
+              type="button"
+              onClick={() => goToWrite('/community/write')}
               className="inline-flex flex-shrink-0 items-center justify-center gap-1.5 rounded-sm bg-[#e60000] px-3.5 py-2.5 text-sm font-black text-white transition-opacity hover:opacity-90 md:px-4 md:py-2"
             >
               <PenSquare className="h-4 w-4" />
               글쓰기
-            </Link>
+            </button>
           </div>
 
           {selectedCategory === 'REVIEW' && (
@@ -387,13 +404,14 @@ export default function CommunityPage() {
                   긴 후기 말고 한두 줄만 남겨도 좋아요. 오늘의 질문으로 가볍게 커뮤니티에 참여해보세요.
                 </p>
               </div>
-              <Link
-                href={`/community/write?category=FREE&title=${encodeURIComponent('오늘의 질문: 요즘 가장 자주 생각나는 라멘집은 어디인가요?')}&content=${encodeURIComponent('<p>저는 요즘 이 라멘집이 자꾸 생각나요.</p><p>이유는...</p>')}`}
+              <button
+                type="button"
+                onClick={() => goToWrite(`/community/write?category=FREE&title=${encodeURIComponent('오늘의 질문: 요즘 가장 자주 생각나는 라멘집은 어디인가요?')}&content=${encodeURIComponent('<p>저는 요즘 이 라멘집이 자꾸 생각나요.</p><p>이유는...</p>')}`)}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 py-2.5 text-sm font-black text-white transition-opacity hover:opacity-90 sm:w-auto sm:shrink-0"
               >
                 답변 쓰기
                 <ArrowRight className="h-4 w-4" />
-              </Link>
+              </button>
             </div>
           </section>
 

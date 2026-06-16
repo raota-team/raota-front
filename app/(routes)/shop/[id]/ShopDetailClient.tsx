@@ -274,7 +274,13 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push(reviewWriteUrl)}
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login"));
+                      return;
+                    }
+                    router.push(reviewWriteUrl);
+                  }}
                   className="inline-flex items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
                 >
                   <PenSquare className="h-4 w-4" />
