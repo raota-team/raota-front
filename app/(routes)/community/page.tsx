@@ -503,7 +503,7 @@ export default function CommunityPage() {
           )}
         </main>
 
-        <aside className="space-y-4 lg:sticky lg:top-32 lg:self-start">
+        <aside className="space-y-4 lg:self-start">
           <section className="rounded-md border border-stone-200 bg-[#25282b] p-5 text-white">
             <div className="mb-4 flex items-center gap-2">
               <Flame className="h-4 w-4 text-[#e60000]" />
