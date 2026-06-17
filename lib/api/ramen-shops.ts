@@ -62,6 +62,7 @@ interface ApiMenuItem {
 
 interface ApiShopStats {
   visit_count?: number | string;
+  view_count?: number | string;
   bookmark_count?: number | string;
 }
 
@@ -225,7 +226,7 @@ const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
     stats: {
       // 신규 명세(visits) 우선, 없으면 기존 명세(votes 또는 stats) 지원
       visit_count: toNumber(shop.visits ?? shop.stats?.visit_count ?? shop.votes, 0),
-      view_count: toNumber(shop.viewCount, 0),
+      view_count: toNumber(shop.stats?.view_count ?? shop.viewCount, 0),
       bookmark_count: toNumber(shop.stats?.bookmark_count, 0),
     },
     instagram_url: shop.instagram_url || "",

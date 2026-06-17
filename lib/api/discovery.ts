@@ -26,7 +26,6 @@ export interface WeekendRecommendationResponse {
 export interface PopularShopTodayResponse {
   ramenShopId: number;
   name: string;
-  viewCount: number;
 }
 
 export interface CommunityHomePostResponse {

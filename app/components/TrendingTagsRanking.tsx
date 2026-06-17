@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Eye } from 'lucide-react';
 
 import { usePopularShopsToday } from '@/hooks/queries/useDiscovery';
 
@@ -85,10 +84,7 @@ export default function TrendingTagsRanking() {
                     </span>
                   </div>
                 </div>
-                <div className="flex-shrink-0 ml-2 flex items-center gap-1 text-[10px] font-black text-stone-400">
-                  <Eye className="h-3 w-3" />
-                  {shop.viewCount.toLocaleString()}
-                </div>
+
               </Link>
             </li>
           ))}
@@ -120,10 +116,7 @@ export default function TrendingTagsRanking() {
                   </span>
                 </div>
               </div>
-              <div className="flex-shrink-0 ml-2 flex items-center gap-1 text-[10px] font-black text-stone-400">
-                <Eye className="h-3 w-3" />
-                {shop.viewCount.toLocaleString()}
-              </div>
+
             </Link>
           ))}
           {/* 무한 롤링을 위한 첫 번째 아이템 복제 */}
@@ -139,10 +132,7 @@ export default function TrendingTagsRanking() {
                   </span>
                 </div>
               </div>
-              <div className="flex-shrink-0 ml-2 flex items-center gap-1 text-[10px] font-black text-stone-400">
-                <Eye className="h-3 w-3" />
-                {shops[0].viewCount.toLocaleString()}
-              </div>
+
             </Link>
           )}
         </div>
