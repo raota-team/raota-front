@@ -48,6 +48,18 @@ const getEditableBio = (profile: MyProfileData) => {
     : '';
 };
 
+const getShopId = (item: any) =>
+  item.restaurant_id || item.shopId || item.shop_id || item.ramenShopId || item.ramen_shop_id || item.id;
+
+const getShopName = (item: any) =>
+  item.restaurant_name || item.restaurantName || item.shopName || item.shop_name || item.name || '이름 미정';
+
+const getShopImageUrl = (item: any) =>
+  item.restaurant_image_url || item.shopImageUrl || item.shop_image_url || item.thumbnailUrl || item.thumbnail_url || item.imageUrl || item.image_url || '/hero-home.jpg';
+
+const getShopAddress = (item: any) =>
+  item.simple_address || item.address_simple || item.region || item.address || item.location || '주소 정보 없음';
+
 export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
@@ -157,7 +169,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       if (res && res.data) {
         const validItems = (res.data.items || []).filter((item: any) => {
           if (activeTab === 'photos') return !!(item.photo_id || item.id);
-          if (activeTab === 'visits' || activeTab === 'bookmarks') return !!(item.restaurant_id || item.id);
+          if (activeTab === 'visits' || activeTab === 'bookmarks') return !!getShopId(item);
           if (activeTab === 'posts') return !!(item.post_id || item.postId || item.id);
           if (activeTab === 'comments') return !!(item.commentId || item.id);
           return true;
@@ -428,7 +440,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         {items.length > 0 ? (
           <div className={activeTab === 'photos' ? "grid grid-cols-3 gap-1 md:gap-4" : "flex flex-col gap-3"}>
             {items.map((item, index) => {
-              const itemId = item.photo_id || item.restaurant_id || item.post_id || item.postId || item.commentId || item.id || 'no-id';
+              const itemId = item.photo_id || getShopId(item) || item.post_id || item.postId || item.commentId || item.id || 'no-id';
               const uniqueKey = `${activeTab}-${itemId}-${index}`;
               if (activeTab === 'photos') return (
                 <div key={uniqueKey} ref={items.length === index + 1 ? lastItemRef : null} className="group relative aspect-square overflow-hidden rounded-md border border-stone-200 bg-stone-100">
@@ -440,11 +452,11 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 </div>
               );
               if (activeTab === 'visits' || activeTab === 'bookmarks') return (
-                <Link key={uniqueKey} href={`/shop/${item.restaurant_id || item.id}`} ref={items.length === index + 1 ? lastItemRef : null} className="group flex items-center gap-4 rounded-md border border-stone-200 bg-white p-4 transition-colors hover:border-[#e60000]">
-                  <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md bg-stone-100"><img src={item.restaurant_image_url || item.thumbnailUrl} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /></div>
+                <Link key={uniqueKey} href={`/shop/${getShopId(item)}`} ref={items.length === index + 1 ? lastItemRef : null} className="group flex items-center gap-4 rounded-md border border-stone-200 bg-white p-4 transition-colors hover:border-[#e60000]">
+                  <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md bg-stone-100"><img src={getShopImageUrl(item)} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /></div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="truncate text-lg font-bold text-[#25282b] transition-colors group-hover:text-[#e60000]">{item.restaurant_name || item.name}</h4>
-                    <p className="text-sm text-stone-500 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3" /> {item.simple_address || item.address_simple || item.region}</p>
+                    <h4 className="truncate text-lg font-bold text-[#25282b] transition-colors group-hover:text-[#e60000]">{getShopName(item)}</h4>
+                    <p className="text-sm text-stone-500 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3" /> {getShopAddress(item)}</p>
                   </div>
                   {activeTab === 'visits' && <div className="flex min-w-[100px] flex-shrink-0 flex-col items-end justify-center text-right"><div className="flex items-center gap-1 font-bold text-[#e60000]"><Award className="h-4 w-4" /> <span>{item.visit_count_for_user}회 방문</span></div><p className="mt-1 text-xs text-stone-400">{new Date(item.last_visited_at).toLocaleDateString('ko-KR')}</p></div>}
                 </Link>

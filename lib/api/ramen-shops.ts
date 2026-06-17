@@ -47,6 +47,7 @@ interface ApiRamenShop {
   catchTableUrl?: string;
   stats?: ApiShopStats;
   is_bookmarked?: boolean;
+  isBookmarked?: boolean;
 }
 
 interface ApiMenuItem {
@@ -227,7 +228,7 @@ const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
     },
     instagram_url: shop.instagram_url || "",
     catchTableUrl: shop.catchTableUrl || "",
-    isBookmarked: Boolean(shop.is_bookmarked),
+    isBookmarked: Boolean(shop.isBookmarked ?? shop.is_bookmarked),
   };
 };
 

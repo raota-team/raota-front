@@ -102,6 +102,30 @@ export interface BookmarkSummary {
   bookmarked_at: string;
 }
 
+type ApiBookmarkSummary = Partial<BookmarkSummary> & {
+  id?: number | string;
+  shopId?: number | string;
+  shop_id?: number | string;
+  ramenShopId?: number | string;
+  ramen_shop_id?: number | string;
+  name?: string;
+  shopName?: string;
+  shop_name?: string;
+  restaurantName?: string;
+  imageUrl?: string;
+  image_url?: string;
+  thumbnailUrl?: string;
+  thumbnail_url?: string;
+  shopImageUrl?: string;
+  shop_image_url?: string;
+  region?: string;
+  address?: string;
+  simple_address?: string;
+  location?: string;
+  bookmarkedAt?: string;
+  createdAt?: string;
+};
+
 export interface VisitSummary {
   restaurant_id: number;
   restaurant_name: string;
@@ -121,6 +145,50 @@ export interface PageMeta {
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+const toNumber = (value: unknown, fallback = 0) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
+};
+
+const normalizeBookmark = (bookmark: ApiBookmarkSummary): BookmarkSummary => ({
+  restaurant_id: toNumber(
+    bookmark.restaurant_id ??
+      bookmark.shopId ??
+      bookmark.shop_id ??
+      bookmark.ramenShopId ??
+      bookmark.ramen_shop_id ??
+      bookmark.id
+  ),
+  restaurant_name:
+    bookmark.restaurant_name ??
+    bookmark.restaurantName ??
+    bookmark.shopName ??
+    bookmark.shop_name ??
+    bookmark.name ??
+    "이름 미정",
+  restaurant_image_url:
+    bookmark.restaurant_image_url ??
+    bookmark.shopImageUrl ??
+    bookmark.shop_image_url ??
+    bookmark.thumbnailUrl ??
+    bookmark.thumbnail_url ??
+    bookmark.imageUrl ??
+    bookmark.image_url ??
+    "",
+  address_simple:
+    bookmark.address_simple ??
+    bookmark.simple_address ??
+    bookmark.region ??
+    bookmark.address ??
+    bookmark.location ??
+    "주소 정보 없음",
+  bookmarked_at:
+    bookmark.bookmarked_at ??
+    bookmark.bookmarkedAt ??
+    bookmark.createdAt ??
+    "",
+});
 
 /** 내 프로필 조회 */
 export const getMyProfile = async (): Promise<UserProfileResponse> => {
@@ -143,7 +211,14 @@ export const getMyVisits = async (page = 0, size = 20) => {
 };
 
 export const getMyBookmarks = async (page = 0, size = 20) => {
-  return await apiClient<PaginatedResponse<BookmarkSummary>>(`/users/me/bookmarks`, { query: { page, size } });
+  const response = await apiClient<PaginatedResponse<ApiBookmarkSummary>>(`/users/me/bookmarks`, { query: { page, size } });
+  return {
+    ...response,
+    data: {
+      ...response.data,
+      items: (response.data.items || []).map(normalizeBookmark),
+    },
+  };
 };
 
 export const getMyPosts = async (page = 0, size = 10) => {

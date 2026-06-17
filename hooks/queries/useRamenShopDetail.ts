@@ -7,7 +7,7 @@ import type { Shop } from "@/app/types";
 
 export const useRamenShopDetail = (shopId: number, initialShop?: Shop) => {
   const { currentUser } = useApp();
-  const memberId = currentUser?.user_id;
+  const memberId = currentUser?.user_id ?? currentUser?.id;
 
   return useQuery({
     queryKey: ["ramen-shop-detail", shopId, memberId],
