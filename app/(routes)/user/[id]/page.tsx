@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2 } from 'lucide-react';
+import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import PhotoModal from '../../../components/PhotoModal';
 import { useApp } from '../../../context/AppContext';
 import { 
@@ -362,7 +362,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           )}
         </div>
 
-        <div className="px-6 pb-6 md:px-10 md:pb-10 flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16 md:-mt-20 relative z-30">
+        <div className="px-6 pb-6 md:px-10 md:pb-10 flex flex-col md:flex-row items-center md:items-start gap-6 -mt-16 md:-mt-20 relative z-30">
           <div className="relative">
             <div className="relative h-32 w-32 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-white md:h-40 md:w-40" onClick={() => handleZoomImage(editForm.profileImage || profile.profile_image_url, '프로필 이미지')}>
               {(editForm.profileImage || (profile.profile_image_url && !markedForDelete.profile)) ? (
@@ -389,7 +389,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             )}
           </div>
 
-          <div className="flex-1 w-full md:w-auto text-center md:text-left">
+          <div className="flex-1 w-full md:w-auto text-center md:text-left md:pt-[104px] pt-2">
             {isEditing ? (
               <div className="relative z-40 rounded-sm border border-stone-200 bg-white p-4">
                 <div className="space-y-4">
@@ -424,9 +424,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                     <button 
                       type="button"
                       onClick={() => setIsBioExpanded(!isBioExpanded)}
-                      className="text-xs font-black text-[#e60000] hover:underline flex-shrink-0"
+                      className="inline-flex items-center gap-0.5 text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors flex-shrink-0"
                     >
-                      {isBioExpanded ? '접기' : '더보기'}
+                      <span>{isBioExpanded ? '접기' : '더보기'}</span>
+                      {isBioExpanded ? (
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      )}
                     </button>
                   )}
                 </p>
@@ -434,7 +439,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             )}
           </div>
 
-          <div className="mt-4 md:mt-0 relative z-10">
+          <div className="mt-4 md:mt-0 md:pt-[104px] relative z-10">
             {isOwnProfile && !isEditing && (
               <button onClick={handleEditStart} className="inline-flex items-center justify-center gap-2 rounded-sm border border-[#e60000] bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:bg-[#e60000] hover:text-white">
                 <Edit3 className="h-3.5 w-3.5" />
