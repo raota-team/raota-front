@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import {
   Camera,
+  Eye,
   Star,
   Menu,
   MapPin,
@@ -20,6 +21,7 @@ import {
   Check,
   PenSquare,
   ChevronDown,
+  Users,
 } from "lucide-react";
 import { Shop, UserPhoto, MenuItem } from "../../../types";
 import ProgressBar from "../../../components/ProgressBar";
@@ -54,6 +56,8 @@ const formatBreakTime = (hours: Shop["business_hours"]) => {
   if (!hours.break_start || !hours.break_end) return "없음";
   return `${hours.break_start} - ${hours.break_end}`;
 };
+
+const formatCount = (value?: number) => (value ?? 0).toLocaleString("ko-KR");
 
 export default function ShopDetailClient({ initialShop }: ShopDetailClientProps) {
   const router = useRouter();
@@ -219,9 +223,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               sizes="(min-width: 1280px) 768px, (min-width: 1024px) 66vw, calc(100vw - 32px)"
               className="object-cover saturate-105"
             />
-            <span className="absolute right-4 top-4 inline-flex items-center rounded-sm border border-stone-200 bg-white px-3 py-1.5 text-xs font-black text-[#25282b] shadow-lg shadow-black/10 md:right-5 md:top-5 md:text-sm">
-              <Camera className="mr-1.5 h-3.5 w-3.5 text-[#e60000] md:h-4 md:w-4" /> 인증 {shopPhotos.length}회
-            </span>
           </div>
 
           <div className="mb-10 border-b border-stone-200 bg-white py-5 md:mb-12 md:py-7">
@@ -240,6 +241,21 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               <span className="flex min-w-0 items-start gap-1.5">
                 <Menu className="mt-0.5 h-4 w-4 flex-shrink-0 text-stone-400" />
                 <span className="break-words leading-relaxed">{shop.type}</span>
+              </span>
+            </div>
+
+            <div className="mt-2.5 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold text-stone-500">
+              <span className="flex min-w-0 items-start gap-1.5">
+                <Eye className="mt-0.5 h-4 w-4 flex-shrink-0 text-stone-400" />
+                <span className="break-keep leading-relaxed">조회수 {formatCount(shop.stats.view_count)}</span>
+              </span>
+              <span className="flex min-w-0 items-start gap-1.5">
+                <Users className="mt-0.5 h-4 w-4 flex-shrink-0 text-stone-400" />
+                <span className="break-keep leading-relaxed">방문수 {formatCount(shop.stats.visit_count)}</span>
+              </span>
+              <span className="flex min-w-0 items-start gap-1.5">
+                <Heart className="mt-0.5 h-4 w-4 flex-shrink-0 text-stone-400" />
+                <span className="break-keep leading-relaxed">북마크수 {formatCount(shop.stats.bookmark_count)}</span>
               </span>
             </div>
 

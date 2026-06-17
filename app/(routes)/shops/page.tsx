@@ -16,7 +16,7 @@ const SORT_OPTIONS = [
   { value: "VISITS", label: "방문순" },
 ] as const;
 type SortOption = (typeof SORT_OPTIONS)[number]["value"];
-const DEFAULT_SORT = "VIEWS";
+const DEFAULT_SORT = "VISITS";
 const REGIONS = [
   ALL_FILTER,
   "서울",
@@ -101,25 +101,48 @@ const getInitialType = (params: URLSearchParams) => {
 };
 
 export default function ShopsListPage() {
-  const initialParamsRef = useRef(getInitialSearchParams());
-  const initialRegion = getInitialRegion(initialParamsRef.current);
-  const [currentPage, setCurrentPage] = useState(() => getInitialPage(initialParamsRef.current));
-  const [activeRegion, setActiveRegion] = useState(initialRegion);
-  const [activeDistrict, setActiveDistrict] = useState(() => getInitialDistrict(initialParamsRef.current, initialRegion));
-  const [activeType, setActiveType] = useState(() => getInitialType(initialParamsRef.current));
-  const [activeRamenTypeId, setActiveRamenTypeId] = useState<string | undefined>(() => initialParamsRef.current.get("ramenTypeId") ?? undefined);
-  const [activeRamenTypeName, setActiveRamenTypeName] = useState<string | undefined>(() => {
-    const ramenTypeId = initialParamsRef.current.get("ramenTypeId");
-    return ramenTypeId ? initialParamsRef.current.get("ramenTypeName") ?? initialParamsRef.current.get("tag") ?? "추천 라멘" : undefined;
-  });
-  const [sortBy, setSortBy] = useState<SortOption>(() => {
-    const sort = initialParamsRef.current.get("sort");
-    return isSortOption(sort) ? sort : DEFAULT_SORT;
-  });
-  const [searchQuery, setSearchQuery] = useState(() => initialParamsRef.current.get("keyword") ?? initialParamsRef.current.get("q") ?? "");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(() => initialParamsRef.current.get("keyword") ?? initialParamsRef.current.get("q") ?? "");
-  const [pageWindowStart, setPageWindowStart] = useState(() => Math.floor(getInitialPage(initialParamsRef.current) / MAX_VISIBLE_PAGES) * MAX_VISIBLE_PAGES);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [activeRegion, setActiveRegion] = useState(ALL_FILTER);
+  const [activeDistrict, setActiveDistrict] = useState(ALL_FILTER);
+  const [activeType, setActiveType] = useState(ALL_TYPE_FILTER);
+  const [activeRamenTypeId, setActiveRamenTypeId] = useState<string | undefined>(undefined);
+  const [activeRamenTypeName, setActiveRamenTypeName] = useState<string | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<SortOption>(DEFAULT_SORT);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [pageWindowStart, setPageWindowStart] = useState(0);
   const isFirstFilterSyncRef = useRef(true);
+
+  // URL 파라미터에서 초기 상태 설정 (Hydration Mismatch 방지)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const page = getInitialPage(params);
+    const region = getInitialRegion(params);
+    const district = getInitialDistrict(params, region);
+    const type = getInitialType(params);
+    const ramenTypeId = params.get("ramenTypeId") ?? undefined;
+    const ramenTypeName = ramenTypeId ? params.get("ramenTypeName") ?? params.get("tag") ?? "추천 라멘" : undefined;
+    const sort = params.get("sort");
+    const parsedSortBy = isSortOption(sort) ? sort : DEFAULT_SORT;
+    const keyword = params.get("keyword") ?? params.get("q") ?? "";
+
+    if (page !== 0) setCurrentPage(page);
+    if (region !== ALL_FILTER) setActiveRegion(region);
+    if (district !== ALL_FILTER) setActiveDistrict(district);
+    if (type !== ALL_TYPE_FILTER) setActiveType(type);
+    if (ramenTypeId !== undefined) setActiveRamenTypeId(ramenTypeId);
+    if (ramenTypeName !== undefined) setActiveRamenTypeName(ramenTypeName);
+    if (parsedSortBy !== DEFAULT_SORT) setSortBy(parsedSortBy);
+    if (keyword !== "") {
+      setSearchQuery(keyword);
+      setDebouncedSearchQuery(keyword);
+    }
+    if (page !== 0) setPageWindowStart(Math.floor(page / MAX_VISIBLE_PAGES) * MAX_VISIBLE_PAGES);
+
+    setTimeout(() => {
+      isFirstFilterSyncRef.current = false;
+    }, 0);
+  }, []);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -130,7 +153,6 @@ export default function ShopsListPage() {
 
   useEffect(() => {
     if (isFirstFilterSyncRef.current) {
-      isFirstFilterSyncRef.current = false;
       return;
     }
 
@@ -139,6 +161,10 @@ export default function ShopsListPage() {
   }, [activeRegion, activeDistrict, activeType, activeRamenTypeId, sortBy, debouncedSearchQuery]);
 
   useEffect(() => {
+    if (isFirstFilterSyncRef.current) {
+      return;
+    }
+
     const params = new URLSearchParams();
 
     if (currentPage > 0) params.set("page", String(currentPage + 1));

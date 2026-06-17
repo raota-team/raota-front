@@ -12,8 +12,8 @@ export const useRamenShopDetail = (shopId: number, initialShop?: Shop) => {
   return useQuery({
     queryKey: ["ramen-shop-detail", shopId, isLoggedIn ? "auth" : "guest", memberId ?? null],
     queryFn: () => getRamenShopDetail(shopId, memberId),
-    enabled: Number.isFinite(shopId) && !isAuthChecking,
-    initialData: isLoggedIn ? undefined : initialShop,
-    refetchOnMount: "always",
+    enabled: Number.isFinite(shopId) && !isAuthChecking && (isLoggedIn || !initialShop),
+    initialData: initialShop,
+    refetchOnMount: isLoggedIn ? "always" : false,
   });
 };

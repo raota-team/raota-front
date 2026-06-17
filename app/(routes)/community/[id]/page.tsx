@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 import { getCommunityPostDetail } from '@/lib/api/community';
 import CommunityDetailClient from './CommunityDetailClient';
 
@@ -14,10 +15,10 @@ const getPostId = async (params: Props['params']) => {
   return Number.isInteger(postId) && postId > 0 ? postId : null;
 };
 
-const getExistingPost = async (postId: number) => {
+const getExistingPost = cache(async (postId: number) => {
   const res = await getCommunityPostDetail(postId);
   return res?.data ?? null;
-};
+});
 
 // 1. 동적 메타데이터 생성 (SEO의 핵심)
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -86,9 +87,9 @@ export default async function Page({ params }: Props) {
   try {
     const post = await getExistingPost(postId);
     if (!post) notFound();
+
+    return <CommunityDetailClient params={params} initialPost={post} />;
   } catch (error) {
     notFound();
   }
-
-  return <CommunityDetailClient params={params} />;
 }

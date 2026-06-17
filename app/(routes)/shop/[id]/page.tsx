@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { cache } from 'react';
 import { getRamenShopDetail } from '@/lib/api/ramen-shops';
 import ShopDetailClient from './ShopDetailClient';
 import type { Shop } from '@/app/types';
@@ -8,6 +9,8 @@ interface Props {
 }
 
 const SITE_URL = 'https://www.raota.net';
+
+const getCachedRamenShopDetail = cache((shopId: number) => getRamenShopDetail(shopId));
 
 const compactText = (value: string) => value.replace(/\s+/g, ' ').trim();
 
@@ -127,7 +130,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   try {
     // memberId는 0이나 임시값으로 보내 메타데이터만 추출 (비로그인 크롤러 기준)
-    const shop = await getRamenShopDetail(shopId);
+    const shop = await getCachedRamenShopDetail(shopId);
 
     const title = getShopTitle(shop);
     const description = getShopDescription(shop);
@@ -171,7 +174,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Page({ params }: Props) {
   const { id } = await params;
   const shopId = Number(id);
-  const shop = await getRamenShopDetail(shopId);
+  const shop = await getCachedRamenShopDetail(shopId);
 
   return (
     <>

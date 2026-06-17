@@ -22,6 +22,11 @@ import Loading from '@/app/loading';
 
 const hotPostCardClass = "flex h-24 w-[13.5rem] flex-shrink-0 snap-start gap-2.5 rounded-sm border border-stone-200 bg-white p-3 transition-colors hover:border-[#e60000] sm:h-28 sm:w-[17rem] sm:gap-3 md:w-[calc((100%-1.5rem)/3)] md:max-w-none";
 
+interface CommunityDetailPageProps {
+  params: Promise<{ id: string }>;
+  initialPost?: any;
+}
+
 const enhanceContentImages = (html: string, title: string) => {
   let imageIndex = 0;
   const escapedTitle = title.replace(/"/g, '&quot;');
@@ -208,11 +213,11 @@ const CommentForm = memo(function CommentForm({
   );
 });
 
-export default function CommunityDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function CommunityDetailPage({ params, initialPost }: CommunityDetailPageProps) {
   const resolvedParams = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { showToast, showConfirm, isLoggedIn, currentUser } = useApp();
+  const { showToast, showConfirm, isLoggedIn, isAuthChecking, currentUser } = useApp();
   const postId = Number(resolvedParams.id);
 
   const [replyTo, setReplyTo] = useState<{ id: number; name: string } | null>(null);
@@ -221,9 +226,11 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
 
   // 1. 게시글 상세 조회
   const { data: postData, isLoading: isPostLoading, isError: isPostError } = useQuery({
-    queryKey: ['community-post', postId],
+    queryKey: ['community-post', postId, isLoggedIn ? 'auth' : 'guest', currentUser?.user_id ?? currentUser?.id ?? null],
     queryFn: () => getCommunityPostDetail(postId),
-    enabled: !isNaN(postId),
+    enabled: !isNaN(postId) && !isAuthChecking && (isLoggedIn || !initialPost),
+    initialData: initialPost ? { data: initialPost } : undefined,
+    refetchOnMount: isLoggedIn ? 'always' : false,
   });
 
   // 2. 댓글 목록 조회
@@ -271,8 +278,9 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
     mutationFn: () => togglePostLike(postId),
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ['community-post', postId] });
-      const previousPostData = queryClient.getQueryData(['community-post', postId]);
-      queryClient.setQueryData(['community-post', postId], (old: any) => {
+      const postQueryKey = ['community-post', postId, isLoggedIn ? 'auth' : 'guest', currentUser?.user_id ?? currentUser?.id ?? null];
+      const previousPostData = queryClient.getQueryData(postQueryKey);
+      queryClient.setQueryData(postQueryKey, (old: any) => {
         if (!old?.data) return old;
         const currentStatus = old.data.isLiked;
         return {
@@ -287,7 +295,8 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
       return { previousPostData };
     },
     onError: (err, variables, context) => {
-      if (context?.previousPostData) queryClient.setQueryData(['community-post', postId], context.previousPostData);
+      const postQueryKey = ['community-post', postId, isLoggedIn ? 'auth' : 'guest', currentUser?.user_id ?? currentUser?.id ?? null];
+      if (context?.previousPostData) queryClient.setQueryData(postQueryKey, context.previousPostData);
       showToast('좋아요 처리에 실패했습니다.', 'error');
     },
     onSettled: () => {
