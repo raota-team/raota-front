@@ -355,3 +355,11 @@ export const reportShop = async (shopId: number, data: {
 
 export const getTotalVotes = (shop: Shop) =>
   shop.menus.reduce((acc: number, curr) => acc + curr.votes, 0);
+
+/** 가게 조회수 증가 */
+export const increaseShopViewCount = async (shopId: number): Promise<void> => {
+  await apiClient(
+    buildApiUrl(`/ramen-shops/${shopId}/views`),
+    { method: "POST" }
+  );
+};

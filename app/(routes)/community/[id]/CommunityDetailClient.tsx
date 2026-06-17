@@ -16,6 +16,7 @@ import {
   deleteCommunityPost,
   getCommunityPosts,
   type CommunityPostCard,
+  increasePostViewCount,
 } from '@/lib/api/community';
 import { useApp } from '@/app/context/AppContext';
 import Loading from '@/app/loading';
@@ -223,6 +224,15 @@ export default function CommunityDetailPage({ params, initialPost }: CommunityDe
   const [replyTo, setReplyTo] = useState<{ id: number; name: string } | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const hotPostsRef = useRef<HTMLDivElement>(null);
+
+  // 조회수 증가 API 호출 (화면이 완전히 뜬 후 단 한 번 호출)
+  useEffect(() => {
+    if (postId) {
+      increasePostViewCount(postId).catch((err) => {
+        console.error("Failed to increase post view count:", err);
+      });
+    }
+  }, [postId]);
 
   // 1. 게시글 상세 조회
   const { data: postData, isLoading: isPostLoading, isError: isPostError } = useQuery({

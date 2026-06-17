@@ -130,3 +130,10 @@ export const getRamenShopOptions = async (keyword?: string, page = 0, sort?: Ram
     query: { keyword, page, size: 100, sort }
   });
 };
+
+/** 게시글 조회수 증가 */
+export const increasePostViewCount = async (postId: number): Promise<void> => {
+  await apiClient<any>(`/community/posts/${postId}/views`, {
+    method: "POST",
+  });
+};

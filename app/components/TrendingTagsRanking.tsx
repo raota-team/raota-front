@@ -15,7 +15,7 @@ const containerVariants = {
       staggerChildren: 0.08,
     },
   },
-};
+} as const;
 
 const itemVariants = {
   hidden: { opacity: 0, y: 12 },
@@ -28,7 +28,7 @@ const itemVariants = {
       damping: 18,
     },
   },
-};
+} as const;
 
 export default function TrendingTagsRanking() {
   const { data: popularShopsData, isLoading } = usePopularShopsToday(5);

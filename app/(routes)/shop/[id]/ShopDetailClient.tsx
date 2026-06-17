@@ -27,7 +27,7 @@ import { Shop, UserPhoto, MenuItem } from "../../../types";
 import ProgressBar from "../../../components/ProgressBar";
 import Loading from "@/app/loading";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
-import { toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture, deleteProofPicture } from "@/lib/api/ramen-shops";
+import { toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture, deleteProofPicture, increaseShopViewCount } from "@/lib/api/ramen-shops";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
 import { ApiClientError } from "@/lib/api/client";
@@ -101,6 +101,15 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       refreshShopData();
     }
   }, [data]);
+
+  // 조회수 증가 API 호출 (화면이 완전히 뜬 후 단 한 번 호출)
+  useEffect(() => {
+    if (shopId) {
+      increaseShopViewCount(shopId).catch((err) => {
+        console.error("Failed to increase shop view count:", err);
+      });
+    }
+  }, [shopId]);
 
   const handleVote = async (menu: any) => {
     if (!menu?.id || !shopDetail) return;
