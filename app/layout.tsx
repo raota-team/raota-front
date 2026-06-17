@@ -117,6 +117,11 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
+  verification: {
+    other: {
+      "naver-site-verification": "93b875d2b1909492b7875d7ef5f80433141f2617",
+    },
+  },
 };
 
 export default function RootLayout({
