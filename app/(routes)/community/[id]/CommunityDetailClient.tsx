@@ -224,10 +224,12 @@ export default function CommunityDetailPage({ params, initialPost }: CommunityDe
   const [replyTo, setReplyTo] = useState<{ id: number; name: string } | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const hotPostsRef = useRef<HTMLDivElement>(null);
+  const lastIncrementedId = useRef<number | null>(null);
 
   // 조회수 증가 API 호출 (화면이 완전히 뜬 후 단 한 번 호출)
   useEffect(() => {
-    if (postId) {
+    if (postId && lastIncrementedId.current !== postId) {
+      lastIncrementedId.current = postId;
       increasePostViewCount(postId).catch((err) => {
         console.error("Failed to increase post view count:", err);
       });

@@ -81,6 +81,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [isVoteAccordionOpen, setIsVoteAccordionOpen] = useState(false);
   const photoSectionRef = useRef<HTMLDivElement | null>(null);
+  const lastIncrementedId = useRef<number | null>(null);
 
   const refreshShopData = async () => {
     try {
@@ -104,7 +105,8 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
   // 조회수 증가 API 호출 (화면이 완전히 뜬 후 단 한 번 호출)
   useEffect(() => {
-    if (shopId) {
+    if (shopId && lastIncrementedId.current !== shopId) {
+      lastIncrementedId.current = shopId;
       increaseShopViewCount(shopId).catch((err) => {
         console.error("Failed to increase shop view count:", err);
       });
