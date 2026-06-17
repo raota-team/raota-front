@@ -6,13 +6,14 @@ import { useApp } from "@/app/context/AppContext";
 import type { Shop } from "@/app/types";
 
 export const useRamenShopDetail = (shopId: number, initialShop?: Shop) => {
-  const { currentUser } = useApp();
+  const { currentUser, isAuthChecking, isLoggedIn } = useApp();
   const memberId = currentUser?.user_id ?? currentUser?.id;
 
   return useQuery({
-    queryKey: ["ramen-shop-detail", shopId, memberId],
+    queryKey: ["ramen-shop-detail", shopId, isLoggedIn ? "auth" : "guest", memberId ?? null],
     queryFn: () => getRamenShopDetail(shopId, memberId),
-    enabled: Number.isFinite(shopId),
-    initialData: initialShop,
+    enabled: Number.isFinite(shopId) && !isAuthChecking,
+    initialData: isLoggedIn ? undefined : initialShop,
+    refetchOnMount: "always",
   });
 };

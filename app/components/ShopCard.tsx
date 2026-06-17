@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
-import { MapPin, Camera } from 'lucide-react';
+import { MapPin, Camera, Heart } from 'lucide-react';
 import { Shop } from '@/app/types';
 
 interface ShopCardProps {
@@ -18,6 +18,16 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
       href={`/shop/${shop.id}`}
       className="group relative flex min-h-32 cursor-pointer flex-row overflow-hidden rounded-md border border-stone-200 bg-white transition-colors duration-200 hover:border-[#e60000] hover:bg-stone-50 md:min-h-0 md:flex-col"
     >
+      <span
+        aria-label={shop.isBookmarked ? '북마크한 가게' : '북마크하지 않은 가게'}
+        className={`absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border text-white shadow-sm transition-colors md:right-3 md:top-3 ${
+          shop.isBookmarked
+            ? 'border-[#e60000] bg-[#e60000]'
+            : 'border-white/70 bg-[#25282b]/45'
+        }`}
+      >
+        <Heart className={`h-4 w-4 ${shop.isBookmarked ? 'fill-current' : ''}`} />
+      </span>
       <div className="relative min-h-32 w-32 flex-shrink-0 self-stretch overflow-hidden rounded-l-md md:h-48 md:min-h-0 md:w-full md:self-auto md:rounded-l-none md:rounded-t-md bg-stone-100 flex items-center justify-center">
         {shop.imageUrl && useOriginalImage ? (
           <img
