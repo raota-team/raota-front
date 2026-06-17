@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Eye, Search } from 'lucide-react';
+import { Eye } from 'lucide-react';
 
 import { usePopularShopsToday } from '@/hooks/queries/useDiscovery';
 
@@ -79,8 +79,7 @@ export default function TrendingTagsRanking() {
                   <span className={`w-4 text-xs md:text-sm font-black transition-colors duration-300 ${i < 3 ? 'text-[#e60000]' : 'text-[#737373]'}`}>
                     {i + 1}
                   </span>
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <Search className="h-3 w-3 text-stone-300 flex-shrink-0" />
+                  <div className="flex items-center min-w-0">
                     <span className="text-xs md:text-sm font-bold text-[#25282b] truncate group-hover:text-[#e60000] transition-colors">
                       {shop.name}
                     </span>
@@ -115,8 +114,7 @@ export default function TrendingTagsRanking() {
                 <span className={`w-4 text-xs md:text-sm font-black ${index < 3 ? 'text-[#e60000]' : 'text-[#737373]'}`}>
                   {index + 1}
                 </span>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Search className="h-3 w-3 text-stone-300 flex-shrink-0" />
+                <div className="flex items-center min-w-0">
                   <span className="text-xs md:text-sm font-bold text-[#25282b] truncate">
                     {shop.name}
                   </span>
@@ -135,8 +133,7 @@ export default function TrendingTagsRanking() {
                 <span className="w-4 text-xs md:text-sm font-black text-[#e60000]">
                   1
                 </span>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Search className="h-3 w-3 text-stone-300 flex-shrink-0" />
+                <div className="flex items-center min-w-0">
                   <span className="text-xs md:text-sm font-bold text-[#25282b] truncate">
                     {shops[0].name}
                   </span>
