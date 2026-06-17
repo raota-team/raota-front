@@ -23,10 +23,10 @@ export interface WeekendRecommendationResponse {
   reason: string;
 }
 
-export interface TrendingTagResponse {
-  rank: number;
+export interface PopularShopTodayResponse {
+  ramenShopId: number;
   name: string;
-  trend: "up" | "down" | "new" | "same";
+  viewCount: number;
 }
 
 export interface CommunityHomePostResponse {
@@ -49,8 +49,8 @@ export const getRecentVerifiedShops = async (limit: number = 4): Promise<{ succe
   return apiClient<{ success: boolean; data: RecentVerifiedShopResponse[] }>(`/api/v1/shops/recent-verified?limit=${limit}`);
 };
 
-export const getTrendingTags = async (limit: number = 5): Promise<{ success: boolean; data: TrendingTagResponse[] }> => {
-  return apiClient<{ success: boolean; data: TrendingTagResponse[] }>(`/api/v1/discovery/trending-tags?limit=${limit}`);
+export const getPopularShopsToday = async (limit: number = 5): Promise<{ success: boolean; data: PopularShopTodayResponse[] }> => {
+  return apiClient<{ success: boolean; data: PopularShopTodayResponse[] }>(`/api/v1/discovery/popular-shops/today?limit=${limit}`);
 };
 
 export const getHomeTips = async (category: string = "tip", limit: number = 3): Promise<{ success: boolean; data: CommunityHomePostResponse[] }> => {

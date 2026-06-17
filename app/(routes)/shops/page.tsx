@@ -11,12 +11,12 @@ const MAX_VISIBLE_PAGES = 5;
 const ALL_FILTER = "전체";
 const ALL_TYPE_FILTER = "전체";
 const SORT_OPTIONS = [
-  { value: "POPULAR", label: "인기순" },
+  { value: "VIEWS", label: "조회순" },
   { value: "NAME", label: "이름순" },
   { value: "VISITS", label: "방문순" },
 ] as const;
 type SortOption = (typeof SORT_OPTIONS)[number]["value"];
-const DEFAULT_SORT = "POPULAR";
+const DEFAULT_SORT = "VIEWS";
 const REGIONS = [
   ALL_FILTER,
   "서울",

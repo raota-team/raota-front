@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   MessageCircle,
+  Eye,
   Heart,
   ChevronDown,
   PenSquare,
@@ -103,6 +104,10 @@ function Engagement({ post }: { post: CommunityPostCard }) {
       <span className="flex items-center gap-1">
         <MessageCircle className="h-3.5 w-3.5" />
         {post.commentCount}
+      </span>
+      <span className="flex items-center gap-1">
+        <Eye className="h-3.5 w-3.5" />
+        {post.viewCount}
       </span>
     </div>
   );

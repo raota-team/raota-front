@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
-import { MapPin, Camera } from 'lucide-react';
+import { Eye, MapPin, Camera } from 'lucide-react';
 import { Shop } from '@/app/types';
 
 interface ShopCardProps {
@@ -54,7 +54,10 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
         </div>
         <div className="mt-2 flex min-w-0 items-center justify-between gap-2 border-t border-stone-200 pt-2 text-[10px] font-medium text-[#7e7e7e] transition-colors group-hover:text-[#25282b] md:mt-6 md:pt-4 md:text-xs">
           <div className="flex min-w-0 items-center"><MapPin className="mr-1 h-3 w-3 flex-shrink-0" /><span className="truncate">{shop.location}</span></div>
-          <div className="flex flex-shrink-0 items-center"><Camera className="mr-1 h-3 w-3" />{shop.stats.visit_count}</div>
+          <div className="flex flex-shrink-0 items-center gap-2">
+            <span className="flex items-center"><Eye className="mr-1 h-3 w-3" />{shop.stats.view_count}</span>
+            <span className="flex items-center"><Camera className="mr-1 h-3 w-3" />{shop.stats.visit_count}</span>
+          </div>
         </div>
       </div>
     </Link>

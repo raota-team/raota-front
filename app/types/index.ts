@@ -43,6 +43,7 @@ export interface BusinessHours {
 
 export interface ShopStats {
   visit_count: number;
+  view_count: number;
   bookmark_count: number;
 }
 

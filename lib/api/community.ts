@@ -1,6 +1,6 @@
 import { apiClient } from "./client";
 
-export type RamenShopSortType = "LATEST" | "POPULAR" | "NAME" | "VISITS";
+export type RamenShopSortType = "LATEST" | "NAME" | "VISITS" | "VIEWS";
 
 export interface CommunityPostCard {
   postId: number;
@@ -16,6 +16,7 @@ export interface CommunityPostCard {
   createdAt: string;
   likeCount: number;
   commentCount: number;
+  viewCount: number;
 }
 
 export interface CommunityPostDetail extends CommunityPostCard {

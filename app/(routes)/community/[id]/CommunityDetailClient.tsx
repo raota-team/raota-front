@@ -4,7 +4,7 @@ import { memo, useState, use, useEffect, useMemo, useRef, useCallback } from 're
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Heart, MessageCircle, Send, Store, Loader2, Trash2, Edit3, CornerDownRight, X, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Eye, Heart, MessageCircle, Send, Store, Loader2, Trash2, Edit3, CornerDownRight, X, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getCommunityPostDetail, 
@@ -487,8 +487,9 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
             <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-white text-white' : ''}`} /> 
             <span>{post.likeCount}</span>
           </button>
-          <div className="flex items-center gap-2 text-sm font-bold text-stone-600 md:text-base">
-            <MessageCircle className="w-4 h-4" /> <span>댓글 {comments.length}</span>
+          <div className="flex items-center gap-4 text-sm font-bold text-stone-600 md:text-base">
+            <span className="flex items-center gap-2"><Eye className="w-4 h-4" /> 조회 {post.viewCount}</span>
+            <span className="flex items-center gap-2"><MessageCircle className="w-4 h-4" /> 댓글 {comments.length}</span>
           </div>
         </div>
       </article>
@@ -610,6 +611,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
                   <div className="mt-auto flex items-center gap-3 text-[11px] font-bold text-stone-600 sm:text-xs">
                     <span className="flex items-center gap-1"><Heart className="h-3.5 w-3.5" /> {hotPost.likeCount}</span>
                     <span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" /> {hotPost.commentCount}</span>
+                    <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" /> {hotPost.viewCount}</span>
                   </div>
                 </div>
               </Link>

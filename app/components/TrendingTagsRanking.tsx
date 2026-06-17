@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronUp, Hash, Search } from 'lucide-react';
+import { Eye, Search } from 'lucide-react';
 
-import { useTrendingTags } from '@/hooks/queries/useDiscovery';
+import { usePopularShopsToday } from '@/hooks/queries/useDiscovery';
 
 export default function TrendingTagsRanking() {
-  const { data: trendingData, isLoading } = useTrendingTags(5);
-  const tags = trendingData?.data || [];
+  const { data: popularShopsData, isLoading } = usePopularShopsToday(5);
+  const shops = popularShopsData?.data || [];
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(true);
@@ -31,14 +31,14 @@ export default function TrendingTagsRanking() {
 
   // 무한 롤링 트릭 (모바일 전용)
   useEffect(() => {
-    if (tags.length > 0 && currentIndex === tags.length) {
+    if (shops.length > 0 && currentIndex === shops.length) {
       const resetTimer = setTimeout(() => {
         setIsTransitioning(false);
         setCurrentIndex(0);
       }, 500);
       return () => clearTimeout(resetTimer);
     }
-  }, [currentIndex, tags.length]);
+  }, [currentIndex, shops.length]);
 
   return (
     <div className="rounded-md bg-white p-4 ring-1 ring-[#f2f2f2] md:p-6">
@@ -64,32 +64,33 @@ export default function TrendingTagsRanking() {
           </div>
         ) : (
           <ol className="space-y-0 w-full m-0 p-0">
-            {tags.map((tag, i) => (
+            {shops.map((shop, i) => (
             <li 
-              key={`pc-${tag.name}`} 
-              className={`flex items-center justify-between rounded-md bg-transparent px-2 py-2
+              key={`pc-${shop.ramenShopId}`}
+              className={`rounded-md bg-transparent
                 transition-opacity duration-300 ease-out md:py-3
                 ${mounted ? 'opacity-100' : 'opacity-0'}
-                ${i !== tags.length - 1 ? 'border-b border-[#f2f2f2]/50' : ''}
+                ${i !== shops.length - 1 ? 'border-b border-[#f2f2f2]/50' : ''}
               `}
               style={{ transitionDelay: mounted ? '0ms' : `${i * 100}ms` }}
             >
-              <div className="flex items-center gap-3 min-w-0">
-                <span className={`w-4 text-xs md:text-sm font-black transition-colors duration-300 ${tag.rank <= 3 ? 'text-[#e60000]' : 'text-[#737373]'}`}>
-                  {tag.rank}
-                </span>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Search className="h-3 w-3 text-stone-300 flex-shrink-0" />
-                  <span className="text-xs md:text-sm font-bold text-[#25282b] truncate group-hover:text-[#e60000] cursor-pointer transition-colors">
-                    {tag.name}
+              <Link href={`/shop/${shop.ramenShopId}`} className="group flex items-center justify-between px-2 py-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className={`w-4 text-xs md:text-sm font-black transition-colors duration-300 ${i < 3 ? 'text-[#e60000]' : 'text-[#737373]'}`}>
+                    {i + 1}
                   </span>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Search className="h-3 w-3 text-stone-300 flex-shrink-0" />
+                    <span className="text-xs md:text-sm font-bold text-[#25282b] truncate group-hover:text-[#e60000] transition-colors">
+                      {shop.name}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div className="flex-shrink-0 ml-2 flex items-center">
-                {tag.trend === 'up' && <ChevronUp className="h-3 w-3 text-[#e60000]" />}
-                {tag.trend === 'new' && <span className="text-[8px] font-black text-[#e60000]">NEW</span>}
-                {tag.trend === 'down' && <span className="text-[10px] font-black text-stone-300">-</span>}
-              </div>
+                <div className="flex-shrink-0 ml-2 flex items-center gap-1 text-[10px] font-black text-stone-400">
+                  <Eye className="h-3 w-3" />
+                  {shop.viewCount.toLocaleString()}
+                </div>
+              </Link>
             </li>
           ))}
         </ol>
@@ -108,46 +109,44 @@ export default function TrendingTagsRanking() {
           className={`absolute top-0 left-0 w-full ${isTransitioning ? 'transition-transform duration-500 ease-in-out' : ''}`}
           style={{ transform: `translateY(-${currentIndex * 36}px)` }}
         >
-          {tags.map((tag) => (
-            <div key={`mobile-roll-${tag.name}`} className="flex items-center justify-between h-[36px] px-1">
+          {shops.map((shop, index) => (
+            <Link key={`mobile-roll-${shop.ramenShopId}`} href={`/shop/${shop.ramenShopId}`} className="flex items-center justify-between h-[36px] px-1">
               <div className="flex items-center gap-3 min-w-0">
-                <span className={`w-4 text-xs md:text-sm font-black ${tag.rank <= 3 ? 'text-[#e60000]' : 'text-[#737373]'}`}>
-                  {tag.rank}
+                <span className={`w-4 text-xs md:text-sm font-black ${index < 3 ? 'text-[#e60000]' : 'text-[#737373]'}`}>
+                  {index + 1}
                 </span>
                 <div className="flex items-center gap-1.5 min-w-0">
                   <Search className="h-3 w-3 text-stone-300 flex-shrink-0" />
-                  <span className="text-xs md:text-sm font-bold text-[#25282b] truncate cursor-pointer">
-                    {tag.name}
+                  <span className="text-xs md:text-sm font-bold text-[#25282b] truncate">
+                    {shop.name}
                   </span>
                 </div>
               </div>
-              <div className="flex-shrink-0 ml-2">
-                {tag.trend === 'up' && <ChevronUp className="h-3 w-3 text-[#e60000]" />}
-                {tag.trend === 'new' && <span className="text-[8px] font-black text-[#e60000]">NEW</span>}
-                {tag.trend === 'down' && <span className="text-[10px] font-black text-stone-300">-</span>}
+              <div className="flex-shrink-0 ml-2 flex items-center gap-1 text-[10px] font-black text-stone-400">
+                <Eye className="h-3 w-3" />
+                {shop.viewCount.toLocaleString()}
               </div>
-            </div>
+            </Link>
           ))}
           {/* 무한 롤링을 위한 첫 번째 아이템 복제 */}
-          {tags.length > 0 && (
-            <div className="flex items-center justify-between h-[36px] px-1">
+          {shops.length > 0 && (
+            <Link href={`/shop/${shops[0].ramenShopId}`} className="flex items-center justify-between h-[36px] px-1">
               <div className="flex items-center gap-3 min-w-0">
-                <span className={`w-4 text-xs md:text-sm font-black ${tags[0].rank <= 3 ? 'text-[#e60000]' : 'text-[#737373]'}`}>
-                  {tags[0].rank}
+                <span className="w-4 text-xs md:text-sm font-black text-[#e60000]">
+                  1
                 </span>
                 <div className="flex items-center gap-1.5 min-w-0">
                   <Search className="h-3 w-3 text-stone-300 flex-shrink-0" />
-                  <span className="text-xs md:text-sm font-bold text-[#25282b] truncate cursor-pointer">
-                    {tags[0].name}
+                  <span className="text-xs md:text-sm font-bold text-[#25282b] truncate">
+                    {shops[0].name}
                   </span>
                 </div>
               </div>
-              <div className="flex-shrink-0 ml-2">
-                {tags[0].trend === 'up' && <ChevronUp className="h-3 w-3 text-[#e60000]" />}
-                {tags[0].trend === 'new' && <span className="text-[8px] font-black text-[#e60000]">NEW</span>}
-                {tags[0].trend === 'down' && <span className="text-[10px] font-black text-stone-300">-</span>}
+              <div className="flex-shrink-0 ml-2 flex items-center gap-1 text-[10px] font-black text-stone-400">
+                <Eye className="h-3 w-3" />
+                {shops[0].viewCount.toLocaleString()}
               </div>
-            </div>
+            </Link>
           )}
         </div>
         )}

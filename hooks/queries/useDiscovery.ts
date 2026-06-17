@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getDiscoveryStats,
   getRecentVerifiedShops,
-  getTrendingTags,
+  getPopularShopsToday,
   getHomeTips,
   getWeekendRecommendations,
   generateWeekendRecommendations,
@@ -26,10 +26,10 @@ export const useRecentVerifiedShops = (limit: number = 4) => {
   });
 };
 
-export const useTrendingTags = (limit: number = 5) => {
+export const usePopularShopsToday = (limit: number = 5) => {
   return useQuery({
-    queryKey: ["discovery", "trending-tags", limit],
-    queryFn: () => getTrendingTags(limit),
+    queryKey: ["discovery", "popular-shops-today", limit],
+    queryFn: () => getPopularShopsToday(limit),
     staleTime: 1000 * 60 * 1, // 1 minute
   });
 };
