@@ -360,8 +360,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           )}
         </div>
 
-        <div className="px-6 pb-6 md:px-10 md:pb-10 flex flex-col md:flex-row items-center md:items-start gap-6 -mt-16 md:-mt-20 relative z-30">
-          <div className="relative">
+        <div className="px-6 pb-6 md:px-10 md:pb-10 flex flex-col md:flex-row items-center md:items-start gap-6 -mt-16 md:mt-0 relative z-30">
+          <div className="relative md:-mt-20">
             <div className="relative h-32 w-32 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-white md:h-40 md:w-40" onClick={() => handleZoomImage(editForm.profileImage || profile.profile_image_url, '프로필 이미지')}>
               {(editForm.profileImage || (profile.profile_image_url && !markedForDelete.profile)) ? (
                  <img src={editForm.profileImage || profile.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
