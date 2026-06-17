@@ -17,7 +17,6 @@ import {
   Images,
   UserRound,
   Sparkles,
-  MapPinned,
   ArrowRight,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -205,7 +204,6 @@ export default function CommunityPage() {
   const posts = allPosts.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
   const visiblePages = getVisiblePages(pageInfo.totalPages, currentPage);
   const featuredPosts = allPosts.slice(0, 3);
-  const reviewShopPosts = allPosts.filter((post) => post.category === 'REVIEW' && post.storeName).slice(0, 4);
 
   useEffect(() => {
     const fetchShopOptions = async () => {
@@ -545,32 +543,6 @@ export default function CommunityPage() {
             >
               추천받기
             </Link>
-          </section>
-
-          <section className="rounded-md border border-stone-200 bg-white p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <MapPinned className="h-4 w-4 text-[#e60000]" />
-              <h3 className="text-sm font-black uppercase tracking-widest text-[#25282b]">최근 리뷰된 가게</h3>
-            </div>
-            <div className="space-y-3">
-              {reviewShopPosts.length > 0 ? (
-                reviewShopPosts.map((post) => (
-                  <Link
-                    key={post.postId}
-                    href={post.postId > 0 ? `/community/${post.postId}` : '/community'}
-                    className="block border-t border-stone-100 pt-3 first:border-t-0 first:pt-0"
-                  >
-                    <p className="truncate text-sm font-black text-[#25282b] transition-colors hover:text-[#e60000]">
-                      {post.storeName}
-                    </p>
-                  </Link>
-                ))
-              ) : (
-                <p className="text-sm leading-6 text-stone-500">
-                  맛집후기 탭에서 가게가 연결된 글을 모아볼 수 있어요.
-                </p>
-              )}
-            </div>
           </section>
         </aside>
       </div>
