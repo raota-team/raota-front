@@ -2,8 +2,33 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Flame } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 import { usePopularShopsToday } from '@/hooks/queries/useDiscovery';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 150,
+      damping: 18,
+    },
+  },
+};
 
 export default function TrendingTagsRanking() {
   const { data: popularShopsData, isLoading } = usePopularShopsToday(5);
@@ -11,12 +36,6 @@ export default function TrendingTagsRanking() {
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(true);
-  const [mounted, setMounted] = useState(false);
-
-  // 컴포넌트 마운트 시 (PC 등장 애니메이션용)
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // 롤링 애니메이션 타이머 (모바일 전용)
   useEffect(() => {
@@ -43,6 +62,7 @@ export default function TrendingTagsRanking() {
     <div className="rounded-md bg-white p-4 ring-1 ring-[#f2f2f2] md:p-6">
       <div className="mb-3 flex items-center justify-between border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
         <h2 className="font-black text-base md:text-lg text-[#25282b] flex items-center gap-2">
+          <Flame className="h-[18px] w-[18px] text-[#e60000] fill-[#e60000]/10 animate-pulse" />
           오늘 많이 본 라멘집
         </h2>
       </div>
@@ -50,31 +70,36 @@ export default function TrendingTagsRanking() {
       {/* PC: 모든 순위 리스트 표시 + 순차적 등장 애니메이션 */}
       <div className="hidden lg:block relative">
         {isLoading ? (
-          <div className="space-y-4 py-2">
+          <div className="space-y-0 py-1">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center justify-between animate-pulse">
-                <div className="flex items-center gap-3">
-                  <div className="h-4 w-4 bg-stone-200 rounded"></div>
-                  <div className="h-4 w-24 bg-stone-200 rounded"></div>
-                </div>
-                <div className="h-4 w-6 bg-stone-200 rounded"></div>
+              <div 
+                key={i} 
+                className={`flex items-center gap-3 px-2 py-2.5 animate-pulse
+                  ${i !== 4 ? 'border-b border-[#f2f2f2]/50' : ''}
+                `}
+              >
+                <div className="h-4 w-4 bg-stone-200 rounded"></div>
+                <div className="h-4 w-24 bg-stone-200 rounded"></div>
               </div>
             ))}
           </div>
         ) : (
-          <ol className="space-y-0 w-full m-0 p-0">
+          <motion.ol 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-0 w-full m-0 p-0"
+          >
             {shops.map((shop, i) => (
-            <li 
+            <motion.li 
               key={`pc-${shop.ramenShopId}`}
-              className={`rounded-md bg-transparent
-                transition-opacity duration-300 ease-out md:py-3
-                ${mounted ? 'opacity-100' : 'opacity-0'}
+              variants={itemVariants}
+              className={`rounded-md bg-transparent md:py-1
                 ${i !== shops.length - 1 ? 'border-b border-[#f2f2f2]/50' : ''}
               `}
-              style={{ transitionDelay: mounted ? '0ms' : `${i * 100}ms` }}
             >
-              <Link href={`/shop/${shop.ramenShopId}`} className="group flex items-center justify-between px-2 py-2">
-                <div className="flex items-center gap-3 min-w-0">
+              <Link href={`/shop/${shop.ramenShopId}`} className="group flex items-center px-2 py-1.5">
+                <div className="flex items-center gap-3 min-w-0 transition-transform duration-200 ease-out group-hover:translate-x-1">
                   <span className={`w-4 text-xs md:text-sm font-black transition-colors duration-300 ${i < 3 ? 'text-[#e60000]' : 'text-[#737373]'}`}>
                     {i + 1}
                   </span>
@@ -84,11 +109,10 @@ export default function TrendingTagsRanking() {
                     </span>
                   </div>
                 </div>
-
               </Link>
-            </li>
+            </motion.li>
           ))}
-        </ol>
+        </motion.ol>
         )}
       </div>
 
