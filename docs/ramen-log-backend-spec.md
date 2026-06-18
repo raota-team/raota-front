@@ -7,7 +7,7 @@
 필요 기능:
 
 - 공개 라멘로그 피드
-- 6개 단위 페이지네이션 및 무한스크롤
+- 8개 단위 페이지네이션 및 무한스크롤
 - 가게·키워드 필터와 최신순·인기순 정렬
 - 라멘로그 작성, 수정, 삭제
 - 공개·비공개 설정
@@ -51,7 +51,7 @@
     "items": [],
     "page": {
       "number": 0,
-      "size": 6,
+      "size": 8,
       "totalElements": 24,
       "totalPages": 4,
       "hasNext": true,
@@ -61,7 +61,7 @@
 }
 ```
 
-프론트엔드는 기본 `size=6`을 사용한다.
+프론트엔드는 기본 `size=8`을 사용한다.
 
 ## 4. 데이터 모델
 
@@ -156,7 +156,7 @@ API 필드명을 위 형식으로 확정하면 프론트 API 계층에서 한 �
 ### 5.1 공개 라멘로그 목록
 
 ```http
-GET /ramen-logs?page=0&size=6&sort=LATEST&shopId=1&keyword=돈코츠
+GET /ramen-logs?page=0&size=8&sort=LATEST&shopId=1&keyword=돈코츠
 ```
 
 인증:
@@ -170,7 +170,7 @@ Query:
 | 이름 | 타입 | 기본값 | 설명 |
 | --- | --- | --- | --- |
 | `page` | number | `0` | 0부터 시작 |
-| `size` | number | `6` | 프론트 기본 6 |
+| `size` | number | `8` | 프론트 기본 8 |
 | `sort` | enum | `LATEST` | `LATEST`, `POPULAR` |
 | `shopId` | number | - | 가게별 필터 |
 | `keyword` | string | - | 가게명, 메뉴명, 라멘 타입, 기록 내용 검색 |
@@ -297,21 +297,21 @@ Authorization: Bearer {token}
 ### 5.7 내 라멘로그 목록
 
 ```http
-GET /users/me/ramen-logs?page=0&size=6&shopId=1
+GET /users/me/ramen-logs?page=0&size=8&shopId=1
 Authorization: Bearer {token}
 ```
 
 - 공개·비공개 로그 모두 반환
 - 최신순 기본
 - `shopId` 필터 지원
-- 마이페이지 무한스크롤에서 6개 단위 호출
+- 마이페이지 무한스크롤에서 8개 단위 호출
 
 응답: `PageResponse<RamenLogResponse>`
 
 ### 5.8 사용자 라멘로그 목록
 
 ```http
-GET /users/{userId}/ramen-logs?page=0&size=6&shopId=1
+GET /users/{userId}/ramen-logs?page=0&size=8&shopId=1
 ```
 
 - 해당 사용자의 공개 로그만 반환
@@ -437,7 +437,7 @@ GET /users/{userId}/ramen-logs/shops
 ## 10. 구현 우선순위
 
 1. 라멘로그 테이블 및 CRUD
-2. 공개 목록 6개 페이지네이션
+2. 공개 목록 8개 페이지네이션
 3. 내 로그·사용자 로그 목록
 4. 좋아요 토글 및 인기순
 5. `shopId`, `keyword` 필터
@@ -447,10 +447,10 @@ GET /users/{userId}/ramen-logs/shops
 ## 11. 프론트 연동 완료 조건
 
 - 더미 `seedLogs` 제거
-- 공개 목록을 `GET /ramen-logs?size=6`으로 교체
+- 공개 목록을 `GET /ramen-logs?size=8`으로 교체
 - 작성·수정·삭제 후 목록 캐시 갱신
 - 좋아요 토글 응답으로 카드 수치 즉시 갱신
 - 마이페이지 `/photos` 호출을 `/ramen-logs` 호출로 교체
 - 비공개 로그는 내 로그에서만 확인 가능
 - 가게 상세에서 전달한 `shopId`로 작성 성공
-- 6개 단위 무한스크롤의 `hasNext` 종료 처리
+- 8개 단위 무한스크롤의 `hasNext` 종료 처리

@@ -145,7 +145,7 @@ const seedLogs: RamenLog[] = [
   },
 ];
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 8;
 const MOCK_PAGE_COUNT = 4;
 
 const logs: RamenLog[] = Array.from({ length: MOCK_PAGE_COUNT }, (_, page) =>

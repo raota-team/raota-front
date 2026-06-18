@@ -173,7 +173,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       let res;
       if (isOwnProfile) {
         switch (activeTab) {
-          case 'logs': res = await getMyPhotos(page, 6); break;
+          case 'logs': res = await getMyPhotos(page, 8); break;
           case 'visits': res = await getMyVisits(page); break;
           case 'bookmarks': res = await getMyBookmarks(page); break;
           case 'posts': res = await getMyPosts(page); break;
@@ -182,7 +182,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         }
       } else {
         switch (activeTab) {
-          case 'logs': res = await getUserPhotos(userIdFromPath, page, 6); break;
+          case 'logs': res = await getUserPhotos(userIdFromPath, page, 8); break;
           case 'posts': res = await getUserPosts(userIdFromPath, page); break;
           case 'comments': res = await getUserComments(userIdFromPath, page); break;
           case 'visits': res = await getUserVisits(userIdFromPath, page); break;
