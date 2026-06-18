@@ -58,14 +58,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: `${post.title} | 라오타 RAOTA 라멘 커뮤니티`,
         description: post.contentPreview,
         url: `/community/${postId}`,
-        images: post.imageUrl ? [post.imageUrl] : ['/hero-ramen.webp'],
+        images: post.imageUrl ? [post.imageUrl] : ['/hero-ramen.jpg'],
         type: 'article',
       },
       twitter: {
         card: 'summary_large_image',
         title: post.title,
         description: post.contentPreview,
-        images: post.imageUrl ? [post.imageUrl] : ['/hero-ramen.webp'],
+        images: post.imageUrl ? [post.imageUrl] : ['/hero-ramen.jpg'],
       },
     };
   } catch (error) {

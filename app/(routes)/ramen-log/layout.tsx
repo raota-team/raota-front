@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     url: '/ramen-log',
     images: [
       {
-        url: '/hero-ramen.webp',
+        url: '/hero-ramen.jpg',
         width: 1200,
         height: 630,
         alt: '라오타 RAOTA 라멘 로그',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: '라멘 로그 | 라오타 RAOTA',
     description: '유저들이 남긴 한 그릇 기록을 둘러보세요.',
-    images: ['/hero-ramen.webp'],
+    images: ['/hero-ramen.jpg'],
   },
 };
 

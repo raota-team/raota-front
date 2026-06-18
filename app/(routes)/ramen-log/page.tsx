@@ -105,7 +105,7 @@ const logs: RamenLog[] = [
     shop: { id: 8, name: '로쿠린샤 스타일', location: '서울 강남구' },
     menuName: '농후 츠케멘',
     ramenType: '츠케멘',
-    imageUrl: '/hero-ramen.webp',
+    imageUrl: '/hero-ramen.jpg',
     date: '2026-06-14',
     note: '면 씹는 맛이 확실하고 찍어 먹는 농도가 좋았다. 마지막 스프와리까지 만족.',
     tasteNotes: {
@@ -380,7 +380,7 @@ export default function RamenLogPage() {
       <section className="relative h-32 overflow-hidden md:h-[14rem]">
         <div className="absolute inset-0">
           <Image
-            src="/hero-ramen.webp"
+            src="/hero-ramen.jpg"
             alt="Ramen log background"
             fill
             priority
@@ -395,7 +395,7 @@ export default function RamenLogPage() {
               RAMEN LOG<span className="text-[#e60000]">.</span>
             </h1>
             <p className="mx-auto max-w-lg break-keep text-sm font-medium leading-relaxed text-white/85 sm:text-lg">
-              유저들이 남긴 한 그릇 기록을 모아봤어요. 사진, 메뉴, 맛의 감각까지 한 번에 둘러보세요.
+              사진, 메뉴, 맛의 감각으로 남긴 유저들의 생생한 라멘 로그를 둘러보세요.
             </p>
           </div>
         </div>

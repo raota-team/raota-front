@@ -87,7 +87,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: "/hero-ramen.webp", // 공유 시 보여줄 기본 이미지
+        url: "/hero-ramen.jpg", // 공유 시 보여줄 기본 이미지
         width: 1200,
         height: 630,
         alt: "라오타 RAOTA - 라멘에 진심인 사람들",
@@ -99,7 +99,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: ["/hero-ramen.webp"],
+    images: ["/hero-ramen.jpg"],
   },
   // 검색 엔진 로봇 설정
   robots: {
