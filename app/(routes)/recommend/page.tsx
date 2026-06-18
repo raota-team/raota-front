@@ -370,7 +370,7 @@ export default function RecommendPage() {
               </span>
             </h1>
             <p className="mx-auto max-w-md text-sm font-medium leading-relaxed text-white/85 sm:text-lg">
-              AI를 통해 추천받고 싶은 방식을 골라보세요.
+              AI를 통해 추천받고 싶은 방식을 골라보세요
             </p>
             {/* AI Disclaimer */}
             <p className="mx-auto mt-2 max-w-xl text-[10px] sm:text-xs font-medium leading-relaxed text-white/75">

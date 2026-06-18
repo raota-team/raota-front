@@ -91,7 +91,7 @@ export default function LandingContent() {
             </h1>
             <p className="mb-10 md:mb-12 max-w-lg text-base md:text-lg font-medium leading-relaxed text-white/80 break-keep">
               가게를 찾고, 한 그릇을 기록하고, <br className="hidden md:block" />
-              라멘을 좋아하는 사람들과 이야기를 나눠보세요.
+              라멘을 좋아하는 사람들과 이야기를 나눠보세요
             </p>
 
             {/* Mobile Only: Stats Counter under "도와드립니다." (Hidden to reduce clutter on mobile) */}
