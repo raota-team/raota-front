@@ -403,54 +403,56 @@ export default function RamenLogPage() {
 
       <div className="sticky top-14 z-20 border-b border-stone-200 bg-white/95 backdrop-blur md:top-16">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <div className="relative min-w-0 flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="가게, 메뉴, 맛 기록 검색"
-                className="h-11 w-full rounded-sm border border-stone-200 bg-white pl-9 pr-3 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000]"
-              />
-            </div>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col gap-3 min-w-0 flex-1 sm:flex-row sm:items-center">
+              <div className="relative min-w-0 w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="가게, 메뉴, 맛 기록 검색"
+                  className="h-11 w-full rounded-sm border border-stone-200 bg-white pl-9 pr-3 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000]"
+                />
+              </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
-              <label className="relative">
-                <select
-                  value={activeType}
-                  onChange={(event) => setActiveType(event.target.value)}
-                  className="h-11 w-full appearance-none rounded-sm border border-stone-200 bg-white pl-3 pr-9 text-sm font-black text-[#25282b] outline-none transition-colors focus:border-[#e60000] sm:w-32"
-                >
-                  {typeFilters.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-              </label>
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
+                <label className="relative">
+                  <select
+                    value={activeType}
+                    onChange={(event) => setActiveType(event.target.value)}
+                    className="h-11 w-full appearance-none rounded-sm border border-stone-200 bg-white pl-3 pr-9 text-sm font-black text-[#25282b] outline-none transition-colors focus:border-[#e60000] sm:w-32"
+                  >
+                    {typeFilters.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                </label>
 
-              <label className="relative">
-                <select
-                  value={sortBy}
-                  onChange={(event) => setSortBy(event.target.value as SortOption)}
-                  className="h-11 w-full appearance-none rounded-sm border border-stone-200 bg-white pl-3 pr-9 text-sm font-black text-[#25282b] outline-none transition-colors focus:border-[#e60000] sm:w-32"
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-              </label>
+                <label className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(event) => setSortBy(event.target.value as SortOption)}
+                    className="h-11 w-full appearance-none rounded-sm border border-stone-200 bg-white pl-3 pr-9 text-sm font-black text-[#25282b] outline-none transition-colors focus:border-[#e60000] sm:w-32"
+                  >
+                    {sortOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                </label>
+              </div>
             </div>
 
             <button
               type="button"
               onClick={openCreateModal}
-              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 text-sm font-black text-white transition-opacity hover:opacity-90"
+              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 text-sm font-black text-white transition-opacity hover:opacity-90 w-full sm:w-auto"
             >
               <Plus className="h-4 w-4" />
               기록하기
