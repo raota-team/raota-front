@@ -166,17 +166,17 @@ export default function LandingContent() {
                 className="text-[#e60000] text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
                 shouldStart={startPCAnim && stats.totalReviews > 0} 
               />
-              쌓인 라멘 기록
+              참고한 리뷰
             </div>
             <div className="h-8 w-px bg-white/10 flex-shrink-0"></div>
             <div className="flex-shrink-0 whitespace-nowrap">
               <AnimatedCounter 
-                value={stats.totalUsers || 0} 
-                suffix="명+"
+                value={stats.totalUsers || 0}
+                suffix="개+"
                 className="text-white text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
-                shouldStart={startPCAnim && stats.totalUsers > 0} 
+                shouldStart={startPCAnim && stats.totalUsers > 0}
               />
-              함께한 라멘러
+              라멘 인증샷
             </div>
           </div>
         </div>
@@ -204,7 +204,7 @@ export default function LandingContent() {
             <div className="mb-4 md:mb-8 flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="h-6 md:h-8 w-1 md:w-1.5 rounded-full bg-[#e60000]"></div>
-                <h2 className="text-xl md:text-2xl font-black text-[#25282b]">최근 발견된 라멘집</h2>
+                <h2 className="text-xl md:text-2xl font-black text-[#25282b]">최근 방문 인증된 라멘집</h2>
               </div>
               <Link href="/shops" className="text-xs md:text-sm font-bold text-[#666666] hover:text-[#e60000]">
                 더보기 +
