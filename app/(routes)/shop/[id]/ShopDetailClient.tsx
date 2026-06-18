@@ -32,6 +32,7 @@ import { ApiClientError } from "@/lib/api/client";
 
 const ReportModal = dynamic(() => import("../../../components/ReportModal"), { ssr: false });
 const VoteMenuModal = dynamic(() => import("../../../components/VoteMenuModal"), { ssr: false });
+const RamenLogModal = dynamic(() => import("../../../components/RamenLogModal"), { ssr: false });
 
 interface ShopDetailClientProps {
   initialShop?: Shop;
@@ -72,6 +73,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
+  const [isRamenLogModalOpen, setIsRamenLogModalOpen] = useState(false);
   const [isVoteAccordionOpen, setIsVoteAccordionOpen] = useState(false);
   const lastIncrementedId = useRef<number | null>(null);
 
@@ -184,6 +186,22 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     if (maxVotes === 0) return null;
     return votingMenus.find(m => m.votes === maxVotes)?.id;
   }, [votingMenus, maxVotes]);
+  const ramenLogInitialShop = useMemo(() => {
+    if (!shop) return undefined;
+
+    const menuNames = [
+      ...(shop.menu_list || []).map((menu) => menu.name),
+      ...(shop.menus || []).map((menu) => menu.name),
+    ].filter((name, index, names) => Boolean(name) && names.indexOf(name) === index);
+
+    return {
+      id: shop.id,
+      name: shop.name,
+      branchName: shop.branch_name,
+      type: shop.type,
+      menus: menuNames,
+    };
+  }, [shop]);
 
   if (isLoading && !shop) return <Loading />;
   if (isError || !shop) return <div className="text-center py-20">가게 정보를 찾을 수 없습니다.</div>;
@@ -270,7 +288,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                       showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login"));
                       return;
                     }
-                    router.push("/ramen-log");
+                    setIsRamenLogModalOpen(true);
                   }}
                   className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]"
                 >
@@ -445,6 +463,12 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
         totalVotes={totalVotes}
         bestMenuId={bestMenuId}
         shopName={shop.name}
+      />
+
+      <RamenLogModal
+        isOpen={isRamenLogModalOpen}
+        onClose={() => setIsRamenLogModalOpen(false)}
+        initialShop={ramenLogInitialShop}
       />
     </div>
   );

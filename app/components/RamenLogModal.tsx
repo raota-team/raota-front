@@ -14,7 +14,7 @@ export type RamenLogFormData = {
   imageName: string;
   note: string;
   tasteNotes: TasteNotes;
-  revisit: '또 감' | '가끔 생각남' | '한번이면 충분';
+  revisit: '자주 감' | '가끔 생각남' | '한번이면 충분';
   isPublic: boolean;
 };
 
@@ -25,10 +25,18 @@ interface RamenLogModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate?: (data: RamenLogFormData) => void;
+  initialShop?: {
+    id: number;
+    name: string;
+    branchName?: string;
+    type?: string;
+    menus?: string[];
+  };
+  initialLog?: RamenLogFormData;
 }
 
 const ramenTypes = ['돈코츠', '쇼유', '시오', '미소', '츠케멘', '탄탄멘', '마제소바', '아부라소바', '기타'];
-const revisitOptions: RamenLogFormData['revisit'][] = ['또 감', '가끔 생각남', '한번이면 충분'];
+const revisitOptions: RamenLogFormData['revisit'][] = ['자주 감', '가끔 생각남', '한번이면 충분'];
 const tasteFields: Array<{ key: TasteNoteKey; label: string; options: string[] }> = [
   { key: 'broth', label: '국물', options: ['진해요', '깔끔해요', '감칠맛 좋아요', '기름져요', '어패류 향'] },
   { key: 'noodle', label: '면', options: ['탄력 있어요', '단단해요', '부드러워요', '국물 흡착 좋아요', '양 많아요'] },
@@ -84,11 +92,11 @@ const compressImage = (file: File): Promise<File> => {
   });
 };
 
-export default function RamenLogModal({ isOpen, onClose, onCreate }: RamenLogModalProps) {
+export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, initialLog }: RamenLogModalProps) {
   const [shopName, setShopName] = useState('');
   const [menuName, setMenuName] = useState('');
   const [ramenType, setRamenType] = useState(ramenTypes[0]);
-  const [revisit, setRevisit] = useState<RamenLogFormData['revisit']>('또 감');
+  const [revisit, setRevisit] = useState<RamenLogFormData['revisit']>('자주 감');
   const [note, setNote] = useState('');
   const [tasteNotes, setTasteNotes] = useState<TasteNotes>({
     broth: [],
@@ -119,29 +127,39 @@ export default function RamenLogModal({ isOpen, onClose, onCreate }: RamenLogMod
   useEffect(() => {
     if (!isOpen) return;
 
-    setShopName('');
-    setMenuName('');
-    setRamenType(ramenTypes[0]);
-    setRevisit('또 감');
-    setNote('');
-    setTasteNotes({ broth: [], noodle: [], seasoning: [], topping: [] });
-    setIsPublic(true);
+    const initialShopName = initialLog?.shopName || (initialShop
+      ? `${initialShop.name}${initialShop.branchName ? ` ${initialShop.branchName}` : ''}`
+      : '');
+    const initialMenus = initialShop?.menus?.filter(Boolean) || [];
+    const initialMenuOptions = initialMenus.length > 0
+      ? [...initialMenus, '직접 입력']
+      : initialShop || initialLog
+        ? ['직접 입력']
+        : [];
 
-    setShopQuery('');
-    setSelectedShopId(null);
+    setShopName(initialShopName);
+    setMenuName(initialLog?.menuName || initialMenus[0] || '');
+    setRamenType(initialLog?.ramenType || ramenTypes.find((type) => initialShop?.type?.includes(type)) || (initialShop ? '기타' : ramenTypes[0]));
+    setRevisit(initialLog?.revisit || '자주 감');
+    setNote(initialLog?.note || '');
+    setTasteNotes(initialLog?.tasteNotes || { broth: [], noodle: [], seasoning: [], topping: [] });
+    setIsPublic(initialLog?.isPublic ?? true);
+
+    setShopQuery(initialShopName);
+    setSelectedShopId(initialLog?.shopId || initialShop?.id || null);
     setSearchResults([]);
     setIsSearching(false);
     setShowDropdown(false);
 
-    setAvailableMenus([]);
-    setIsCustomMenu(false);
+    setAvailableMenus(initialMenuOptions);
+    setIsCustomMenu(Boolean(initialLog || (initialShop && initialMenus.length === 0)));
 
     setSelectedFile(null);
-    setPreviewUrl(null);
+    setPreviewUrl(initialLog?.imageUrl || null);
     setIsSubmitting(false);
     setIsScrolling(false);
     setScrollThumb({ height: 0, top: 0, visible: false });
-  }, [isOpen]);
+  }, [isOpen, initialLog, initialShop]);
 
   // Debounced API search effect
   useEffect(() => {
@@ -175,7 +193,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate }: RamenLogMod
 
   if (!isOpen) return null;
 
-  const canSubmit = Boolean(shopName.trim() && menuName.trim() && selectedFile);
+  const canSubmit = Boolean(shopName.trim() && menuName.trim() && (selectedFile || initialLog?.imageUrl));
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -228,18 +246,24 @@ export default function RamenLogModal({ isOpen, onClose, onCreate }: RamenLogMod
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!selectedFile || !canSubmit) return;
+    if (!canSubmit) return;
 
     setIsSubmitting(true);
 
     try {
-      const compressedFile = await compressImage(selectedFile);
-      const ticket = await getUploadTicket({
-        type: 'PROOF',
-        extension: 'webp',
-        contentType: 'image/webp',
-      });
-      const imageUrl = await uploadFileToStorage(ticket, compressedFile);
+      let imageUrl = initialLog?.imageUrl || '';
+      let imageName = initialLog?.imageName || '';
+
+      if (selectedFile) {
+        const compressedFile = await compressImage(selectedFile);
+        const ticket = await getUploadTicket({
+          type: 'PROOF',
+          extension: 'webp',
+          contentType: 'image/webp',
+        });
+        imageUrl = await uploadFileToStorage(ticket, compressedFile);
+        imageName = compressedFile.name;
+      }
 
       onCreate?.({
         shopName: shopName.trim(),
@@ -247,7 +271,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate }: RamenLogMod
         menuName: menuName.trim(),
         ramenType,
         imageUrl,
-        imageName: compressedFile.name,
+        imageName,
         note: note.trim(),
         tasteNotes,
         revisit,
@@ -269,7 +293,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate }: RamenLogMod
       <div className="relative max-h-[90dvh] w-full max-w-5xl overflow-hidden rounded-t-md border border-stone-200 bg-white animate-scale-in sm:max-h-[92vh] sm:rounded-sm">
         <div className="flex items-center justify-between border-b border-stone-100 bg-white px-4 py-3 sm:px-5 sm:py-4 md:px-6">
           <div>
-            <h2 className="text-base font-black text-stone-900 sm:text-lg">라멘로그 쓰기</h2>
+            <h2 className="text-base font-black text-stone-900 sm:text-lg">{initialLog ? '라멘로그 수정' : '라멘로그 쓰기'}</h2>
             <p className="mt-0.5 text-[11px] font-medium text-stone-500 sm:text-xs">사진과 선택형 취향 기록을 남겨보세요.</p>
           </div>
           <button
@@ -485,16 +509,16 @@ export default function RamenLogModal({ isOpen, onClose, onCreate }: RamenLogMod
 
               <section className="border-t border-stone-200 pt-5">
                 <label className="mb-2 block text-xs font-bold uppercase text-stone-500">기억해둘 점 (선택)</label>
-                <input
-                  type="text"
+                <textarea
                   value={note}
-                  onChange={(event) => setNote(event.target.value)}
+                  onChange={(event) => setNote(event.target.value.slice(0, 200))}
                   placeholder="예: 다음엔 면을 단단하게 부탁해보기"
-                  className="w-full border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-700 outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000]"
-                  maxLength={120}
+                  className="min-h-24 w-full resize-none border border-stone-200 bg-white px-4 py-3 text-sm font-medium leading-6 text-stone-700 outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000]"
+                  maxLength={200}
+                  rows={3}
                 />
                 <div className="mt-1 text-right">
-                  <span className="font-mono text-xs text-stone-400">{note.length}/120</span>
+                  <span className="font-mono text-xs text-stone-400">{note.length}/200</span>
                 </div>
               </section>
 
@@ -530,7 +554,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate }: RamenLogMod
                 ) : (
                   <>
                     <Check className="h-5 w-5" />
-                    <span>라멘로그 저장하기</span>
+                    <span>{initialLog ? '수정 내용 저장하기' : '라멘로그 저장하기'}</span>
                   </>
                 )}
               </button>

@@ -3,8 +3,16 @@
 import { useState, useEffect, useRef, useCallback, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Shield } from 'lucide-react';
+import { BookOpen, Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Shield } from 'lucide-react';
 import PhotoModal from '../../../components/PhotoModal';
+import RamenLogModal, { type RamenLogFormData } from '../../../components/RamenLogModal';
+import RamenLogCard, {
+  emptyTasteNotes,
+  formatRamenLogDate,
+  tasteNoteLabels,
+  tasteNoteOrder,
+  type RamenLogItem,
+} from '../../../components/RamenLogCard';
 import { useApp } from '../../../context/AppContext';
 import {
   getMyProfile,
@@ -60,13 +68,21 @@ const getShopImageUrl = (item: any) =>
 const getShopAddress = (item: any) =>
   item.simple_address || item.address_simple || item.region || item.address || item.location || '주소 정보 없음';
 
+const getLogShopId = (item: any) =>
+  Number(item.restaurant_id || item.shopId || item.shop_id || item.ramenShopId || item.ramen_shop_id) || null;
+
+type LogShopFilter = {
+  id: number;
+  name: string;
+};
+
 export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
   const userIdFromPath = resolvedParams.id;
   const { isLoggedIn, showToast, currentUser, setCurrentUser } = useApp();
 
-  const [activeTab, setActiveTab] = useState('photos');
+  const [activeTab, setActiveTab] = useState('logs');
   const [profile, setProfile] = useState<MyProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isBioExpanded, setIsBioExpanded] = useState(false);
@@ -92,6 +108,11 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [pageMeta, setPageMeta] = useState<PageMeta | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [logShopFilters, setLogShopFilters] = useState<LogShopFilter[]>([]);
+  const [selectedLogShopId, setSelectedLogShopId] = useState<number | null>(null);
+  const [isLogShopDropdownOpen, setIsLogShopDropdownOpen] = useState(false);
+  const [logShopSearchQuery, setLogShopSearchQuery] = useState('');
+  const logShopDropdownRef = useRef<HTMLDivElement>(null);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastItemRef = useCallback((node: HTMLElement | null) => {
@@ -108,6 +129,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   }, [isLoading, pageMeta]);
 
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
+  const [editingLog, setEditingLog] = useState<RamenLogItem | null>(null);
 
   const isOwnProfile = useMemo(() => {
     if (!currentUser) return false;
@@ -151,7 +173,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       let res;
       if (isOwnProfile) {
         switch (activeTab) {
-          case 'photos': res = await getMyPhotos(page); break;
+          case 'logs': res = await getMyPhotos(page, 6); break;
           case 'visits': res = await getMyVisits(page); break;
           case 'bookmarks': res = await getMyBookmarks(page); break;
           case 'posts': res = await getMyPosts(page); break;
@@ -160,7 +182,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         }
       } else {
         switch (activeTab) {
-          case 'photos': res = await getUserPhotos(userIdFromPath, page); break;
+          case 'logs': res = await getUserPhotos(userIdFromPath, page, 6); break;
           case 'posts': res = await getUserPosts(userIdFromPath, page); break;
           case 'comments': res = await getUserComments(userIdFromPath, page); break;
           case 'visits': res = await getUserVisits(userIdFromPath, page); break;
@@ -170,7 +192,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
       if (res && res.data) {
         const validItems = (res.data.items || []).filter((item: any) => {
-          if (activeTab === 'photos') return !!(item.photo_id || item.id);
+          if (activeTab === 'logs') return !!(item.photo_id || item.id);
           if (activeTab === 'visits' || activeTab === 'bookmarks') return !!getShopId(item);
           if (activeTab === 'posts') return !!(item.post_id || item.postId || item.id);
           if (activeTab === 'comments') return !!(item.commentId || item.id);
@@ -191,6 +213,51 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     fetchTabData(0);
   }, [fetchTabData]);
 
+  useEffect(() => {
+    if (activeTab !== 'logs' || isError) return;
+
+    let isCancelled = false;
+
+    const fetchLogShopFilters = async () => {
+      try {
+        const response = isOwnProfile
+          ? await getMyVisits(0, 100)
+          : await getUserVisits(userIdFromPath, 0, 100);
+
+        if (isCancelled) return;
+
+        const uniqueShops = new Map<number, LogShopFilter>();
+        (response.data.items || []).forEach((visit: any) => {
+          const id = Number(getShopId(visit));
+          if (!id || uniqueShops.has(id)) return;
+          uniqueShops.set(id, { id, name: getShopName(visit) });
+        });
+
+        setLogShopFilters(Array.from(uniqueShops.values()));
+      } catch (error) {
+        console.error('Failed to fetch visit shops for log filters:', error);
+        if (!isCancelled) setLogShopFilters([]);
+      }
+    };
+
+    fetchLogShopFilters();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeTab, isError, isOwnProfile, userIdFromPath]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (logShopDropdownRef.current && !logShopDropdownRef.current.contains(event.target as Node)) {
+        setIsLogShopDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const loadMore = () => {
     if (pageMeta && pageMeta.hasNext) {
       fetchTabData(pageMeta.number + 1);
@@ -200,11 +267,64 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const handleTabChange = (tab: string) => {
     setItems([]);
     setPageMeta(null);
+    setSelectedLogShopId(null);
+    setIsLogShopDropdownOpen(false);
+    setLogShopSearchQuery('');
     if (tab === activeTab) {
       fetchTabData(0);
       return;
     }
     setActiveTab(tab);
+  };
+
+  const handleLogLikeChange = (logId: number, likes: number, isLiked: boolean) => {
+    setItems((current) =>
+      current.map((item) =>
+        Number(item.photo_id || item.id) === logId ? { ...item, likes, isLiked } : item,
+      ),
+    );
+    setSelectedPhoto((current: any) =>
+      current?.id === logId ? { ...current, likes, isLiked } : current,
+    );
+  };
+
+  const handleEditLog = (logId: number) => {
+    const item = items.find((candidate) => Number(candidate.photo_id || candidate.id) === logId);
+    if (!item) return;
+    setSelectedPhoto(null);
+    setEditingLog(toRamenLogItem(item));
+  };
+
+  const handleUpdateLog = (data: RamenLogFormData) => {
+    if (!editingLog) return;
+
+    setItems((current) =>
+      current.map((item) =>
+        Number(item.photo_id || item.id) === editingLog.id
+          ? {
+              ...item,
+              restaurant_id: data.shopId,
+              restaurant_name: data.shopName,
+              menuName: data.menuName,
+              menu_name: data.menuName,
+              image_url: data.imageUrl,
+              description: data.note,
+              ramenType: data.ramenType,
+              tasteNotes: data.tasteNotes,
+              revisit: data.revisit,
+              isPublic: data.isPublic,
+            }
+          : item,
+      ),
+    );
+    setEditingLog(null);
+    showToast('라멘로그를 수정했습니다.', 'success');
+  };
+
+  const handleDeleteLog = async (logId: number) => {
+    setItems((current) => current.filter((item) => Number(item.photo_id || item.id) !== logId));
+    setSelectedPhoto(null);
+    showToast('라멘로그를 삭제했습니다.', 'success');
   };
 
   const handleEditStart = () => {
@@ -332,13 +452,44 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   );
 
   const displayBio = (profile.userDescription && profile.userDescription !== profile.nickname) ? profile.userDescription : '자기소개가 아직 없습니다.';
+  const filteredLogItems = selectedLogShopId
+    ? items.filter((item) => getLogShopId(item) === selectedLogShopId)
+    : items;
+  const selectedLogShop = logShopFilters.find((shop) => shop.id === selectedLogShopId);
+  const visibleLogShopFilters = logShopFilters.filter((shop) =>
+    shop.name.toLowerCase().includes(logShopSearchQuery.trim().toLowerCase()),
+  );
+
+  const toRamenLogItem = (item: any): RamenLogItem => ({
+    id: Number(item.photo_id || item.id),
+    author: {
+      id: Number(profile.user_id || profile.id || userIdFromPath),
+      name: profile.nickname,
+      imageUrl: profile.profile_image_url || undefined,
+    },
+    shop: {
+      id: getLogShopId(item) || undefined,
+      name: item.restaurant_name || item.shopName || item.shop_name || '가게 정보 없음',
+      location: item.location || item.simple_address || item.address_simple || undefined,
+    },
+    menuName: item.menuName || item.menu_name || '메뉴 기록',
+    ramenType: item.ramenType || item.ramen_type,
+    imageUrl: item.image_url || item.imageUrl,
+    date: item.uploaded_at || item.createdAt || item.created_at || '',
+    note: item.description || item.note || '',
+    tasteNotes: item.tasteNotes || item.taste_notes || emptyTasteNotes(),
+    revisit: item.revisit,
+    likes: typeof item.likes === 'number' ? item.likes : undefined,
+    isLiked: Boolean(item.isLiked ?? item.is_liked),
+    isPublic: item.isPublic ?? item.is_public,
+  });
 
   const EmptyState = ({ message, icon: Icon, tab }: { message: string; icon: any; tab: string }) => (
     <div className="flex flex-col items-center justify-center rounded-sm border border-dashed border-stone-300 bg-stone-50 py-20 text-center">
       <div className="mb-4 rounded-full border border-stone-100 bg-white p-5"><Icon className="h-10 w-10 text-stone-300" /></div>
       <p className="text-stone-500 font-bold mb-6">{message}</p>
-      <Link href={tab === 'posts' || tab === 'comments' ? '/community' : '/shops'} className="inline-flex items-center gap-2 rounded-sm bg-[#e60000] px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
-        {tab === 'posts' || tab === 'comments' ? '커뮤니티 가기' : '맛집 찾아보기'} <ArrowRight className="w-4 h-4" />
+      <Link href={tab === 'logs' ? '/ramen-log' : tab === 'posts' || tab === 'comments' ? '/community' : '/shops'} className="inline-flex items-center gap-2 rounded-sm bg-[#e60000] px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
+        {tab === 'logs' ? '라멘로그 기록하기' : tab === 'posts' || tab === 'comments' ? '커뮤니티 가기' : '맛집 찾아보기'} <ArrowRight className="w-4 h-4" />
       </Link>
     </div>
   );
@@ -466,7 +617,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       {/* Tabs */}
       <div className="mb-8 flex overflow-x-auto border-b border-stone-200 scrollbar-hide">
         {[
-          { id: 'photos', label: '사진', icon: Camera, count: profile.stats.total_photo_count },
+          { id: 'logs', label: '내 로그', icon: BookOpen, count: profile.stats.total_photo_count },
           { id: 'visits', label: '방문기록', icon: MapPin, count: profile.stats.visited_restaurant_count },
           { id: 'posts', label: '게시글', icon: FileText, count: profile.stats.post_count },
           { id: 'comments', label: '댓글', icon: MessageSquare, count: profile.stats.comment_count },
@@ -479,23 +630,112 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       </div>
 
       <div className="min-h-[400px] pb-20 relative">
+        {activeTab === 'logs' && (
+          <div className="mb-6 flex flex-col gap-3 border-b border-stone-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#e60000]">가게별 보기</p>
+              <p className="mt-1 text-xs font-medium text-stone-400">방문기록에 있는 가게를 기준으로 분류합니다.</p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {selectedLogShopId && (
+                <span className="shrink-0 text-xs font-black text-stone-400">
+                  {filteredLogItems.length}개 로그
+                </span>
+              )}
+
+              <div ref={logShopDropdownRef} className="relative w-full sm:w-56">
+                <button
+                  type="button"
+                  onClick={() => setIsLogShopDropdownOpen((current) => !current)}
+                  className="flex h-11 w-full items-center justify-between gap-2 rounded-sm border border-stone-200 bg-white px-3 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000]"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <MapPin className="h-4 w-4 shrink-0 text-[#e60000]" />
+                    <span className="truncate">{selectedLogShop?.name || '전체 가게'}</span>
+                  </span>
+                  <ChevronDown className={`h-4 w-4 shrink-0 text-stone-400 transition-transform ${isLogShopDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isLogShopDropdownOpen && (
+                  <div className="absolute right-0 z-30 mt-2 flex max-h-72 w-full flex-col overflow-hidden rounded-sm border border-stone-200 bg-white shadow-lg sm:w-64">
+                    <div className="border-b border-stone-100 bg-stone-50 p-2">
+                      <div className="relative">
+                        <MapPin className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
+                        <input
+                          type="search"
+                          value={logShopSearchQuery}
+                          onChange={(event) => setLogShopSearchQuery(event.target.value)}
+                          placeholder="방문한 가게 검색"
+                          className="w-full rounded-sm border border-stone-200 bg-white py-2 pl-8 pr-3 text-xs outline-none focus:border-[#e60000]"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+
+                    <div className="overflow-y-auto">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedLogShopId(null);
+                          setIsLogShopDropdownOpen(false);
+                          setLogShopSearchQuery('');
+                        }}
+                        className={`w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-stone-50 ${
+                          selectedLogShopId === null ? 'font-semibold text-[#e60000]' : 'text-stone-700'
+                        }`}
+                      >
+                        전체 가게
+                      </button>
+
+                      {visibleLogShopFilters.map((shop) => (
+                        <button
+                          key={shop.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedLogShopId(shop.id);
+                            setIsLogShopDropdownOpen(false);
+                            setLogShopSearchQuery('');
+                          }}
+                          className={`w-full border-t border-stone-100 px-4 py-2.5 text-left text-sm transition-colors hover:bg-stone-50 ${
+                            selectedLogShopId === shop.id ? 'font-semibold text-[#e60000]' : 'text-stone-700'
+                          }`}
+                        >
+                          <span className="block truncate">{shop.name}</span>
+                        </button>
+                      ))}
+
+                      {visibleLogShopFilters.length === 0 && (
+                        <p className="px-4 py-6 text-center text-xs font-bold text-stone-400">검색된 가게가 없습니다.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {isLoading && (!pageMeta || pageMeta.number === 0) && (
           <div className="absolute inset-0 z-10 flex justify-center bg-white/50 pt-20"><Loader2 className="h-10 w-10 animate-spin text-[#e60000]" /></div>
         )}
-        {items.length > 0 ? (
-          <div className={activeTab === 'photos' ? "grid grid-cols-3 gap-1 md:gap-4" : "flex flex-col gap-3"}>
+        {(activeTab === 'logs' ? filteredLogItems.length > 0 : items.length > 0) ? (
+          activeTab === 'logs' ? (
+            <div className="grid grid-cols-2 items-stretch gap-2 sm:gap-4 lg:grid-cols-4 lg:gap-4">
+              {filteredLogItems.map((item, index) => {
+                const log = toRamenLogItem(item);
+                return (
+                  <div key={`logs-${log.id}-${index}`} className="h-full">
+                    <RamenLogCard log={log} onClick={setSelectedPhoto} />
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+          <div className="flex flex-col gap-3">
             {items.map((item, index) => {
               const itemId = item.photo_id || getShopId(item) || item.post_id || item.postId || item.commentId || item.id || 'no-id';
               const uniqueKey = `${activeTab}-${itemId}-${index}`;
-              if (activeTab === 'photos') return (
-                <div key={uniqueKey} ref={items.length === index + 1 ? lastItemRef : null} className="group relative aspect-square overflow-hidden rounded-md border border-stone-200 bg-stone-100">
-                  <img src={item.image_url} alt={item.menuName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03] cursor-pointer" onClick={() => setSelectedPhoto(item)} />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pointer-events-none">
-                    <p className="text-white text-xs font-bold truncate">{item.menuName}</p>
-                    <Link href={`/shop/${item.restaurant_id}`} className="text-stone-300 text-[10px] hover:text-white hover:underline transition-all pointer-events-auto flex items-center gap-1 mt-0.5"><MapPin className="w-2.5 h-2.5" />{item.restaurant_name}</Link>
-                  </div>
-                </div>
-              );
               if (activeTab === 'visits' || activeTab === 'bookmarks') return (
                 <Link key={uniqueKey} href={`/shop/${getShopId(item)}`} ref={items.length === index + 1 ? lastItemRef : null} className="group flex items-center gap-4 rounded-md border border-stone-200 bg-white p-4 transition-colors hover:border-[#e60000]">
                   <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md bg-stone-100"><img src={getShopImageUrl(item)} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /></div>
@@ -528,7 +768,11 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
               return null;
             })}
           </div>
-        ) : !isLoading && <EmptyState tab={activeTab} message={`아직 항목이 없습니다.`} icon={activeTab === 'photos' ? Camera : activeTab === 'visits' ? MapPin : activeTab === 'bookmarks' ? Heart : activeTab === 'posts' ? FileText : MessageSquare} />}
+          )
+        ) : !isLoading && !(activeTab === 'logs' && pageMeta?.hasNext) && <EmptyState tab={activeTab} message={activeTab === 'logs' ? (selectedLogShopId ? '이 가게에 남긴 라멘로그가 없습니다.' : '아직 남긴 라멘로그가 없습니다.') : '아직 항목이 없습니다.'} icon={activeTab === 'logs' ? BookOpen : activeTab === 'visits' ? MapPin : activeTab === 'bookmarks' ? Heart : activeTab === 'posts' ? FileText : MessageSquare} />}
+        {activeTab === 'logs' && pageMeta?.hasNext && !isLoading && (
+          <div ref={lastItemRef} className="h-1" aria-hidden="true" />
+        )}
         {isLoading && pageMeta && pageMeta.number > 0 && <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-[#e60000]" /></div>}
       </div>
       {isOwnProfile && (
@@ -539,7 +783,50 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           </Link>
         </div>
       )}
-      {selectedPhoto && <PhotoModal photo={{ id: selectedPhoto.photo_id || selectedPhoto.id, imageUrl: selectedPhoto.image_url, menuName: selectedPhoto.menuName || '이미지 보기', restaurantName: selectedPhoto.restaurant_name || '사용자 프로필', restaurantId: selectedPhoto.restaurant_id, date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-', comment: selectedPhoto.description || '', isUserPhoto: selectedPhoto.isUserPhoto }} onClose={() => setSelectedPhoto(null)} disableNavigation={false} />}
+      {selectedPhoto && <PhotoModal photo={'shop' in selectedPhoto ? {
+        id: selectedPhoto.id,
+        imageUrl: selectedPhoto.imageUrl,
+        menuName: selectedPhoto.menuName,
+        user: selectedPhoto.author.name,
+        userId: selectedPhoto.author.id,
+        restaurantName: selectedPhoto.shop.name,
+        restaurantId: selectedPhoto.shop.id,
+        date: formatRamenLogDate(selectedPhoto.date),
+        comment: selectedPhoto.note || '',
+        revisit: selectedPhoto.revisit,
+        likes: selectedPhoto.likes,
+        isLiked: selectedPhoto.isLiked,
+        tasteNotes: tasteNoteOrder
+          .filter((key) => selectedPhoto.tasteNotes?.[key]?.length)
+          .map((key) => ({ label: tasteNoteLabels[key], values: selectedPhoto.tasteNotes?.[key] || [] })),
+      } : {
+        id: selectedPhoto.photo_id || selectedPhoto.id,
+        imageUrl: selectedPhoto.image_url,
+        menuName: selectedPhoto.menuName || '이미지 보기',
+        restaurantName: selectedPhoto.restaurant_name || '사용자 프로필',
+        restaurantId: selectedPhoto.restaurant_id,
+        date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-',
+        comment: selectedPhoto.description || '',
+        isUserPhoto: selectedPhoto.isUserPhoto,
+      }} onClose={() => setSelectedPhoto(null)} onLikeChange={handleLogLikeChange} onEdit={handleEditLog} onDelete={handleDeleteLog} disableNavigation={false} />}
+
+      <RamenLogModal
+        isOpen={Boolean(editingLog)}
+        onClose={() => setEditingLog(null)}
+        onCreate={handleUpdateLog}
+        initialLog={editingLog ? {
+          shopName: editingLog.shop.name,
+          shopId: editingLog.shop.id,
+          menuName: editingLog.menuName,
+          ramenType: editingLog.ramenType || '기타',
+          imageUrl: editingLog.imageUrl,
+          imageName: '',
+          note: editingLog.note || '',
+          tasteNotes: editingLog.tasteNotes || emptyTasteNotes(),
+          revisit: editingLog.revisit || '자주 감',
+          isPublic: editingLog.isPublic ?? true,
+        } : undefined}
+      />
 
       {/* Privacy Settings Modal */}
       {isPrivacyModalOpen && (
@@ -563,7 +850,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
             <div className="p-6 space-y-1">
               {[
-                { key: 'photos' as const, label: '사진', description: '인증샷 및 라멘 사진', icon: Camera },
+                { key: 'photos' as const, label: '내 로그', description: '내가 남긴 라멘로그', icon: BookOpen },
                 { key: 'visits' as const, label: '방문기록', description: '방문한 가게 목록', icon: MapPin },
                 { key: 'posts' as const, label: '게시글', description: '커뮤니티 작성 글', icon: FileText },
                 { key: 'comments' as const, label: '댓글', description: '커뮤니티 작성 댓글', icon: MessageSquare },

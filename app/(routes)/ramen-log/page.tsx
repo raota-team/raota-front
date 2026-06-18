@@ -2,51 +2,39 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import Masonry from 'react-masonry-css';
 import {
   Camera,
   ChevronDown,
-  Heart,
+  Loader2,
   Plus,
   Search,
   Store,
-  UserRound,
-  Loader2,
 } from 'lucide-react';
-import RamenLogModal, { type RamenLogFormData, type TasteNoteKey, type TasteNotes } from '@/app/components/RamenLogModal';
+import RamenLogModal, { type RamenLogFormData, type TasteNotes } from '@/app/components/RamenLogModal';
+import RamenLogCard, {
+  formatRamenLogDate,
+  getTasteNoteValues,
+  tasteNoteLabels,
+  tasteNoteOrder,
+  type RamenLogItem,
+} from '@/app/components/RamenLogCard';
 import { useApp } from '@/app/context/AppContext';
 import { getAccessToken } from '@/lib/auth/accessToken';
 import { useRamenShops } from '@/hooks/queries/useRamenShops';
 
 const PhotoModal = dynamic(() => import('@/app/components/PhotoModal'), { ssr: false });
 
-type RamenLog = {
-  id: number;
-  author: {
-    id: number;
-    name: string;
-    imageUrl?: string;
-  };
-  shop: {
-    id?: number;
-    name: string;
-    location: string;
-  };
-  menuName: string;
+type RamenLog = RamenLogItem & {
   ramenType: string;
-  imageUrl: string;
-  date: string;
   note: string;
   tasteNotes: TasteNotes;
-  revisit: '또 감' | '가끔 생각남' | '한번이면 충분';
+  revisit: '자주 감' | '가끔 생각남' | '한번이면 충분';
   likes: number;
-  isPublic?: boolean;
 };
 
-const logs: RamenLog[] = [
+const seedLogs: RamenLog[] = [
   {
     id: 1,
     author: { id: 12, name: '멘마수집가' },
@@ -62,7 +50,7 @@ const logs: RamenLog[] = [
       seasoning: ['딱 좋아요'],
       topping: ['차슈 좋아요', '구성 알차요'],
     },
-    revisit: '또 감',
+    revisit: '자주 감',
     likes: 38,
   },
   {
@@ -98,7 +86,7 @@ const logs: RamenLog[] = [
       seasoning: ['딱 좋아요'],
       topping: ['계란 좋아요'],
     },
-    revisit: '또 감',
+    revisit: '자주 감',
     likes: 41,
   },
   {
@@ -116,7 +104,7 @@ const logs: RamenLog[] = [
       seasoning: ['딱 좋아요'],
       topping: ['구성 알차요'],
     },
-    revisit: '또 감',
+    revisit: '자주 감',
     likes: 52,
   },
   {
@@ -157,148 +145,29 @@ const logs: RamenLog[] = [
   },
 ];
 
-const typeFilters = ['전체', '돈코츠', '쇼유', '시오', '미소', '츠케멘'];
+const PAGE_SIZE = 6;
+const MOCK_PAGE_COUNT = 4;
+
+const logs: RamenLog[] = Array.from({ length: MOCK_PAGE_COUNT }, (_, page) =>
+  seedLogs.map((log) => {
+    const date = new Date(log.date);
+    date.setDate(date.getDate() - page * PAGE_SIZE);
+
+    return {
+      ...log,
+      id: log.id + page * PAGE_SIZE,
+      date: date.toISOString(),
+      likes: Math.max(0, log.likes - page * 3),
+    };
+  }),
+).flat();
+
 const sortOptions = [
   { value: 'latest', label: '최신순' },
   { value: 'popular', label: '인기순' },
 ] as const;
 
 type SortOption = (typeof sortOptions)[number]['value'];
-
-const masonryBreakpoints = {
-  default: 3,
-  1023: 2,
-};
-
-const tasteNoteLabels: Record<TasteNoteKey, string> = {
-  broth: '국물',
-  noodle: '면',
-  seasoning: '간',
-  topping: '토핑',
-};
-
-const tasteNoteOrder: TasteNoteKey[] = ['broth', 'noodle', 'seasoning', 'topping'];
-
-const getTasteNoteValues = (tasteNotes: TasteNotes) =>
-  tasteNoteOrder.flatMap((key) => tasteNotes[key]);
-
-const formatDate = (value: string) =>
-  new Date(value).toLocaleDateString('ko-KR', {
-    month: 'short',
-    day: 'numeric',
-  });
-
-const getImageAspectClass = (id: number) => {
-  const aspectClasses = ['aspect-[4/5]', 'aspect-square', 'aspect-[3/4]', 'aspect-[5/4]', 'aspect-[4/3]'];
-  return aspectClasses[id % aspectClasses.length];
-};
-
-function RamenLogCard({ log, onImageClick }: { log: RamenLog; onImageClick: (log: RamenLog) => void }) {
-  const tasteSummary = getTasteNoteValues(log.tasteNotes);
-  const visibleTasteNotes = tasteSummary.slice(0, 3);
-  const mobileTasteNote = tasteSummary[0];
-  const hiddenTasteNoteCount = Math.max(0, tasteSummary.length - visibleTasteNotes.length);
-  const mobileHiddenTasteNoteCount = Math.max(0, tasteSummary.length - 1);
-
-  return (
-    <article
-      onClick={() => onImageClick(log)}
-      className="group mb-2 break-inside-avoid overflow-hidden rounded-md border border-stone-200 bg-white transition-colors hover:border-[#e60000] sm:mb-4 cursor-pointer"
-    >
-      <div
-        className={`relative block w-full overflow-hidden bg-stone-100 ${getImageAspectClass(log.id)}`}
-      >
-        <Image
-          src={log.imageUrl}
-          alt={`${log.shop.name} ${log.menuName}`}
-          fill
-          sizes="(min-width: 1024px) 33vw, 50vw"
-          className="object-cover"
-        />
-      </div>
-
-      <div className="p-2.5 sm:p-3.5">
-        <div className="mb-2 flex items-start justify-between gap-2 sm:mb-3 sm:gap-3">
-          <div className="min-w-0">
-            {log.shop.id ? (
-              <Link
-                href={`/shop/${log.shop.id}`}
-                className="group/shop flex min-w-0 items-center gap-1.5"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Store className="h-3 w-3 shrink-0 text-stone-400 group-hover/shop:text-[#e60000] sm:h-3.5 sm:w-3.5" />
-                <span className="truncate text-[10px] font-black text-stone-500 group-hover/shop:text-[#e60000] sm:text-xs">
-                  {log.shop.name}
-                </span>
-              </Link>
-            ) : (
-              <span className="flex min-w-0 items-center gap-1.5">
-                <Store className="h-3 w-3 shrink-0 text-stone-400 sm:h-3.5 sm:w-3.5" />
-                <span className="truncate text-[10px] font-black text-stone-500 sm:text-xs">{log.shop.name}</span>
-              </span>
-            )}
-            <h2 className="mt-1 line-clamp-2 text-sm font-black leading-5 text-[#25282b] sm:truncate sm:text-lg">
-              {log.menuName}
-            </h2>
-            <p className="mt-0.5 hidden text-xs font-bold text-stone-400 sm:block">{log.shop.location}</p>
-          </div>
-          <span className="hidden shrink-0 text-xs font-bold text-stone-400 sm:block">{formatDate(log.date)}</span>
-        </div>
-
-        <p className="hidden line-clamp-3 text-sm font-medium leading-6 text-stone-600 sm:block">{log.note}</p>
-
-        {mobileTasteNote && (
-          <div className="mt-2 flex min-w-0 items-center gap-1 sm:hidden">
-            <span className="max-w-full truncate rounded-full bg-stone-100 px-2 py-1 text-[10px] font-bold text-stone-600">
-              {mobileTasteNote}
-            </span>
-            {mobileHiddenTasteNoteCount > 0 && (
-              <span className="shrink-0 text-[10px] font-black text-stone-400">+{mobileHiddenTasteNoteCount}</span>
-            )}
-          </div>
-        )}
-
-        {visibleTasteNotes.length > 0 && (
-          <div className="mt-3 hidden flex-wrap items-center gap-1.5 sm:flex">
-            <span className="mr-1 text-[10px] font-black uppercase text-stone-400">취향</span>
-            {visibleTasteNotes.map((note) => (
-              <span key={note} className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-bold text-stone-600">
-                {note}
-              </span>
-            ))}
-            {hiddenTasteNoteCount > 0 && (
-              <span className="text-xs font-black text-stone-400">+{hiddenTasteNoteCount}</span>
-            )}
-          </div>
-        )}
-
-        <div className="mt-2.5 flex items-center justify-between border-t border-stone-100 pt-2.5 sm:mt-4 sm:pt-3">
-          <Link
-            href={`/user/${log.author.id}`}
-            className="flex min-w-0 items-center gap-1.5 sm:gap-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200 bg-stone-100 sm:h-7 sm:w-7">
-              {log.author.imageUrl ? (
-                <Image src={log.author.imageUrl} alt={log.author.name} width={28} height={28} className="h-full w-full object-cover" />
-              ) : (
-                <UserRound className="h-3 w-3 text-stone-400 sm:h-3.5 sm:w-3.5" />
-              )}
-            </span>
-            <span className="truncate text-[10px] font-black text-stone-500 sm:text-xs">{log.author.name}</span>
-          </Link>
-
-          <div className="flex shrink-0 items-center gap-3 text-[10px] font-black text-stone-400 sm:text-xs">
-            <span className="flex items-center gap-1">
-              <Heart className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              {log.likes}
-            </span>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
 
 export default function RamenLogPage() {
   const router = useRouter();
@@ -318,6 +187,10 @@ export default function RamenLogPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<RamenLog | null>(null);
+  const [editingLog, setEditingLog] = useState<RamenLog | null>(null);
+  const [visibleLogCount, setVisibleLogCount] = useState(PAGE_SIZE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Fetch shops
   const { data: shopsData } = useRamenShops({ page: 0, size: 100, sort: "NAME" });
@@ -358,6 +231,37 @@ export default function RamenLogPage() {
       });
   }, [selectedShopId, logItems, searchQuery, sortBy, currentUser]);
 
+  const visibleLogs = useMemo(
+    () => filteredLogs.slice(0, visibleLogCount),
+    [filteredLogs, visibleLogCount],
+  );
+  const hasMoreLogs = visibleLogCount < filteredLogs.length;
+
+  useEffect(() => {
+    setVisibleLogCount(PAGE_SIZE);
+  }, [selectedShopId, searchQuery, sortBy]);
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target || !hasMoreLogs || isLoadingMore) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+
+        setIsLoadingMore(true);
+        window.setTimeout(() => {
+          setVisibleLogCount((current) => Math.min(current + PAGE_SIZE, filteredLogs.length));
+          setIsLoadingMore(false);
+        }, 350);
+      },
+      { rootMargin: '240px 0px' },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [filteredLogs.length, hasMoreLogs, isLoadingMore]);
+
   const openCreateModal = () => {
     const hasAccessToken = Boolean(getAccessToken());
 
@@ -374,6 +278,33 @@ export default function RamenLogPage() {
   };
 
   const handleCreateLog = (data: RamenLogFormData) => {
+    if (editingLog) {
+      setLogItems((current) =>
+        current.map((log) =>
+          log.id === editingLog.id
+            ? {
+                ...log,
+                shop: {
+                  id: data.shopId,
+                  name: data.shopName,
+                  location: data.shopId ? log.shop.location || '라오타 연동 가게' : '직접 기록',
+                },
+                menuName: data.menuName,
+                ramenType: data.ramenType,
+                imageUrl: data.imageUrl,
+                note: data.note,
+                tasteNotes: data.tasteNotes,
+                revisit: data.revisit,
+                isPublic: data.isPublic,
+              }
+            : log,
+        ),
+      );
+      setEditingLog(null);
+      showToast('라멘로그를 수정했습니다.', 'success');
+      return;
+    }
+
     const userId = currentUser?.user_id ?? currentUser?.id ?? 0;
     const authorName = currentUser?.nickname ?? currentUser?.name ?? '나';
 
@@ -403,6 +334,27 @@ export default function RamenLogPage() {
       ...current,
     ]);
     showToast('라멘로그를 저장했습니다.', 'success');
+  };
+
+  const handleLikeChange = (logId: number, likes: number, isLiked: boolean) => {
+    setLogItems((current) =>
+      current.map((log) => (log.id === logId ? { ...log, likes, isLiked } : log)),
+    );
+    setSelectedLog((current) => (current?.id === logId ? { ...current, likes, isLiked } : current));
+  };
+
+  const handleEditLog = (logId: number) => {
+    const log = logItems.find((item) => item.id === logId);
+    if (!log) return;
+    setSelectedLog(null);
+    setEditingLog(log);
+    setIsLogModalOpen(true);
+  };
+
+  const handleDeleteLog = async (logId: number) => {
+    setLogItems((current) => current.filter((log) => log.id !== logId));
+    setSelectedLog(null);
+    showToast('라멘로그를 삭제했습니다.', 'success');
   };
 
   return (
@@ -560,15 +512,11 @@ export default function RamenLogPage() {
           </div>
 
           {filteredLogs.length > 0 ? (
-            <Masonry
-              breakpointCols={masonryBreakpoints}
-              className="ramen-log-masonry"
-              columnClassName="ramen-log-masonry-column"
-            >
-              {filteredLogs.map((log) => (
-                <RamenLogCard key={log.id} log={log} onImageClick={setSelectedLog} />
+            <div className="grid grid-cols-2 items-stretch gap-2 sm:gap-4 lg:grid-cols-4 lg:gap-4">
+              {visibleLogs.map((log) => (
+                <RamenLogCard key={log.id} log={log} onClick={(item) => setSelectedLog(item as RamenLog)} />
               ))}
-            </Masonry>
+            </div>
           ) : (
             <div className="rounded-md border border-dashed border-stone-300 py-24 text-center">
               <Camera className="mx-auto mb-4 h-10 w-10 text-stone-200" />
@@ -576,13 +524,42 @@ export default function RamenLogPage() {
               <p className="mt-2 text-xs font-bold text-stone-300">다른 조건으로 다시 찾아보세요.</p>
             </div>
           )}
+
+          {filteredLogs.length > 0 && (
+            <div ref={loadMoreRef} className="flex min-h-16 items-center justify-center py-5">
+              {isLoadingMore && (
+                <div className="flex items-center gap-2 text-xs font-black text-stone-400">
+                  <Loader2 className="h-4 w-4 animate-spin text-[#e60000]" />
+                  다음 라멘로그 불러오는 중
+                </div>
+              )}
+              {!hasMoreLogs && !isLoadingMore && (
+                <p className="text-xs font-bold text-stone-300">모든 라멘로그를 확인했습니다.</p>
+              )}
+            </div>
+          )}
         </section>
       </main>
 
       <RamenLogModal
         isOpen={isLogModalOpen}
-        onClose={() => setIsLogModalOpen(false)}
+        onClose={() => {
+          setIsLogModalOpen(false);
+          setEditingLog(null);
+        }}
         onCreate={handleCreateLog}
+        initialLog={editingLog ? {
+          shopName: editingLog.shop.name,
+          shopId: editingLog.shop.id,
+          menuName: editingLog.menuName,
+          ramenType: editingLog.ramenType,
+          imageUrl: editingLog.imageUrl,
+          imageName: '',
+          note: editingLog.note,
+          tasteNotes: editingLog.tasteNotes,
+          revisit: editingLog.revisit,
+          isPublic: editingLog.isPublic ?? true,
+        } : undefined}
       />
 
       {selectedLog && (
@@ -595,14 +572,19 @@ export default function RamenLogPage() {
             userId: selectedLog.author.id,
             restaurantName: selectedLog.shop.name,
             restaurantId: selectedLog.shop.id,
-            date: formatDate(selectedLog.date),
+            date: formatRamenLogDate(selectedLog.date),
             comment: selectedLog.note,
             revisit: selectedLog.revisit,
+            likes: selectedLog.likes,
+            isLiked: selectedLog.isLiked,
             tasteNotes: tasteNoteOrder
               .filter((key) => selectedLog.tasteNotes[key].length > 0)
               .map((key) => ({ label: tasteNoteLabels[key], values: selectedLog.tasteNotes[key] })),
           }}
           onClose={() => setSelectedLog(null)}
+          onLikeChange={handleLikeChange}
+          onEdit={handleEditLog}
+          onDelete={handleDeleteLog}
           disableNavigation
         />
       )}
