@@ -395,7 +395,7 @@ export default function RamenLogPage() {
               RAMEN LOG<span className="text-[#e60000]">.</span>
             </h1>
             <p className="mx-auto max-w-lg break-keep text-sm font-medium leading-relaxed text-white/85 sm:text-lg">
-              사진, 메뉴, 맛의 감각으로 남긴 유저들의 생생한 라멘 로그를 둘러보세요.
+              유저들의 생생한 라멘 기록을 둘러보세요.
             </p>
           </div>
         </div>
