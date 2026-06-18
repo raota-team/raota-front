@@ -37,6 +37,7 @@ import {
 const PhotoModal = dynamic(() => import('@/app/components/PhotoModal'), { ssr: false });
 
 const PAGE_SIZE = 8;
+const FEATURED_INTERVAL = 8;
 
 const sortOptions = [
   { value: 'LATEST', label: '최신순' },
@@ -90,6 +91,7 @@ export default function RamenLogPage() {
   const { data: shopsData } = useRamenShops({ page: 0, size: 100, sort: "NAME" });
   const listShops = shopsData?.shops ?? [];
   const selectedShop = listShops.find(s => s.id === selectedShopId);
+  const hasActiveFilter = Boolean(selectedShopId || debouncedSearchQuery);
 
   // Click outside to close dropdowns
   useEffect(() => {
@@ -412,14 +414,40 @@ export default function RamenLogPage() {
           {isInitialLoading ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-label="라멘로그 불러오는 중">
               {Array.from({ length: 6 }, (_, index) => (
-                <div key={index} className="h-44 animate-pulse rounded-md border border-stone-200 bg-stone-100 sm:h-[28rem]" />
+                <div
+                  key={index}
+                  className={`animate-pulse rounded-xl border border-stone-200 bg-stone-100 ${
+                    index === 0 ? 'h-[28rem] sm:col-span-2 lg:h-[30rem]' : 'h-[28rem]'
+                  }`}
+                />
               ))}
             </div>
           ) : logItems.length > 0 ? (
-            <div className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {logItems.map((log) => (
-                <RamenLogCard key={log.id} log={log} onClick={(item) => setSelectedLog(item as RamenLog)} />
-              ))}
+            <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+              {logItems.map((log, index) => {
+                const featureBlock = Math.floor(index / FEATURED_INTERVAL);
+                const positionInBlock = index % FEATURED_INTERVAL;
+                const featureOnRight = featureBlock % 2 === 1;
+                const featuredPosition = featureOnRight ? 1 : 0;
+                const isFeatured = !hasActiveFilter && positionInBlock === featuredPosition;
+
+                return (
+                  <div
+                    key={log.id}
+                    className={
+                      isFeatured
+                        ? `lg:col-span-2 ${featureOnRight ? 'lg:col-start-2' : 'lg:col-start-1'}`
+                        : ''
+                    }
+                  >
+                    <RamenLogCard
+                      log={log}
+                      featured={isFeatured}
+                      onClick={(item) => setSelectedLog(item as RamenLog)}
+                    />
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="rounded-md border border-dashed border-stone-300 py-24 text-center">

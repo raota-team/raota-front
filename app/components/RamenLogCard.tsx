@@ -49,92 +49,92 @@ export const formatRamenLogDate = (value: string) => {
 export default function RamenLogCard({
   log,
   onClick,
+  featured = false,
 }: {
   log: RamenLogItem;
   onClick?: (log: RamenLogItem) => void;
+  featured?: boolean;
 }) {
   const tasteSummary = getTasteNoteValues(log.tasteNotes);
-  const visibleTasteNotes = tasteSummary.slice(0, 3);
-  const mobileTasteNotes = tasteSummary.slice(0, 2);
+  const visibleTasteNotes = tasteSummary.slice(0, featured ? 4 : 2);
 
   return (
     <article
       onClick={() => onClick?.(log)}
-      className={`group flex min-h-44 overflow-hidden rounded-md border border-stone-200 bg-white transition-colors hover:border-[#e60000] sm:h-full sm:min-h-0 sm:flex-col ${onClick ? 'cursor-pointer' : ''}`}
+      className={`group flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-stone-200 bg-white shadow-[0_8px_30px_rgba(28,25,23,0.04)] transition duration-300 hover:-translate-y-1 hover:border-stone-300 hover:shadow-[0_18px_44px_rgba(28,25,23,0.12)] ${onClick ? 'cursor-pointer' : ''}`}
     >
-      <div className="relative w-32 shrink-0 self-stretch overflow-hidden bg-stone-100 sm:aspect-video sm:w-full sm:self-auto">
+      <div className={`relative w-full overflow-hidden bg-stone-100 ${featured ? 'aspect-[4/3] sm:aspect-[16/9]' : 'aspect-[4/3] sm:aspect-[4/5]'}`}>
         <Image
           src={log.imageUrl}
           alt={`${log.shop.name} ${log.menuName}`}
           fill
-          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 128px"
-          className="object-cover"
+          sizes={featured
+            ? '(min-width: 1024px) 66vw, (min-width: 640px) 100vw, 100vw'
+            : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'}
+          className="object-cover transition duration-500 group-hover:scale-[1.025]"
         />
-      </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/5" />
 
-      <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-5">
-        <div className="mb-2 flex items-start justify-between gap-2 sm:mb-3 sm:gap-3">
-          <div className="min-w-0">
+        <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2 sm:left-4 sm:right-4 sm:top-4">
+          <span className="rounded-full bg-black/35 px-2.5 py-1 text-[10px] font-black text-white/90 backdrop-blur-md sm:text-xs">
+            {formatRamenLogDate(log.date)}
+          </span>
+          <span className="flex items-center gap-1 rounded-full bg-black/35 px-2.5 py-1 text-[10px] font-black text-white backdrop-blur-md sm:text-xs">
+            <Heart className={`h-3 w-3 ${log.isLiked ? 'fill-current text-[#ff473d]' : ''}`} />
+            {log.likes ?? 0}
+          </span>
+        </div>
+
+        <div className={`absolute inset-x-0 bottom-0 p-4 text-white ${featured ? 'sm:p-7' : 'sm:p-5'}`}>
+          <div className="mb-1.5 flex min-w-0 items-center gap-1.5">
             {log.shop.id ? (
               <Link
                 href={`/shop/${log.shop.id}`}
-                className="group/shop flex min-w-0 items-center gap-1.5"
+                className="group/shop flex min-w-0 items-center gap-1.5 text-white/80 hover:text-white"
                 onClick={(event) => event.stopPropagation()}
               >
-                <Store className="h-3.5 w-3.5 shrink-0 text-stone-400 group-hover/shop:text-[#e60000]" />
-                <span className="truncate text-xs font-black text-stone-500 group-hover/shop:text-[#e60000]">
+                <Store className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate text-xs font-black sm:text-sm">
                   {log.shop.name}
                 </span>
               </Link>
             ) : (
-              <span className="flex min-w-0 items-center gap-1.5">
-                <Store className="h-3.5 w-3.5 shrink-0 text-stone-400" />
-                <span className="truncate text-xs font-black text-stone-500">{log.shop.name}</span>
+              <span className="flex min-w-0 items-center gap-1.5 text-white/80">
+                <Store className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate text-xs font-black sm:text-sm">{log.shop.name}</span>
               </span>
             )}
-            <h2 className="mt-1 line-clamp-2 text-base font-black leading-5 text-[#25282b] sm:mt-1.5 sm:text-xl sm:leading-7">
-              {log.menuName}
-            </h2>
-            {log.shop.location && (
-              <p className="mt-0.5 truncate text-[11px] font-bold text-stone-400 sm:mt-1 sm:text-xs">{log.shop.location}</p>
-            )}
           </div>
-          <span className="hidden shrink-0 text-xs font-bold text-stone-400 sm:block">
-            {formatRamenLogDate(log.date)}
-          </span>
+          <h2 className={`line-clamp-2 font-black tracking-[-0.02em] ${featured ? 'text-2xl leading-tight sm:text-4xl' : 'text-xl leading-tight sm:text-2xl'}`}>
+            {log.menuName}
+          </h2>
+          {log.shop.location && (
+            <p className="mt-1 truncate text-[11px] font-bold text-white/65 sm:text-xs">{log.shop.location}</p>
+          )}
         </div>
+      </div>
 
+      <div className={`flex min-w-0 flex-1 flex-col ${featured ? 'p-4 sm:p-6' : 'p-4 sm:p-5'}`}>
         {log.note && (
-          <p className="hidden line-clamp-2 min-h-12 text-sm font-medium leading-6 text-stone-600 sm:block">{log.note}</p>
-        )}
-
-        {mobileTasteNotes.length > 0 && (
-          <div className="mt-1.5 flex min-w-0 items-center gap-1 sm:hidden">
-            {mobileTasteNotes.map((note) => (
-              <span key={note} className="max-w-20 truncate rounded-full bg-stone-100 px-2 py-1 text-[10px] font-bold text-stone-600">
-                {note}
-              </span>
-            ))}
-            {tasteSummary.length > 2 && (
-              <span className="shrink-0 text-[10px] font-black text-stone-400">+{tasteSummary.length - 2}</span>
-            )}
-          </div>
+          <p className={`font-medium text-stone-600 ${featured ? 'line-clamp-2 text-sm leading-6 sm:text-base sm:leading-7' : 'line-clamp-2 text-sm leading-6'}`}>
+            {log.note}
+          </p>
         )}
 
         {visibleTasteNotes.length > 0 && (
-          <div className="mt-4 hidden flex-wrap items-center gap-1.5 sm:flex">
+          <div className="mt-3 flex min-w-0 flex-wrap items-center gap-1.5">
             {visibleTasteNotes.map((note) => (
-              <span key={note} className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-bold text-stone-600">
+              <span key={note} className="max-w-28 truncate rounded-full bg-stone-100 px-2.5 py-1 text-[10px] font-bold text-stone-600 sm:text-xs">
                 {note}
               </span>
             ))}
-            {tasteSummary.length > 3 && (
-              <span className="text-xs font-black text-stone-400">+{tasteSummary.length - 3}</span>
+            {tasteSummary.length > visibleTasteNotes.length && (
+              <span className="text-[10px] font-black text-stone-400 sm:text-xs">+{tasteSummary.length - visibleTasteNotes.length}</span>
             )}
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between pt-2.5 sm:pt-5">
+        <div className="mt-auto flex items-center justify-between pt-4">
           <Link
             href={`/user/${log.author.id}`}
             className="flex min-w-0 items-center gap-2"
@@ -149,11 +149,6 @@ export default function RamenLogCard({
             </span>
             <span className="truncate text-[11px] font-black text-stone-500 sm:text-xs">{log.author.name}</span>
           </Link>
-
-          <span className="flex shrink-0 items-center gap-1 text-[11px] font-black text-stone-400 sm:text-xs">
-            <Heart className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${log.isLiked ? 'fill-current text-[#e60000]' : ''}`} />
-            {log.likes ?? 0}
-          </span>
         </div>
       </div>
     </article>
