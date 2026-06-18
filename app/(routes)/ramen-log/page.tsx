@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -14,10 +14,12 @@ import {
   Search,
   Store,
   UserRound,
+  Loader2,
 } from 'lucide-react';
 import RamenLogModal, { type RamenLogFormData, type TasteNoteKey, type TasteNotes } from '@/app/components/RamenLogModal';
 import { useApp } from '@/app/context/AppContext';
 import { getAccessToken } from '@/lib/auth/accessToken';
+import { useRamenShops } from '@/hooks/queries/useRamenShops';
 
 const PhotoModal = dynamic(() => import('@/app/components/PhotoModal'), { ssr: false });
 
@@ -302,11 +304,39 @@ export default function RamenLogPage() {
   const router = useRouter();
   const { isLoggedIn, isAuthChecking, currentUser, showConfirm, showToast } = useApp();
   const [logItems, setLogItems] = useState<RamenLog[]>(logs);
-  const [activeType, setActiveType] = useState('전체');
+  
+  // Custom dropdown states
+  const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
+  const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
+  const [shopSearchQuery, setShopSearchQuery] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const [sortBy, setSortBy] = useState<SortOption>('latest');
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<RamenLog | null>(null);
+
+  // Fetch shops
+  const { data: shopsData } = useRamenShops({ page: 0, size: 100, sort: "NAME" });
+  const listShops = shopsData?.shops ?? [];
+  const selectedShop = listShops.find(s => s.id === selectedShopId);
+
+  // Click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsShopDropdownOpen(false);
+      }
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setIsSortDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const filteredLogs = useMemo(() => {
     const keyword = searchQuery.trim().toLowerCase();
@@ -314,7 +344,7 @@ export default function RamenLogPage() {
 
     return [...logItems]
       .filter((log) => log.isPublic !== false || log.author.id === currentUserId)
-      .filter((log) => activeType === '전체' || log.ramenType === activeType)
+      .filter((log) => !selectedShopId || log.shop.id === selectedShopId)
       .filter((log) => {
         if (!keyword) return true;
         return [log.shop.name, log.menuName, log.ramenType, log.note, ...getTasteNoteValues(log.tasteNotes)]
@@ -326,7 +356,7 @@ export default function RamenLogPage() {
         if (sortBy === 'popular') return b.likes - a.likes;
         return new Date(b.date).getTime() - new Date(a.date).getTime();
       });
-  }, [activeType, logItems, searchQuery, sortBy, currentUser]);
+  }, [selectedShopId, logItems, searchQuery, sortBy, currentUser]);
 
   const openCreateModal = () => {
     const hasAccessToken = Boolean(getAccessToken());
@@ -416,36 +446,90 @@ export default function RamenLogPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
-                <label className="relative">
-                  <select
-                    value={activeType}
-                    onChange={(event) => setActiveType(event.target.value)}
-                    className="h-11 w-full appearance-none rounded-sm border border-stone-200 bg-white pl-3 pr-9 text-sm font-black text-[#25282b] outline-none transition-colors focus:border-[#e60000] sm:w-32"
+              <div className="flex flex-row gap-2 sm:shrink-0 w-full sm:w-auto">
+                {/* Shop Search Dropdown */}
+                <div className="relative flex-1 sm:flex-initial" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsShopDropdownOpen(!isShopDropdownOpen)}
+                    className="flex h-11 w-full items-center justify-between gap-2 rounded-sm border border-stone-200 bg-white px-3 py-2.5 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000] sm:w-48"
                   >
-                    {typeFilters.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-                </label>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Store className="w-4 h-4 text-[#e60000] shrink-0" />
+                      <span className="truncate">{selectedShop ? selectedShop.name : '가게 선택'}</span>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-stone-400 shrink-0 transition-transform ${isShopDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
 
-                <label className="relative">
-                  <select
-                    value={sortBy}
-                    onChange={(event) => setSortBy(event.target.value as SortOption)}
-                    className="h-11 w-full appearance-none rounded-sm border border-stone-200 bg-white pl-3 pr-9 text-sm font-black text-[#25282b] outline-none transition-colors focus:border-[#e60000] sm:w-32"
+                  {isShopDropdownOpen && (
+                    <div className="absolute left-0 right-0 z-30 mt-2 flex max-h-64 flex-col overflow-hidden rounded-sm border border-stone-200 bg-white shadow-lg sm:w-64">
+                      <div className="p-2 border-b border-stone-100 bg-stone-50">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+                          <input
+                            type="text"
+                            placeholder="라멘집 검색..."
+                            value={shopSearchQuery}
+                            onChange={(e) => setShopSearchQuery(e.target.value)}
+                            className="w-full rounded-sm border border-stone-200 bg-white py-2 pl-8 pr-3 text-xs focus:border-[#e60000] focus:outline-none"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+                      <div className="overflow-y-auto">
+                        <button
+                          type="button"
+                          onClick={() => { setSelectedShopId(null); setIsShopDropdownOpen(false); }}
+                          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-stone-50 ${!selectedShopId ? 'text-[#e60000] font-semibold' : 'text-stone-700'}`}
+                        >
+                          전체 가게
+                        </button>
+                        {listShops
+                          ?.filter(shop => !shopSearchQuery || shop.name.toLowerCase().includes(shopSearchQuery.toLowerCase()))
+                          .map(shop => (
+                            <button
+                              key={shop.id}
+                              type="button"
+                              onClick={() => { setSelectedShopId(shop.id); setIsShopDropdownOpen(false); }}
+                              className={`w-full border-t border-stone-100 px-4 py-2.5 text-left text-sm hover:bg-stone-50 ${selectedShopId === shop.id ? 'font-semibold text-[#e60000]' : 'text-stone-700'}`}
+                            >
+                              <div className="font-medium truncate">{shop.name}</div>
+                              <div className="text-xs text-stone-400 truncate">{shop.location}</div>
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Custom Sort Dropdown */}
+                <div className="relative flex-1 sm:flex-initial" ref={sortDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                    className="flex h-11 w-full items-center justify-between gap-2 rounded-sm border border-stone-200 bg-white px-3 py-2.5 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000] sm:w-32"
                   >
-                    {sortOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-                </label>
+                    <span className="truncate">{sortOptions.find(o => o.value === sortBy)?.label || '최신순'}</span>
+                    <ChevronDown className={`w-4 h-4 text-stone-400 shrink-0 transition-transform ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isSortDropdownOpen && (
+                    <div className="absolute left-0 right-0 z-30 mt-2 overflow-hidden rounded-sm border border-stone-200 bg-white shadow-lg sm:w-32">
+                      <div className="py-1">
+                        {sortOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => { setSortBy(option.value); setIsSortDropdownOpen(false); }}
+                            className={`w-full px-4 py-2.5 text-left text-sm hover:bg-stone-50 ${sortBy === option.value ? 'font-semibold text-[#e60000]' : 'text-stone-700'}`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

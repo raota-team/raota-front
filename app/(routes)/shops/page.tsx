@@ -276,27 +276,26 @@ export default function ShopsListPage() {
         </div>
       </section>
 
-      <section className="relative z-20 mt-6 px-4 sm:px-6 lg:-mt-8 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="mx-auto w-full max-w-3xl rounded-[18px] border border-stone-200 bg-white p-2 shadow-[0_10px_28px_rgba(37,40,43,0.06)] sm:max-w-[44rem] sm:p-2.5">
-            <div className="relative mx-auto w-full">
-              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#e60000] md:left-5 md:h-5 md:w-5" />
-              <input
-                type="text"
-                placeholder="가게 이름이나 키워드를 검색해보세요"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-[16px] border border-stone-200 bg-white py-3 pl-12 pr-5 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-[#7e7e7e] focus:border-[#e60000] md:rounded-[18px] md:py-3.5 md:pl-14 md:pr-6"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
       <div className="max-w-7xl mx-auto px-4 pb-10 pt-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 items-end gap-3 md:flex md:flex-wrap">
+              {/* Search Box */}
+              <div className="col-span-2 block min-w-0 w-full md:w-[280px]">
+                <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-stone-400 md:mb-2 md:tracking-[0.2em]">
+                  가게 검색
+                </span>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                  <input
+                    type="text"
+                    placeholder="가게 이름이나 키워드 검색"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full h-11 rounded-sm border border-stone-200 bg-white pl-9 pr-4 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000]"
+                  />
+                </div>
+              </div>
               <FilterSelect
                 label="지역"
                 value={activeRegion}
