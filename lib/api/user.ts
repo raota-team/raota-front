@@ -19,6 +19,7 @@ export interface UserProfileUpdateParams {
 export interface UserStatsDto {
   visited_restaurant_count: number;
   total_photo_count: number;
+  total_log_count?: number;
   total_bookmark_count: number;
   post_count: number;
   comment_count: number;

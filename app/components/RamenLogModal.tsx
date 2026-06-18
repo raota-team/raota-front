@@ -24,7 +24,7 @@ export type TasteNotes = Record<TasteNoteKey, string[]>;
 interface RamenLogModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate?: (data: RamenLogFormData) => void;
+  onCreate?: (data: RamenLogFormData) => void | Promise<void>;
   initialShop?: {
     id: number;
     name: string;
@@ -193,7 +193,13 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
 
   if (!isOpen) return null;
 
-  const canSubmit = Boolean(shopName.trim() && menuName.trim() && (selectedFile || initialLog?.imageUrl));
+  const canSubmit = Boolean(
+    selectedShopId &&
+    menuName.trim() &&
+    ramenType &&
+    revisit &&
+    (selectedFile || initialLog?.imageUrl),
+  );
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -265,9 +271,9 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
         imageName = compressedFile.name;
       }
 
-      onCreate?.({
+      await onCreate?.({
         shopName: shopName.trim(),
-        shopId: selectedShopId || undefined,
+        shopId: selectedShopId!,
         menuName: menuName.trim(),
         ramenType,
         imageUrl,

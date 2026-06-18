@@ -31,7 +31,7 @@ interface PhotoModalProps {
   onDelete?: (photoId: number) => Promise<void>; // 삭제 콜백 추가
   onEdit?: (photoId: number) => void;
   disableNavigation?: boolean;
-  onLikeChange?: (photoId: number, likes: number, isLiked: boolean) => void;
+  onLikeChange?: (photoId: number, likes: number, isLiked: boolean) => void | Promise<void>;
 }
 
 const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdit, disableNavigation = false, onLikeChange }) => {
@@ -98,12 +98,19 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
     photo.restaurantName || photo.user || hasComment || photo.tasteNotes?.length,
   );
 
-  const handleLikeClick = () => {
+  const handleLikeClick = async () => {
     const nextIsLiked = !isLiked;
     const nextLikeCount = Math.max(0, likeCount + (nextIsLiked ? 1 : -1));
     setIsLiked(nextIsLiked);
     setLikeCount(nextLikeCount);
-    if (photo.id) onLikeChange?.(photo.id, nextLikeCount, nextIsLiked);
+    if (!photo.id || !onLikeChange) return;
+
+    try {
+      await onLikeChange(photo.id, nextLikeCount, nextIsLiked);
+    } catch {
+      setIsLiked(isLiked);
+      setLikeCount(likeCount);
+    }
   };
 
   return (

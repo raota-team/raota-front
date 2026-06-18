@@ -22,14 +22,23 @@ import {
   getMyBookmarks,
   getMyPosts,
   getUserPosts,
-  getMyPhotos,
-  getUserPhotos,
   getMyComments,
   getUserComments,
   updateUserProfile,
   MyProfileData,
   PageMeta
 } from '@/lib/api/user';
+import {
+  deleteRamenLog,
+  getMyRamenLogs,
+  getMyRamenLogShops,
+  getUserRamenLogs,
+  getUserRamenLogShops,
+  toggleRamenLogLike,
+  toRevisitValue,
+  updateRamenLog,
+  type RamenLog,
+} from '@/lib/api/ramen-logs';
 import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
 import { compressImage } from '@/lib/utils/image-optimization';
 import Loading from '@/app/loading';
@@ -69,7 +78,7 @@ const getShopAddress = (item: any) =>
   item.simple_address || item.address_simple || item.region || item.address || item.location || '주소 정보 없음';
 
 const getLogShopId = (item: any) =>
-  Number(item.restaurant_id || item.shopId || item.shop_id || item.ramenShopId || item.ramen_shop_id) || null;
+  Number(item.shop?.id || item.restaurant_id || item.shopId || item.shop_id || item.ramenShopId || item.ramen_shop_id) || null;
 
 type LogShopFilter = {
   id: number;
@@ -80,7 +89,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const resolvedParams = use(params);
   const router = useRouter();
   const userIdFromPath = resolvedParams.id;
-  const { isLoggedIn, showToast, currentUser, setCurrentUser } = useApp();
+  const { isLoggedIn, showConfirm, showToast, currentUser, setCurrentUser } = useApp();
 
   const [activeTab, setActiveTab] = useState('logs');
   const [profile, setProfile] = useState<MyProfileData | null>(null);
@@ -173,7 +182,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       let res;
       if (isOwnProfile) {
         switch (activeTab) {
-          case 'logs': res = await getMyPhotos(page, 8); break;
+          case 'logs': res = { data: await getMyRamenLogs({ page, size: 8, shopId: selectedLogShopId || undefined }) }; break;
           case 'visits': res = await getMyVisits(page); break;
           case 'bookmarks': res = await getMyBookmarks(page); break;
           case 'posts': res = await getMyPosts(page); break;
@@ -182,7 +191,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         }
       } else {
         switch (activeTab) {
-          case 'logs': res = await getUserPhotos(userIdFromPath, page, 8); break;
+          case 'logs': res = { data: await getUserRamenLogs(userIdFromPath, { page, size: 8, shopId: selectedLogShopId || undefined }) }; break;
           case 'posts': res = await getUserPosts(userIdFromPath, page); break;
           case 'comments': res = await getUserComments(userIdFromPath, page); break;
           case 'visits': res = await getUserVisits(userIdFromPath, page); break;
@@ -192,7 +201,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
       if (res && res.data) {
         const validItems = (res.data.items || []).filter((item: any) => {
-          if (activeTab === 'logs') return !!(item.photo_id || item.id);
+          if (activeTab === 'logs') return !!item.id;
           if (activeTab === 'visits' || activeTab === 'bookmarks') return !!getShopId(item);
           if (activeTab === 'posts') return !!(item.post_id || item.postId || item.id);
           if (activeTab === 'comments') return !!(item.commentId || item.id);
@@ -207,7 +216,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab, isOwnProfile, userIdFromPath, isError]);
+  }, [activeTab, isOwnProfile, userIdFromPath, isError, selectedLogShopId]);
 
   useEffect(() => {
     fetchTabData(0);
@@ -220,22 +229,15 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
     const fetchLogShopFilters = async () => {
       try {
-        const response = isOwnProfile
-          ? await getMyVisits(0, 100)
-          : await getUserVisits(userIdFromPath, 0, 100);
+        const shops = isOwnProfile
+          ? await getMyRamenLogShops()
+          : await getUserRamenLogShops(userIdFromPath);
 
         if (isCancelled) return;
 
-        const uniqueShops = new Map<number, LogShopFilter>();
-        (response.data.items || []).forEach((visit: any) => {
-          const id = Number(getShopId(visit));
-          if (!id || uniqueShops.has(id)) return;
-          uniqueShops.set(id, { id, name: getShopName(visit) });
-        });
-
-        setLogShopFilters(Array.from(uniqueShops.values()));
+        setLogShopFilters(shops.map((shop) => ({ id: shop.id, name: shop.name })));
       } catch (error) {
-        console.error('Failed to fetch visit shops for log filters:', error);
+        console.error('Failed to fetch ramen log shops:', error);
         if (!isCancelled) setLogShopFilters([]);
       }
     };
@@ -277,52 +279,58 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     setActiveTab(tab);
   };
 
-  const handleLogLikeChange = (logId: number, likes: number, isLiked: boolean) => {
+  const handleLogLikeChange = async (logId: number) => {
+    if (!isLoggedIn) {
+      showConfirm('로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?', () => {
+        router.push('/login');
+      });
+      throw new Error('Login required');
+    }
+
+    const result = await toggleRamenLogLike(logId);
     setItems((current) =>
       current.map((item) =>
-        Number(item.photo_id || item.id) === logId ? { ...item, likes, isLiked } : item,
+        Number(item.id) === logId
+          ? { ...item, likes: result.likeCount, isLiked: result.liked }
+          : item,
       ),
     );
     setSelectedPhoto((current: any) =>
-      current?.id === logId ? { ...current, likes, isLiked } : current,
+      current?.id === logId
+        ? { ...current, likes: result.likeCount, isLiked: result.liked }
+        : current,
     );
   };
 
   const handleEditLog = (logId: number) => {
-    const item = items.find((candidate) => Number(candidate.photo_id || candidate.id) === logId);
+    const item = items.find((candidate) => Number(candidate.id) === logId);
     if (!item) return;
     setSelectedPhoto(null);
     setEditingLog(toRamenLogItem(item));
   };
 
-  const handleUpdateLog = (data: RamenLogFormData) => {
+  const handleUpdateLog = async (data: RamenLogFormData) => {
     if (!editingLog) return;
+    if (!data.shopId) throw new Error('라멘 가게를 선택해주세요.');
 
-    setItems((current) =>
-      current.map((item) =>
-        Number(item.photo_id || item.id) === editingLog.id
-          ? {
-              ...item,
-              restaurant_id: data.shopId,
-              restaurant_name: data.shopName,
-              menuName: data.menuName,
-              menu_name: data.menuName,
-              image_url: data.imageUrl,
-              description: data.note,
-              ramenType: data.ramenType,
-              tasteNotes: data.tasteNotes,
-              revisit: data.revisit,
-              isPublic: data.isPublic,
-            }
-          : item,
-      ),
-    );
+    const updated = await updateRamenLog(editingLog.id, {
+      shopId: data.shopId,
+      menuName: data.menuName,
+      ramenType: data.ramenType,
+      imageUrl: data.imageUrl,
+      note: data.note || undefined,
+      tasteNotes: data.tasteNotes,
+      revisit: toRevisitValue(data.revisit),
+      public: data.isPublic,
+    });
+    setItems((current) => current.map((item) => item.id === updated.id ? updated : item));
     setEditingLog(null);
     showToast('라멘로그를 수정했습니다.', 'success');
   };
 
   const handleDeleteLog = async (logId: number) => {
-    setItems((current) => current.filter((item) => Number(item.photo_id || item.id) !== logId));
+    await deleteRamenLog(logId);
+    setItems((current) => current.filter((item) => Number(item.id) !== logId));
     setSelectedPhoto(null);
     showToast('라멘로그를 삭제했습니다.', 'success');
   };
@@ -460,7 +468,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     shop.name.toLowerCase().includes(logShopSearchQuery.trim().toLowerCase()),
   );
 
-  const toRamenLogItem = (item: any): RamenLogItem => ({
+  const toRamenLogItem = (item: any): RamenLogItem => item.shop && item.author ? item as RamenLog : ({
     id: Number(item.photo_id || item.id),
     author: {
       id: Number(profile.user_id || profile.id || userIdFromPath),
@@ -617,7 +625,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       {/* Tabs */}
       <div className="mb-8 flex overflow-x-auto border-b border-stone-200 scrollbar-hide">
         {[
-          { id: 'logs', label: '내 로그', icon: BookOpen, count: profile.stats.total_photo_count },
+          { id: 'logs', label: '내 로그', icon: BookOpen, count: profile.stats.total_log_count ?? profile.stats.total_photo_count },
           { id: 'visits', label: '방문기록', icon: MapPin, count: profile.stats.visited_restaurant_count },
           { id: 'posts', label: '게시글', icon: FileText, count: profile.stats.post_count },
           { id: 'comments', label: '댓글', icon: MessageSquare, count: profile.stats.comment_count },
@@ -721,7 +729,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         )}
         {(activeTab === 'logs' ? filteredLogItems.length > 0 : items.length > 0) ? (
           activeTab === 'logs' ? (
-            <div className="grid grid-cols-2 items-stretch gap-2 sm:gap-4 lg:grid-cols-4 lg:gap-4">
+            <div className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filteredLogItems.map((item, index) => {
                 const log = toRamenLogItem(item);
                 return (

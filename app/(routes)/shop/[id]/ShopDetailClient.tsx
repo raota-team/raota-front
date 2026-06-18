@@ -258,7 +258,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               </span>
               <span className="flex min-w-0 items-start gap-1.5">
                 <Users className="mt-0.5 h-4 w-4 flex-shrink-0 text-stone-400" />
-                <span className="break-keep leading-relaxed">방문수 {formatCount(shop.stats.visit_count)}</span>
+                <span className="break-keep leading-relaxed">방문 인증수 {formatCount(shop.stats.visit_count)}</span>
               </span>
               <span className="flex min-w-0 items-start gap-1.5">
                 <Heart className="mt-0.5 h-4 w-4 flex-shrink-0 text-stone-400" />
