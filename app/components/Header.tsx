@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronRight, LogIn, LogOut, Menu, X, Home, MessageSquare, User, UtensilsCrossed, Sparkles } from 'lucide-react';
+import { ChevronRight, LogIn, LogOut, Menu, X, Home, MessageSquare, User, UtensilsCrossed, Sparkles, NotebookPen } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 interface HeaderProps {
@@ -72,6 +72,13 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
       active: isActive('/shops') || currentPath.startsWith('/shop/'),
     },
     {
+      href: '/ramen-log',
+      label: '라멘로그',
+      description: '유저들의 한 그릇 기록 둘러보기',
+      icon: NotebookPen,
+      active: isActive('/ramen-log'),
+    },
+    {
       href: '/community',
       label: '커뮤니티',
       description: '후기와 인증샷, 라멘 이야기',
@@ -120,6 +127,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
                 <div className="ml-10 flex items-center justify-end gap-6">
                   <Link href="/" className={`text-sm transition-colors ${currentPath === '/' ? activeTextColor : navTextColor}`}>홈</Link>
                   <Link href="/shops" className={`text-sm transition-colors ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
+                  <Link href="/ramen-log" className={`text-sm transition-colors ${currentPath === '/ramen-log' ? activeTextColor : navTextColor}`}>라멘로그</Link>
                   <Link href="/community" className={`text-sm transition-colors ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
                   <Link
                     href="/recommend"

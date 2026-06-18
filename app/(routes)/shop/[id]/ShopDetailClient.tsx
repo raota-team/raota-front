@@ -5,16 +5,13 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import {
-  Camera,
   Eye,
   Star,
   Menu,
   MapPin,
   Award,
   ArrowLeft,
-  Image as ImageIcon,
   Instagram,
-  ExternalLink,
   Sparkles,
   Utensils,
   Heart,
@@ -22,19 +19,18 @@ import {
   PenSquare,
   ChevronDown,
   Users,
+  NotebookPen,
 } from "lucide-react";
-import { Shop, UserPhoto, MenuItem } from "../../../types";
+import { Shop } from "../../../types";
 import ProgressBar from "../../../components/ProgressBar";
 import Loading from "@/app/loading";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
-import { toggleBookmark, voteMenu, getVoteStatus, getShopPhotos, addProofPicture, deleteProofPicture, increaseShopViewCount } from "@/lib/api/ramen-shops";
+import { toggleBookmark, voteMenu, getVoteStatus, increaseShopViewCount } from "@/lib/api/ramen-shops";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
 import { ApiClientError } from "@/lib/api/client";
 
-const PhotoModal = dynamic(() => import("../../../components/PhotoModal"), { ssr: false });
 const ReportModal = dynamic(() => import("../../../components/ReportModal"), { ssr: false });
-const UploadPhotoModal = dynamic(() => import("../../../components/UploadPhotoModal"), { ssr: false });
 const VoteMenuModal = dynamic(() => import("../../../components/VoteMenuModal"), { ssr: false });
 
 interface ShopDetailClientProps {
@@ -73,21 +69,14 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   const [shopDetail, setShopDetail] = useState<Shop | null>(initialShop ?? null);
   const [isBookmarked, setIsBookmarked] = useState(Boolean(initialShop?.isBookmarked));
   const [voteData, setVoteStatus] = useState<any>(null);
-  const [shopPhotos, setShopPhotos] = useState<UserPhoto[]>([]);
 
-  const [selectedPhoto, setSelectedPhoto] = useState<UserPhoto | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [isVoteAccordionOpen, setIsVoteAccordionOpen] = useState(false);
-  const photoSectionRef = useRef<HTMLDivElement | null>(null);
   const lastIncrementedId = useRef<number | null>(null);
 
   const refreshShopData = async () => {
     try {
-      const photos = await getShopPhotos(shopId, 0, 12);
-      setShopPhotos(photos);
-      
       const votes = await getVoteStatus(shopId);
       setVoteStatus(votes);
     } catch (err) {
@@ -137,17 +126,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
       console.error("Voting failed:", error);
       showToast("투표 처리 중 오류가 발생했습니다.", "error");
-    }
-  };
-
-  const handleDeletePhoto = async (photoId: number) => {
-    try {
-      await deleteProofPicture(shopId, photoId);
-      showToast("사진이 삭제되었습니다.", "success");
-      await refreshShopData();
-      queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
-    } catch (error) {
-      showToast("사진 삭제 중 오류가 발생했습니다.", "error");
     }
   };
 
@@ -274,7 +252,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#e60000]">바로 참여</p>
               <h2 className="mt-2 text-lg font-black text-[#25282b]">{shop.name} 방문 후기를 들려주세요!</h2>
               <p className="mt-1 text-sm leading-6 text-stone-500">
-                먹어봤다면 10초면 충분해요. 투표하고, 인증샷 남기고, 후기까지 바로 남겨보세요.
+                먹어봤다면 10초면 충분해요. 투표하고, 라멘로그나 방문 후기를 남겨보세요.
               </p>
               <div className="mt-4 grid gap-2 sm:grid-cols-3">
                 <button
@@ -292,12 +270,12 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                       showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login"));
                       return;
                     }
-                    setIsUploadModalOpen(true);
+                    router.push("/ramen-log");
                   }}
                   className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]"
                 >
-                  <Camera className="h-4 w-4" />
-                  인증샷 남기기
+                  <NotebookPen className="h-4 w-4" />
+                  라멘로그 쓰러가기
                 </button>
                 <button
                   type="button"
@@ -363,58 +341,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               </div>
             </div>
           )}
-
-          <div ref={photoSectionRef} className="mt-10 border-t border-stone-200 pt-6 md:mt-12 md:pt-8">
-            <div className="mb-4 flex items-end justify-between md:mb-6">
-              <h2 className="flex items-center text-lg font-bold text-[#25282b] md:text-xl"><ImageIcon className="mr-2 h-5 w-5 text-[#e60000]" /> 유저 메뉴 인증</h2>
-              <span className="text-xs text-stone-600 font-mono">{shopPhotos.length}개 사진</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
-              {shopPhotos.map((photo) => (
-                <div key={photo.id} onClick={() => setSelectedPhoto(photo)} className="group relative aspect-square cursor-pointer overflow-hidden rounded-sm border border-stone-200 bg-stone-100 transition-colors hover:border-[#e60000]">
-                  <Image
-                    src={photo.imageUrl} 
-                    alt={photo.menuName} 
-                    fill
-                    sizes="(min-width: 768px) 260px, calc((100vw - 44px) / 2)"
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                    <p className="text-white text-xs font-bold truncate">
-                      {photo.menuName}
-                    </p>
-                    <div className="flex justify-between items-center mt-1 border-t border-white/20 pt-1">
-                      <span className="text-[10px] text-white/70 font-mono">{photo.user}</span>
-                      <span className="text-[10px] text-white/50 font-mono">{photo.date}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              <button 
-                onClick={() => {
-                  if (!isLoggedIn) {
-                    showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login"));
-                    return;
-                  }
-                  setIsUploadModalOpen(true);
-                }}
-                className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-stone-300 bg-stone-50 p-3 text-center transition-colors hover:border-[#e60000] md:gap-3 md:p-4"
-                aria-label="라멘 인증샷 올리기"
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition-colors group-hover:border-[#e60000] group-hover:text-[#e60000] md:h-12 md:w-12">
-                  <Camera className="h-5 w-5 md:h-6 md:w-6" />
-                </span>
-                <span className="break-keep text-xs font-black leading-tight text-[#25282b] transition-colors group-hover:text-[#e60000] md:text-sm">
-                  라멘 인증샷 올리기
-                </span>
-                <span className="text-[11px] font-bold text-stone-600 leading-tight break-keep">
-                  내가 먹은 메뉴를 기록해요
-                </span>
-              </button>
-            </div>
-          </div>
         </div>
 
         <div className="lg:col-span-4">
@@ -511,26 +437,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
         />
       )}
 
-      {isUploadModalOpen && (
-        <UploadPhotoModal
-          isOpen={isUploadModalOpen}
-          onClose={() => setIsUploadModalOpen(false)}
-          shopName={shop.name}
-          menuList={shop.menu_list}
-          onUpload={async (formData) => {
-            try {
-              await addProofPicture(shopId, formData);
-              showToast("사진이 성공적으로 등록되었습니다!", "success");
-              await refreshShopData();
-              queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
-            } catch (error: any) {
-              console.error("Backend registration failed:", error);
-              showToast(error.message || "사진 등록 중 오류가 발생했습니다.", "error");
-            }
-          }}
-        />
-      )}
-
       <VoteMenuModal
         isOpen={isVoteModalOpen}
         onClose={() => setIsVoteModalOpen(false)}
@@ -540,14 +446,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
         bestMenuId={bestMenuId}
         shopName={shop.name}
       />
-
-      {selectedPhoto && (
-        <PhotoModal 
-          photo={{ ...selectedPhoto, userId: selectedPhoto.uploaderId ?? selectedPhoto.userId }} 
-          onClose={() => setSelectedPhoto(null)} 
-          onDelete={handleDeletePhoto}
-        />
-      )}
     </div>
   );
 }

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { useApp } from '../context/AppContext';
 import HomeHeroActions from './HomeHeroActions';
 import UserProfileCard from './UserProfileCard';
 import AnimatedCounter from './AnimatedCounter';
@@ -15,7 +14,6 @@ import { Do_Hyeon } from 'next/font/google';
 import { useDiscoveryStats, useRecentVerifiedShops, useHomeTips } from '@/hooks/queries/useDiscovery';
 import {
   Sparkles,
-  Scale,
   MessageSquare,
   MessageCircleMore,
   Camera,
@@ -27,7 +25,6 @@ import {
   MessageCircle,
   TrendingUp,
   Map,
-  MapPin,
   Search,
   ArrowRight,
   Zap,
@@ -51,7 +48,6 @@ export default function LandingContent() {
   const [heroRef, heroVisible] = useScrollReveal();
   const [contentRef, contentVisible] = useScrollReveal({ threshold: 0.05 });
   const [startPCAnim, setStartPCAnim] = useState(false);
-  const { showToast } = useApp();
   
   useEffect(() => {
     const timer = setTimeout(() => setStartPCAnim(true), 300);
@@ -70,9 +66,9 @@ export default function LandingContent() {
   return (
     <div className="min-h-screen bg-white pb-6 md:pb-10">
       {/* SEO용 숨겨진 제목 */}
-      <h1 className="sr-only">라오타 - 라멘 추천 & 맛집 지도 & 전국 라멘 커뮤니티</h1>
+      <h1 className="sr-only">라오타 - 라멘의 모든 것을 기록하고 나누는 커뮤니티</h1>
       
-      {/* 1. Portal Hero Section - Focus on AI Recommendation */}
+      {/* 1. Portal Hero Section */}
       <section ref={heroRef} className="relative h-[430px] min-h-[430px] w-full overflow-hidden bg-[#25282b] md:h-[500px] md:min-h-0">
         <div className="absolute inset-0">
           <Image
@@ -90,12 +86,12 @@ export default function LandingContent() {
           <div className="max-w-2xl">
 
             <h1 className={`mb-4 md:mb-6 text-[clamp(2rem,8vw,4.5rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-white ${doHyeon.className}`}>
-              오늘 당신의 <br />
-              <span>베스트 한 그릇</span>은?
+              라멘을 사랑하는 <br />
+              <span>사람들, 라오타.</span>
             </h1>
             <p className="mb-10 md:mb-12 max-w-lg text-base md:text-lg font-medium leading-relaxed text-white/80 break-keep">
-              취향 분석부터 매장 비교까지, <br className="hidden md:block" />
-              라오타가 실패 없는 라멘 선택을 도와드립니다.
+              가게를 찾고, 한 그릇을 기록하고, <br className="hidden md:block" />
+              라멘을 좋아하는 사람들과 이야기를 나눠보세요.
             </p>
 
             {/* Mobile Only: Stats Counter under "도와드립니다." (Hidden to reduce clutter on mobile) */}
@@ -104,28 +100,28 @@ export default function LandingContent() {
             {/* Mobile: Hero CTA buttons */}
             <div className="grid max-w-[360px] grid-cols-2 gap-2.5 sm:hidden">
               <Link 
-                href="/recommend?mode=taste"
-                aria-label="취향으로 추천받기"
+                href="/shops"
+                aria-label="라멘 가게 둘러보기"
                 className="group flex h-14 items-center justify-between rounded-full bg-[#e60000] px-4 text-white transition-opacity hover:opacity-95 active:opacity-90"
               >
                 <span className="text-sm font-bold tracking-[0.01em]">
-                  취향 추천
+                  가게 둘러보기
                 </span>
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#e60000]">
-                  <Sparkles className="h-4 w-4" />
+                  <Store className="h-4 w-4" />
                 </span>
               </Link>
               
               <Link 
-                href="/recommend?mode=compare"
-                aria-label="매장 1:1 비교"
+                href="/ramen-log"
+                aria-label="라멘로그 둘러보기"
                 className="group flex h-14 items-center justify-between rounded-full border border-white/35 bg-white/10 px-4 text-white transition-colors hover:bg-white/20 active:bg-white/15"
               >
                 <span className="text-sm font-bold tracking-[0.01em]">
-                  1:1 비교
+                  라멘로그
                 </span>
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white">
-                  <Scale className="h-4 w-4" />
+                  <Camera className="h-4 w-4" />
                 </span>
               </Link>
             </div>
@@ -133,19 +129,19 @@ export default function LandingContent() {
             {/* PC: Original Pill Button Style */}
             <div className="hidden sm:flex flex-row gap-3 md:gap-4">
               <Link 
-                href="/recommend?mode=taste"
+                href="/shops"
                 className="vodafone-button-pill bg-[#e60000] px-6 py-3.5 text-center transition-opacity hover:opacity-95 active:opacity-90 md:px-8 md:py-4"
               >
                 <span className="flex items-center justify-center gap-2 text-white font-bold text-sm md:text-base">
-                  취향으로 추천받기 <Sparkles className="h-4 w-4 md:h-5 md:w-5" />
+                  라멘 가게 둘러보기 <Store className="h-4 w-4 md:h-5 md:w-5" />
                 </span>
               </Link>
               <Link 
-                href="/recommend?mode=compare"
+                href="/ramen-log"
                 className="vodafone-button-pill border border-white/30 bg-white/10 px-6 py-3.5 text-center transition-colors hover:bg-white/20 md:px-8 md:py-4"
               >
                 <span className="flex items-center justify-center gap-2 text-white font-bold text-sm md:text-base">
-                  매장 1:1 비교 <Scale className="h-4 w-4 md:h-5 md:w-5" />
+                  라멘로그 둘러보기 <Camera className="h-4 w-4 md:h-5 md:w-5" />
                 </span>
               </Link>
             </div>
@@ -170,17 +166,17 @@ export default function LandingContent() {
                 className="text-[#e60000] text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
                 shouldStart={startPCAnim && stats.totalReviews > 0} 
               />
-              참고한 후기
+              쌓인 라멘 기록
             </div>
             <div className="h-8 w-px bg-white/10 flex-shrink-0"></div>
             <div className="flex-shrink-0 whitespace-nowrap">
               <AnimatedCounter 
                 value={stats.totalUsers || 0} 
-                suffix="건+" 
+                suffix="명+"
                 className="text-white text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
                 shouldStart={startPCAnim && stats.totalUsers > 0} 
               />
-              AI 분석 리뷰
+              함께한 라멘러
             </div>
           </div>
         </div>
@@ -208,7 +204,7 @@ export default function LandingContent() {
             <div className="mb-4 md:mb-8 flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="h-6 md:h-8 w-1 md:w-1.5 rounded-full bg-[#e60000]"></div>
-                <h2 className="text-xl md:text-2xl font-black text-[#25282b]">최근 사진 인증된 라멘집</h2>
+                <h2 className="text-xl md:text-2xl font-black text-[#25282b]">최근 발견된 라멘집</h2>
               </div>
               <Link href="/shops" className="text-xs md:text-sm font-bold text-[#666666] hover:text-[#e60000]">
                 더보기 +
@@ -258,23 +254,13 @@ export default function LandingContent() {
           <section className="grid grid-cols-2 gap-3 md:gap-4 sm:grid-cols-4">
             {[
               { label: '전체 맛집', icon: Store, href: '/shops', color: 'bg-stone-50 text-[#25282b]' },
+              { label: '라멘로그', icon: Camera, href: '/ramen-log', color: 'bg-stone-50 text-[#25282b]' },
               { label: '커뮤니티', icon: Users, href: '/community', color: 'bg-stone-50 text-[#25282b]' },
-              { 
-                label: '웨이팅 스팟', 
-                icon: MapPin, 
-                href: '/waiting-map', 
-                color: 'bg-stone-50 text-[#25282b]',
-                onClick: (e: React.MouseEvent<HTMLAnchorElement>) => {
-                  e.preventDefault();
-                  showToast('웨이팅 스팟 서비스는 준비 중입니다.', 'info');
-                }
-              },
               { label: '내 정보', icon: LayoutGrid, href: '/mypage', color: 'bg-stone-50 text-[#25282b]' },
             ].map((item) => (
               <Link 
                 key={item.label}
                 href={item.href}
-                onClick={item.onClick}
                 className="group flex flex-col items-center justify-center rounded-md bg-white py-3 px-2 ring-1 ring-[#f2f2f2] transition-colors hover:ring-[#e60000]/20 md:py-4 md:px-4"
               >
                 <div className={`mb-2 flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full ${item.color} group-hover:bg-[#e60000] group-hover:text-white transition-colors`}>
@@ -285,7 +271,7 @@ export default function LandingContent() {
             ))}
           </section>
 
-          {/* Bottom Banner Group: AI Summary & Contact Banner */}
+          {/* Bottom Banner Group: AI Summary & Ramen Log Event */}
           <div className="lg:mt-auto flex flex-col gap-4 md:gap-8 w-full">
             {/* AI Feature Summary Banner */}
             <section className="relative overflow-hidden rounded-md bg-[#e60000] p-5 text-white md:p-8">
@@ -310,7 +296,7 @@ export default function LandingContent() {
               </div>
             </section>
 
-            {/* PC Only: Contact Us Banner aligned to the bottom */}
+            {/* PC Only: Ramen Log Event Banner aligned to the bottom */}
             <div className="hidden lg:block">
               <ContactUsBanner />
             </div>
@@ -362,7 +348,7 @@ export default function LandingContent() {
           </div>
         </aside>
 
-        {/* Mobile Only: Contact Us Banner at the very bottom */}
+        {/* Mobile Only: Ramen Log Event Banner at the very bottom */}
         <div className="lg:hidden mt-4">
           <ContactUsBanner />
         </div>

@@ -25,11 +25,22 @@ const Footer: React.FC = () => {
             <a href="mailto:contact@raota.net" className="hover:text-white transition-colors text-[10px] text-white/65 mt-0.5 block md:text-right font-medium">
               제휴 및 문의: contact@raota.net
             </a>
+            <p className="text-[10px] text-white/65 md:text-right font-medium">
+              가게 목록 출처 : 카카오톡 오픈채팅{' '}
+              <a
+                href="https://open.kakao.com/o/ggsXReuc"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#ff4d4d] underline underline-offset-4 transition-opacity hover:opacity-80"
+              >
+                라멘방
+              </a>
+            </p>
           </div>
         </div>
 
         {/* Bottom copyright */}
-        <div className="mt-5 border-t border-white/5 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] text-white/65">
+        <div className="mt-3 border-t border-white/5 pt-3 flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] text-white/65">
           <p>© 2026 RAOTA. All rights reserved.</p>
           <p className="font-medium hidden sm:block">RAOTA - 라멘 맛집 정보 · AI 추천 · 커뮤니티</p>
         </div>

@@ -39,7 +39,7 @@ export default function WeekendRecommendation() {
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2 md:gap-3">
             <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-[#e60000]" />
-            <h2 className="text-xl md:text-2xl font-black text-[#25282b]">이번 주말, AI가 추천하는 한 그릇</h2>
+            <h2 className="text-xl md:text-2xl font-black text-[#25282b]">이번 주말 둘러볼 한 그릇</h2>
           </div>
         </div>
 
@@ -47,7 +47,7 @@ export default function WeekendRecommendation() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="mb-2 text-base font-bold text-[#25282b]">
-                {isError ? "추천을 불러오지 못했습니다." : "이번 주말 추천을 준비 중입니다."}
+                {isError ? "한 그릇을 불러오지 못했습니다." : "이번 주말의 한 그릇을 준비 중입니다."}
               </p>
               <p className="text-sm leading-relaxed text-[#666666]">
                 지금은 등록된 주말 추천이 없어요. 가게 목록에서 원하는 라멘을 먼저 둘러보세요.
@@ -70,7 +70,7 @@ export default function WeekendRecommendation() {
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2 md:gap-3">
           <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-[#e60000]" />
-          <h2 className="text-xl md:text-2xl font-black text-[#25282b]">이번 주말, AI가 추천하는 한 그릇</h2>
+          <h2 className="text-xl md:text-2xl font-black text-[#25282b]">이번 주말 둘러볼 한 그릇</h2>
         </div>
       </div>
 

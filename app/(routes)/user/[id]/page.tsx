@@ -3,18 +3,18 @@
 import { useState, useEffect, useRef, useCallback, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Shield } from 'lucide-react';
 import PhotoModal from '../../../components/PhotoModal';
 import { useApp } from '../../../context/AppContext';
-import { 
-  getMyProfile, 
+import {
+  getMyProfile,
   getUserProfile,
-  getMyVisits, 
+  getMyVisits,
   getUserVisits,
-  getMyBookmarks, 
-  getMyPosts, 
+  getMyBookmarks,
+  getMyPosts,
   getUserPosts,
-  getMyPhotos, 
+  getMyPhotos,
   getUserPhotos,
   getMyComments,
   getUserComments,
@@ -65,7 +65,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const router = useRouter();
   const userIdFromPath = resolvedParams.id;
   const { isLoggedIn, showToast, currentUser, setCurrentUser } = useApp();
-  
+
   const [activeTab, setActiveTab] = useState('photos');
   const [profile, setProfile] = useState<MyProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -77,7 +77,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     profileImage: '',
     backgroundImage: ''
   });
-  
+
   const [selectedFiles, setSelectedFiles] = useState<{
     profile: File | null;
     background: File | null;
@@ -97,13 +97,13 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const lastItemRef = useCallback((node: HTMLElement | null) => {
     if (isLoading) return;
     if (observer.current) observer.current.disconnect();
-    
+
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && pageMeta?.hasNext) {
         loadMore();
       }
     });
-    
+
     if (node) observer.current.observe(node);
   }, [isLoading, pageMeta]);
 
@@ -167,7 +167,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           default: return;
         }
       }
-      
+
       if (res && res.data) {
         const validItems = (res.data.items || []).filter((item: any) => {
           if (activeTab === 'photos') return !!(item.photo_id || item.id);
@@ -261,7 +261,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         profile_image_url: finalProfileUrl || undefined,
         background_image_url: finalBackgroundUrl || undefined,
       } as any);
-      
+
       setIsEditing(false);
       showToast('프로필이 성공적으로 저장되었습니다!', 'success');
       fetchProfile();
@@ -294,9 +294,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const handleImageDelete = (type: 'profile' | 'background') => {
     setMarkedForDelete(prev => ({ ...prev, [type]: true }));
     setSelectedFiles(prev => ({ ...prev, [type]: null }));
-    setEditForm(prev => ({ 
-      ...prev, 
-      [type === 'profile' ? 'profileImage' : 'backgroundImage']: '' 
+    setEditForm(prev => ({
+      ...prev,
+      [type === 'profile' ? 'profileImage' : 'backgroundImage']: ''
     }));
   };
 
@@ -314,6 +314,13 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [privacySettings, setPrivacySettings] = useState({
+    photos: true,
+    visits: true,
+    posts: true,
+    comments: true,
+  });
 
   if (isInitialLoading) return <Loading />;
   if (isError || !profile) return (
@@ -366,7 +373,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           <div className="relative">
             <div className="relative h-32 w-32 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-white md:h-40 md:w-40" onClick={() => handleZoomImage(editForm.profileImage || profile.profile_image_url, '프로필 이미지')}>
               {(editForm.profileImage || (profile.profile_image_url && !markedForDelete.profile)) ? (
-                 <img src={editForm.profileImage || profile.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+                <img src={editForm.profileImage || profile.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-4xl bg-stone-100 text-stone-300">🍜</div>
               )}
@@ -380,7 +387,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
               )}
             </div>
             {isEditing && isOwnProfile && (editForm.profileImage || profile.profile_image_url) && !markedForDelete.profile && (
-              <button 
+              <button
                 onClick={(e) => { e.stopPropagation(); handleImageDelete('profile'); }}
                 className="absolute -right-1 -top-1 z-40 rounded-full border-2 border-white bg-[#25282b] p-1.5 text-white transition-colors hover:bg-[#e60000]"
               >
@@ -395,11 +402,11 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 <div className="space-y-4">
                   <input type="text" value={editForm.nickname} onChange={(e) => setEditForm({ ...editForm, nickname: e.target.value })} className="w-full rounded-sm border border-stone-200 bg-white px-4 py-2 text-xl font-bold outline-none focus:border-[#e60000]" />
                   <div className="relative">
-                    <textarea 
-                      value={editForm.bio} 
-                      onChange={(e) => setEditForm({ ...editForm, bio: e.target.value.slice(0, 150) })} 
-                      placeholder="자기소개를 입력하세요" 
-                      className="w-full rounded-sm border border-stone-200 bg-white px-4 py-2 pr-16 text-sm outline-none focus:border-[#e60000]" 
+                    <textarea
+                      value={editForm.bio}
+                      onChange={(e) => setEditForm({ ...editForm, bio: e.target.value.slice(0, 150) })}
+                      placeholder="자기소개를 입력하세요"
+                      className="w-full rounded-sm border border-stone-200 bg-white px-4 py-2 pr-16 text-sm outline-none focus:border-[#e60000]"
                       rows={2}
                       maxLength={150}
                     />
@@ -421,7 +428,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                     {displayBio}
                   </span>
                   {displayBio && displayBio !== '자기소개가 아직 없습니다.' && displayBio.length > 45 && (
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setIsBioExpanded(!isBioExpanded)}
                       className="inline-flex items-center gap-0.5 text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors flex-shrink-0"
@@ -441,10 +448,16 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
           <div className="mt-4 md:mt-0 md:pt-[104px] relative z-10">
             {isOwnProfile && !isEditing && (
-              <button onClick={handleEditStart} className="inline-flex items-center justify-center gap-2 rounded-sm border border-[#e60000] bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:bg-[#e60000] hover:text-white">
-                <Edit3 className="h-3.5 w-3.5" />
-                프로필 수정
-              </button>
+              <div className="flex flex-col gap-2">
+                <button onClick={handleEditStart} className="inline-flex items-center justify-center gap-2 rounded-sm border border-[#e60000] bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:bg-[#e60000] hover:text-white">
+                  <Edit3 className="h-3.5 w-3.5" />
+                  프로필 수정
+                </button>
+                <button onClick={() => setIsPrivacyModalOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]">
+                  <Shield className="h-3.5 w-3.5" />
+                  공개 설정
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -527,6 +540,84 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         </div>
       )}
       {selectedPhoto && <PhotoModal photo={{ id: selectedPhoto.photo_id || selectedPhoto.id, imageUrl: selectedPhoto.image_url, menuName: selectedPhoto.menuName || '이미지 보기', restaurantName: selectedPhoto.restaurant_name || '사용자 프로필', restaurantId: selectedPhoto.restaurant_id, date: selectedPhoto.uploaded_at ? new Date(selectedPhoto.uploaded_at).toLocaleDateString('ko-KR') : '-', comment: selectedPhoto.description || '', isUserPhoto: selectedPhoto.isUserPhoto }} onClose={() => setSelectedPhoto(null)} disableNavigation={false} />}
+
+      {/* Privacy Settings Modal */}
+      {isPrivacyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setIsPrivacyModalOpen(false)} />
+          <div className="relative w-full max-w-md overflow-hidden rounded-sm border border-stone-200 bg-white animate-scale-in">
+            <div className="flex items-center justify-between border-b border-stone-100 px-6 py-4">
+              <div>
+                <h3 className="text-base font-black text-[#25282b]">공개 설정</h3>
+                <p className="mt-0.5 text-[11px] font-medium text-stone-500">다른 사용자에게 보여질 탭을 선택하세요.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPrivacyModalOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-400 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+                aria-label="공개 설정 모달 닫기"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-1">
+              {[
+                { key: 'photos' as const, label: '사진', description: '인증샷 및 라멘 사진', icon: Camera },
+                { key: 'visits' as const, label: '방문기록', description: '방문한 가게 목록', icon: MapPin },
+                { key: 'posts' as const, label: '게시글', description: '커뮤니티 작성 글', icon: FileText },
+                { key: 'comments' as const, label: '댓글', description: '커뮤니티 작성 댓글', icon: MessageSquare },
+              ].map((item) => (
+                <div
+                  key={item.key}
+                  className="flex items-center justify-between rounded-sm px-4 py-3.5 transition-colors hover:bg-stone-50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-sm border border-stone-200 bg-stone-50">
+                      <item.icon className="h-4 w-4 text-stone-500" />
+                    </div>
+                    <div>
+                      <span className="block text-sm font-black text-[#25282b]">{item.label}</span>
+                      <span className="block text-[11px] font-medium text-stone-400">{item.description}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-stone-400">
+                      {privacySettings[item.key] ? (
+                        <span className="flex items-center gap-1 text-[#25282b]"><Eye className="h-3 w-3" />공개</span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-stone-400"><EyeOff className="h-3 w-3" />비공개</span>
+                      )}
+                    </span>
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={privacySettings[item.key]}
+                        onChange={(e) => setPrivacySettings(prev => ({ ...prev, [item.key]: e.target.checked }))}
+                        className="peer sr-only"
+                      />
+                      <div className="relative h-6 w-11 rounded-full bg-stone-200 transition-colors peer-checked:bg-[#e60000] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-5"></div>
+                    </label>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-stone-100 px-6 py-4 flex items-center justify-between">
+              <p className="text-[11px] font-medium text-stone-400">비공개 항목은 나만 볼 수 있습니다.</p>
+              <button
+                onClick={() => {
+                  setIsPrivacyModalOpen(false);
+                  showToast('공개 설정이 저장되었습니다.', 'success');
+                }}
+                className="rounded-sm bg-[#e60000] px-6 py-2.5 text-xs font-black text-white transition-opacity hover:opacity-90"
+              >
+                저장
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

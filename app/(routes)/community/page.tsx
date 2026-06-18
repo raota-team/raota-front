@@ -121,7 +121,7 @@ function PostListCard({ post }: { post: CommunityPostCard }) {
   return (
     <article
       onClick={openPost}
-      className="group flex h-[7.25rem] w-full cursor-pointer gap-4 overflow-hidden rounded-md border border-stone-200 bg-white p-3.5 transition-colors hover:border-[#e60000] sm:h-32 sm:p-4"
+      className="group flex w-full cursor-pointer gap-4 bg-white px-2 py-4 transition-colors hover:bg-stone-50 sm:py-5"
     >
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <div className="mb-1.5 flex min-w-0 flex-wrap items-center gap-2">
@@ -145,7 +145,7 @@ function PostListCard({ post }: { post: CommunityPostCard }) {
         </div>
       </div>
       {post.imageUrl && (
-        <div className="h-full w-24 flex-shrink-0 overflow-hidden rounded-md bg-stone-100 sm:w-36">
+        <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-sm bg-stone-100 sm:h-24 sm:w-28">
           <img src={post.imageUrl} alt={post.title} loading="lazy" className="h-full w-full object-cover" />
         </div>
       )}
@@ -428,20 +428,20 @@ export default function CommunityPage() {
           </div>
 
           {isLoading && posts.length === 0 ? (
-            <div className="space-y-4">
+            <div className="divide-y divide-stone-200 border-t border-b border-stone-200">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex h-[7.25rem] w-full animate-pulse gap-4 rounded-md border border-stone-100 bg-stone-50 p-3.5 sm:h-32 sm:p-4">
+                <div key={i} className="flex w-full animate-pulse gap-4 bg-white px-0 py-4 sm:py-5">
                   <div className="flex flex-1 flex-col justify-between">
                     <div className="h-4 w-1/3 rounded bg-stone-200"></div>
                     <div className="h-6 w-3/4 rounded bg-stone-200"></div>
                     <div className="h-4 w-1/4 rounded bg-stone-200"></div>
                   </div>
-                  <div className="h-full w-24 rounded-md bg-stone-200 sm:w-36"></div>
+                  <div className="h-20 w-20 rounded-sm bg-stone-200 sm:h-24 sm:w-28"></div>
                 </div>
               ))}
             </div>
           ) : posts.length > 0 ? (
-            <div className={`space-y-4 transition-opacity duration-300 ${isFetching ? 'opacity-60' : 'opacity-100'}`}>
+            <div className={`divide-y divide-stone-200 border-t border-b border-stone-200 transition-opacity duration-300 ${isFetching ? 'opacity-60' : 'opacity-100'}`}>
               {posts.map((post) =>
                 <PostListCard key={post.postId} post={post} />,
               )}

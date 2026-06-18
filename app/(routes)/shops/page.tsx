@@ -452,7 +452,7 @@ export default function ShopsListPage() {
             {/* Pagination - Clean Style */}
             {totalPages > 1 && (
                 <div className={`mt-16 flex flex-col items-center gap-6 pb-20 border-t border-stone-200 pt-10 transition-opacity duration-200 md:flex-row md:justify-between ${showListLoading ? "opacity-35 pointer-events-none" : "opacity-100"}`}>
-                <div className="text-center text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] md:text-left">페이지 {currentPage + 1} / {totalPages}</div>
+                <div className="text-center text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 md:text-left">페이지 {currentPage + 1} / {totalPages}</div>
                 <div className="flex max-w-full items-center justify-center gap-2 overflow-x-auto pb-1">
                   <button
                     type="button"
@@ -497,7 +497,7 @@ export default function ShopsListPage() {
             )}
           </section>
 
-          <div className="flex justify-center border-t border-stone-200 pt-6">
+          <div className="flex flex-col items-center justify-center gap-4 pt-6">
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
