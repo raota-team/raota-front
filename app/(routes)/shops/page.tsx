@@ -281,7 +281,7 @@ export default function ShopsListPage() {
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 items-end gap-3 md:flex md:flex-wrap">
               {/* Search Box */}
-              <div className="col-span-2 block min-w-0 w-full md:w-[200px]">
+              <div className="col-span-2 block min-w-0 w-full md:w-[250px]">
                 <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-stone-400 md:mb-2 md:tracking-[0.2em]">
                   가게 검색
                 </span>
