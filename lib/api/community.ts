@@ -19,6 +19,16 @@ export interface CommunityPostCard {
   viewCount: number;
 }
 
+export interface PopularCommunityPost {
+  postId: number;
+  category: string;
+  categoryName: string;
+  title: string;
+  likeCount: number;
+  commentCount: number;
+  createdAt: string;
+}
+
 export interface CommunityPostDetail extends CommunityPostCard {
   imageUrls: string[];
   contentFormat: "MARKDOWN" | "PLAIN" | "TIPTAP_JSON";
@@ -57,6 +67,14 @@ export const getCommunityPosts = async (params: {
   ramenShopId?: number | null;
 }) => {
   return await apiClient<any>("/community/posts", { query: params });
+};
+
+/** 최근 인기글 조회 */
+export const getPopularCommunityPosts = async (limit = 3) => {
+  return await apiClient<{ status: string; data: PopularCommunityPost[] }>(
+    "/api/v1/community/posts/popular",
+    { query: { limit } },
+  );
 };
 
 /** 커뮤니티 글 작성 */

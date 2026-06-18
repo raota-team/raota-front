@@ -21,7 +21,13 @@ import {
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { getCommunityPosts, getRamenShopOptions, type CommunityPostCard } from '@/lib/api/community';
+import {
+  getCommunityPosts,
+  getPopularCommunityPosts,
+  getRamenShopOptions,
+  type CommunityPostCard,
+  type PopularCommunityPost,
+} from '@/lib/api/community';
 import Loading from '@/app/loading';
 import { useApp } from '@/app/context/AppContext';
 
@@ -35,6 +41,8 @@ const getCategoryLabel = (category: string) => {
       return 'Q&A';
     case 'FREE':
       return '자유게시판';
+    case 'POPULAR':
+      return '인기글';
     default:
       return category;
   }
@@ -42,6 +50,7 @@ const getCategoryLabel = (category: string) => {
 
 const categories = [
   { id: 'all', label: '전체' },
+  { id: 'POPULAR', label: '인기글' },
   { id: 'REVIEW', label: '맛집후기' },
   { id: 'TIP', label: '라멘꿀팁' },
   { id: 'QUESTION', label: 'Q&A' },
@@ -179,11 +188,11 @@ export default function CommunityPage() {
   }, [searchParams]);
 
   const { data: postsData, isLoading, isFetching } = useQuery({
-    queryKey: ['community-posts', selectedCategory, selectedShopId],
+    queryKey: ['community-posts', selectedCategory, selectedShopId, currentPage],
     queryFn: () =>
       getCommunityPosts({
-        page: 0,
-        size: 100,
+        page: currentPage,
+        size: PAGE_SIZE,
         category: selectedCategory === 'all' ? undefined : selectedCategory,
         ramenShopId: selectedShopId,
       }),
@@ -191,19 +200,21 @@ export default function CommunityPage() {
     staleTime: 60 * 1000,
   });
 
-  const apiPosts: CommunityPostCard[] = postsData?.data?.items || [];
-  const allPosts = [...apiPosts].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
-  const totalPages = Math.max(1, Math.ceil(allPosts.length / PAGE_SIZE));
+  const { data: popularPostsData, isLoading: isPopularPostsLoading } = useQuery({
+    queryKey: ['community-posts', 'recent-popular', 3],
+    queryFn: () => getPopularCommunityPosts(3),
+    staleTime: 60 * 1000,
+  });
+
+  const posts: CommunityPostCard[] = postsData?.data?.items || [];
+  const totalPages = Math.max(1, postsData?.data?.page?.totalPages || 1);
   const pageInfo = {
     totalPages,
-    hasPrevious: currentPage > 0,
-    hasNext: currentPage < totalPages - 1,
+    hasPrevious: postsData?.data?.page?.hasPrevious ?? currentPage > 0,
+    hasNext: postsData?.data?.page?.hasNext ?? currentPage < totalPages - 1,
   };
-  const posts = allPosts.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
   const visiblePages = getVisiblePages(pageInfo.totalPages, currentPage);
-  const featuredPosts = allPosts.slice(0, 3);
+  const popularPosts: PopularCommunityPost[] = popularPostsData?.data || [];
 
   useEffect(() => {
     const fetchShopOptions = async () => {
@@ -505,18 +516,28 @@ export default function CommunityPage() {
           <section className="rounded-md border border-stone-200 bg-[#25282b] p-5 text-white">
             <div className="mb-4 flex items-center gap-2">
               <Flame className="h-4 w-4 text-[#e60000]" />
-              <h3 className="text-sm font-black uppercase tracking-widest">지금 핫한 글</h3>
+              <h3 className="text-sm font-black uppercase tracking-widest">최근 인기글</h3>
             </div>
             <div className="space-y-4">
-              {featuredPosts.length > 0 ? (
-                featuredPosts.map((post) => (
+              {isPopularPostsLoading ? (
+                [1, 2, 3].map((item) => (
+                  <div
+                    key={item}
+                    className="animate-pulse border-t border-white/10 pt-4 first:border-t-0 first:pt-0"
+                  >
+                    <div className="mb-2 h-2.5 w-16 rounded bg-white/10" />
+                    <div className="h-4 w-full rounded bg-white/10" />
+                  </div>
+                ))
+              ) : popularPosts.length > 0 ? (
+                popularPosts.map((post) => (
                   <Link
                     key={post.postId}
-                    href={post.postId > 0 ? `/community/${post.postId}` : '/community'}
+                    href={`/community/${post.postId}`}
                     className="block border-t border-white/10 pt-4 first:border-t-0 first:pt-0"
                   >
                     <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-white/45">
-                      {getCategoryLabel(post.category)}
+                      {post.categoryName || getCategoryLabel(post.category)}
                     </p>
                     <p className="line-clamp-2 text-sm font-bold leading-5 text-white transition-colors hover:text-[#e60000]">
                       {post.title}
