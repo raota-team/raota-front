@@ -188,7 +188,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                 </span>
               )}
               <h2 className="mt-3 text-xl font-black leading-tight text-[#25282b] sm:text-2xl">
-                {photo.restaurantName || photo.menuName}
+                {photo.menuName}
               </h2>
 
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-bold text-stone-500">
