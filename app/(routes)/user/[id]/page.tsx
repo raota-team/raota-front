@@ -24,7 +24,9 @@ import {
   getUserPosts,
   getMyComments,
   getUserComments,
+  updateMyPrivacySettings,
   updateUserProfile,
+  ActivityVisibility,
   MyProfileData,
   PageMeta
 } from '@/lib/api/user';
@@ -85,6 +87,13 @@ type LogShopFilter = {
   name: string;
 };
 
+const allPublicVisibility: ActivityVisibility = {
+  logs: true,
+  visits: true,
+  posts: true,
+  comments: true,
+};
+
 export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
@@ -139,12 +148,26 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
   const [editingLog, setEditingLog] = useState<RamenLogItem | null>(null);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [isPrivacySaving, setIsPrivacySaving] = useState(false);
+  const [privacySettings, setPrivacySettings] = useState<ActivityVisibility>(allPublicVisibility);
+  const [savedPrivacySettings, setSavedPrivacySettings] = useState<ActivityVisibility>(allPublicVisibility);
 
   const isOwnProfile = useMemo(() => {
     if (!currentUser) return false;
     const myId = String(currentUser.user_id || currentUser.id);
     return myId === String(userIdFromPath);
   }, [currentUser, userIdFromPath]);
+
+  useEffect(() => {
+    if (isOwnProfile || !profile) return;
+    const visibility = profile.activity_visibility || allPublicVisibility;
+    const visibleTabs = (['logs', 'visits', 'posts', 'comments'] as const)
+      .filter((tab) => visibility[tab]);
+    if (!visibleTabs.includes(activeTab as typeof visibleTabs[number])) {
+      setActiveTab(visibleTabs[0] || 'none');
+    }
+  }, [activeTab, isOwnProfile, profile]);
 
   const fetchProfile = useCallback(async () => {
     setIsInitialLoading(true);
@@ -153,6 +176,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     try {
       const res = isOwnProfile ? await getMyProfile() : await getUserProfile(userIdFromPath);
       setProfile(res.data);
+      const visibility = res.data.activity_visibility || allPublicVisibility;
+      setPrivacySettings(visibility);
+      setSavedPrivacySettings(visibility);
       setEditForm({
         nickname: res.data.nickname,
         bio: getEditableBio(res.data),
@@ -177,6 +203,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
   const fetchTabData = useCallback(async (page: number) => {
     if (isError) return;
+    if (!isOwnProfile && profile && activeTab !== 'bookmarks') {
+      const visibility = profile.activity_visibility || allPublicVisibility;
+      if (!visibility[activeTab as keyof ActivityVisibility]) {
+        setItems([]);
+        setPageMeta(null);
+        return;
+      }
+    }
     setIsLoading(true);
     try {
       let res;
@@ -216,7 +250,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab, isOwnProfile, userIdFromPath, isError, selectedLogShopId]);
+  }, [activeTab, isOwnProfile, userIdFromPath, isError, selectedLogShopId, profile]);
 
   useEffect(() => {
     fetchTabData(0);
@@ -441,14 +475,34 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     });
   };
 
+  const openPrivacyModal = () => {
+    setPrivacySettings(savedPrivacySettings);
+    setIsPrivacyModalOpen(true);
+  };
+
+  const closePrivacyModal = () => {
+    setPrivacySettings(savedPrivacySettings);
+    setIsPrivacyModalOpen(false);
+  };
+
+  const handlePrivacySave = async () => {
+    setIsPrivacySaving(true);
+    try {
+      const response = await updateMyPrivacySettings(privacySettings);
+      setPrivacySettings(response.data);
+      setSavedPrivacySettings(response.data);
+      setProfile((current) => current ? { ...current, activity_visibility: response.data } : current);
+      setIsPrivacyModalOpen(false);
+      showToast('공개 설정이 저장되었습니다.', 'success');
+    } catch (error: any) {
+      setPrivacySettings(savedPrivacySettings);
+      showToast(error.message || '공개 설정 저장에 실패했습니다.', 'error');
+    } finally {
+      setIsPrivacySaving(false);
+    }
+  };
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
-  const [privacySettings, setPrivacySettings] = useState({
-    photos: true,
-    visits: true,
-    posts: true,
-    comments: true,
-  });
 
   if (isInitialLoading) return <Loading />;
   if (isError || !profile) return (
@@ -460,6 +514,16 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   );
 
   const displayBio = (profile.userDescription && profile.userDescription !== profile.nickname) ? profile.userDescription : '자기소개가 아직 없습니다.';
+  const activityVisibility = profile.activity_visibility || allPublicVisibility;
+  const profileTabs = [
+    { id: 'logs', label: '내 로그', icon: BookOpen, count: profile.stats.total_log_count ?? profile.stats.total_photo_count ?? 0 },
+    { id: 'visits', label: '방문기록', icon: MapPin, count: profile.stats.visited_restaurant_count ?? 0 },
+    { id: 'posts', label: '게시글', icon: FileText, count: profile.stats.post_count ?? 0 },
+    { id: 'comments', label: '댓글', icon: MessageSquare, count: profile.stats.comment_count ?? 0 },
+    { id: 'bookmarks', label: '북마크', icon: Heart, count: profile.stats.total_bookmark_count, private: true },
+  ].filter((tab) =>
+    isOwnProfile || (!tab.private && activityVisibility[tab.id as keyof ActivityVisibility]),
+  );
   const filteredLogItems = selectedLogShopId
     ? items.filter((item) => getLogShopId(item) === selectedLogShopId)
     : items;
@@ -612,7 +676,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                   <Edit3 className="h-3.5 w-3.5" />
                   프로필 수정
                 </button>
-                <button onClick={() => setIsPrivacyModalOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]">
+                <button onClick={openPrivacyModal} className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]">
                   <Shield className="h-3.5 w-3.5" />
                   공개 설정
                 </button>
@@ -624,13 +688,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
       {/* Tabs */}
       <div className="mb-8 flex overflow-x-auto border-b border-stone-200 scrollbar-hide">
-        {[
-          { id: 'logs', label: '내 로그', icon: BookOpen, count: profile.stats.total_log_count ?? profile.stats.total_photo_count },
-          { id: 'visits', label: '방문기록', icon: MapPin, count: profile.stats.visited_restaurant_count },
-          { id: 'posts', label: '게시글', icon: FileText, count: profile.stats.post_count },
-          { id: 'comments', label: '댓글', icon: MessageSquare, count: profile.stats.comment_count },
-          { id: 'bookmarks', label: '북마크', icon: Heart, count: profile.stats.total_bookmark_count, private: true }
-        ].filter(tab => isOwnProfile || !tab.private).map(tab => (
+        {profileTabs.map(tab => (
           <button key={tab.id} onClick={() => handleTabChange(tab.id)} className={`whitespace-nowrap border-b-2 px-6 py-4 text-xs font-bold transition-colors ${activeTab === tab.id ? 'border-[#e60000] text-[#25282b]' : 'border-transparent text-stone-500 hover:text-[#25282b]'}`}>
             <div className="flex items-center"><tab.icon className="mr-2 h-3.5 w-3.5" />{tab.label}<span className={`ml-1 ${activeTab === tab.id ? 'text-[#e60000]' : 'text-stone-400'}`}>({tab.count})</span></div>
           </button>
@@ -777,7 +835,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             })}
           </div>
           )
-        ) : !isLoading && !(activeTab === 'logs' && pageMeta?.hasNext) && <EmptyState tab={activeTab} message={activeTab === 'logs' ? (selectedLogShopId ? '이 가게에 남긴 라멘로그가 없습니다.' : '아직 남긴 라멘로그가 없습니다.') : '아직 항목이 없습니다.'} icon={activeTab === 'logs' ? BookOpen : activeTab === 'visits' ? MapPin : activeTab === 'bookmarks' ? Heart : activeTab === 'posts' ? FileText : MessageSquare} />}
+        ) : !isLoading && !(activeTab === 'logs' && pageMeta?.hasNext) && <EmptyState tab={activeTab} message={activeTab === 'none' ? '공개된 활동이 없습니다.' : activeTab === 'logs' ? (selectedLogShopId ? '이 가게에 남긴 라멘로그가 없습니다.' : '아직 남긴 라멘로그가 없습니다.') : '아직 항목이 없습니다.'} icon={activeTab === 'logs' ? BookOpen : activeTab === 'visits' ? MapPin : activeTab === 'bookmarks' ? Heart : activeTab === 'posts' ? FileText : MessageSquare} />}
         {activeTab === 'logs' && pageMeta?.hasNext && !isLoading && (
           <div ref={lastItemRef} className="h-1" aria-hidden="true" />
         )}
@@ -839,7 +897,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       {/* Privacy Settings Modal */}
       {isPrivacyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setIsPrivacyModalOpen(false)} />
+          <div className="absolute inset-0 bg-black/60" onClick={closePrivacyModal} />
           <div className="relative w-full max-w-md overflow-hidden rounded-sm border border-stone-200 bg-white animate-scale-in">
             <div className="flex items-center justify-between border-b border-stone-100 px-6 py-4">
               <div>
@@ -848,7 +906,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
               </div>
               <button
                 type="button"
-                onClick={() => setIsPrivacyModalOpen(false)}
+                onClick={closePrivacyModal}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-400 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
                 aria-label="공개 설정 모달 닫기"
               >
@@ -858,7 +916,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
             <div className="p-6 space-y-1">
               {[
-                { key: 'photos' as const, label: '내 로그', description: '내가 남긴 라멘로그', icon: BookOpen },
+                { key: 'logs' as const, label: '내 로그', description: '내가 남긴 라멘로그', icon: BookOpen },
                 { key: 'visits' as const, label: '방문기록', description: '방문한 가게 목록', icon: MapPin },
                 { key: 'posts' as const, label: '게시글', description: '커뮤니티 작성 글', icon: FileText },
                 { key: 'comments' as const, label: '댓글', description: '커뮤니티 작성 댓글', icon: MessageSquare },
@@ -901,13 +959,11 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             <div className="border-t border-stone-100 px-6 py-4 flex items-center justify-between">
               <p className="text-[11px] font-medium text-stone-400">비공개 항목은 나만 볼 수 있습니다.</p>
               <button
-                onClick={() => {
-                  setIsPrivacyModalOpen(false);
-                  showToast('공개 설정이 저장되었습니다.', 'success');
-                }}
-                className="rounded-sm bg-[#e60000] px-6 py-2.5 text-xs font-black text-white transition-opacity hover:opacity-90"
+                onClick={handlePrivacySave}
+                disabled={isPrivacySaving}
+                className="rounded-sm bg-[#e60000] px-6 py-2.5 text-xs font-black text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                저장
+                {isPrivacySaving ? '저장 중' : '저장'}
               </button>
             </div>
           </div>

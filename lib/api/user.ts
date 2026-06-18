@@ -17,12 +17,19 @@ export interface UserProfileUpdateParams {
 }
 
 export interface UserStatsDto {
-  visited_restaurant_count: number;
-  total_photo_count: number;
-  total_log_count?: number;
+  visited_restaurant_count: number | null;
+  total_photo_count: number | null;
+  total_log_count?: number | null;
   total_bookmark_count: number;
-  post_count: number;
-  comment_count: number;
+  post_count: number | null;
+  comment_count: number | null;
+}
+
+export interface ActivityVisibility {
+  logs: boolean;
+  visits: boolean;
+  posts: boolean;
+  comments: boolean;
 }
 
 export interface MyProfileData {
@@ -33,6 +40,7 @@ export interface MyProfileData {
   background_image_url: string;
   userDescription: string;
   stats: UserStatsDto;
+  activity_visibility: ActivityVisibility;
 }
 
 export interface UserProfileResponse {
@@ -204,6 +212,19 @@ export const getMemberSummary = async (): Promise<{ success: boolean; data: Memb
 /** 타 사용자 프로필 조회 */
 export const getUserProfile = async (userId: number | string): Promise<UserProfileResponse> => {
   return await apiClient<UserProfileResponse>(`/users/${userId}/profile`);
+};
+
+export const getMyPrivacySettings = async (): Promise<{ status: string; data: ActivityVisibility }> => {
+  return await apiClient<{ status: string; data: ActivityVisibility }>(`/users/me/privacy-settings`);
+};
+
+export const updateMyPrivacySettings = async (
+  settings: ActivityVisibility,
+): Promise<{ status: string; data: ActivityVisibility }> => {
+  return await apiClient<{ status: string; data: ActivityVisibility }>(`/users/me/privacy-settings`, {
+    method: "PATCH",
+    body: settings,
+  });
 };
 
 /** 내 활동 내역 조회용 헬퍼들 */
