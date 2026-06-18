@@ -464,7 +464,7 @@ export default function RamenLogPage() {
         <section className="min-w-0">
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#e60000]">Public Notes</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#e60000]">공개 노트</p>
               <h2 className="mt-1 text-xl font-black text-[#25282b]">라멘러들의 기록</h2>
               <p className="mt-1 text-sm font-medium leading-6 text-stone-500">
                 저장하고, 다시 보고, 취향을 비교하기 좋은 한 그릇 로그입니다.
