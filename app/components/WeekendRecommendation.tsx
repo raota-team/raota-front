@@ -1,12 +1,17 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { Sparkles, UtensilsCrossed, Store } from 'lucide-react';
 import { useWeekendRecommendations } from '@/hooks/queries/useDiscovery';
+import ResilientImage from './ResilientImage';
+import type { WeekendRecommendationResponse } from '@/lib/api/discovery';
 
-export default function WeekendRecommendation() {
-  const { data, isLoading, isError } = useWeekendRecommendations();
+export default function WeekendRecommendation({
+  initialData,
+}: {
+  initialData?: { success: boolean; data: WeekendRecommendationResponse[] };
+}) {
+  const { data, isLoading, isError } = useWeekendRecommendations(initialData);
   const recommendation = data?.data?.[0];
   const ramenTypeTag = recommendation?.name.replace(/\s+/g, "");
   const shopsHref = recommendation
@@ -80,7 +85,7 @@ export default function WeekendRecommendation() {
       >
         <div className="relative h-[190px] shrink-0 overflow-hidden rounded-[0px_6px_0px_0px] bg-stone-100 md:h-[280px] md:w-[42%]">
           {recommendation.imageUrl ? (
-            <Image
+            <ResilientImage
               src={recommendation.imageUrl}
               alt={recommendation.title || recommendation.name}
               fill

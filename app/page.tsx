@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import LandingContent from './components/LandingContent';
+import LandingContent, { type HomeInitialData } from './components/LandingContent';
 
 export const metadata: Metadata = {
   title: {
@@ -12,6 +12,38 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
-  return <LandingContent />;
+const fetchPublicHomeData = async <T,>(
+  path: string,
+  revalidate: number,
+): Promise<T | undefined> => {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiBaseUrl) return undefined;
+
+  try {
+    const response = await fetch(`${apiBaseUrl}${path}`, {
+      next: { revalidate },
+    });
+
+    if (!response.ok) return undefined;
+    return await response.json() as T;
+  } catch {
+    return undefined;
+  }
+};
+
+export default async function HomePage() {
+  const [stats, recentShops, weekendRecommendations] = await Promise.all([
+    fetchPublicHomeData<HomeInitialData['stats']>('/api/v1/discovery/stats', 300),
+    fetchPublicHomeData<HomeInitialData['recentShops']>('/api/v1/shops/recent-verified?limit=4', 60),
+    fetchPublicHomeData<HomeInitialData['weekendRecommendations']>(
+      '/api/v1/discovery/weekend-recommendations',
+      3600,
+    ),
+  ]);
+
+  return (
+    <LandingContent
+      initialData={{ stats, recentShops, weekendRecommendations }}
+    />
+  );
 }

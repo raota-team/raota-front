@@ -12,11 +12,12 @@ type TasteShop = {
   isBookmarked?: boolean;
 };
 import { FocusCard } from "./SharedComponents";
+import ResilientImage from "@/app/components/ResilientImage";
 
 const buildUniqueTags = (tags: Array<string | undefined>) =>
   Array.from(new Set(tags.filter(Boolean))).slice(0, 4) as string[];
 
-const getShopImage = (imageUrl?: string) => imageUrl || "/header-recommend.png";
+const getShopImage = (imageUrl?: string) => imageUrl || "/header-recommend.webp";
 
 export function TasteResults({
   shops,
@@ -63,7 +64,13 @@ function ShopCard({ shop, index, selectedTags }: { shop: TasteShop; index: numbe
   return (
     <Link href={`/shop/${shop.id}`} className="group relative flex min-h-32 w-full min-w-0 overflow-hidden rounded-[6px] bg-white border border-stone-200">
       <div className="relative min-h-32 w-28 shrink-0 overflow-hidden rounded-[6px] bg-stone-100">
-        <img src={getShopImage(shop.imageUrl)} alt={shop.name} className="absolute inset-0 h-full w-full object-cover" />
+        <ResilientImage
+          src={getShopImage(shop.imageUrl)}
+          alt={shop.name}
+          fill
+          sizes="112px"
+          className="absolute inset-0 object-cover"
+        />
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
         <div className="min-w-0">
@@ -104,7 +111,13 @@ function ShopCardDesktop({ shop, index, selectedTags }: { shop: TasteShop; index
   return (
     <article className="group overflow-hidden bg-white relative transition-colors">
       <div className="relative aspect-[16/9] overflow-hidden rounded-[6px] bg-stone-100">
-        <img src={getShopImage(shop.imageUrl)} alt={shop.name} className="h-full w-full object-cover" />
+        <ResilientImage
+          src={getShopImage(shop.imageUrl)}
+          alt={shop.name}
+          fill
+          sizes="(min-width: 640px) 50vw, 100vw"
+          className="object-cover"
+        />
         <button type="button" onClick={handleBookmark} disabled={isBookmarkPending} className="absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#25282b] shadow-sm transition-colors hover:text-[#e60000] hover:bg-white backdrop-blur-sm disabled:cursor-not-allowed disabled:opacity-60">
           <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-[#e60000] text-[#e60000]" : ""}`} />
         </button>

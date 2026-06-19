@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { MessageCircle, Fingerprint } from 'lucide-react';
 import { useApp } from '@/app/context/AppContext';
 
@@ -27,7 +28,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-sm border border-stone-200 bg-white p-8 text-center">
         <div className="mb-8">
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-stone-100">
-            <img src="/logo.png" alt="RAOTA Logo" className="w-14 h-14 object-contain" />
+            <Image
+              src="/logo.png"
+              alt="RAOTA Logo"
+              width={56}
+              height={56}
+              className="h-14 w-14 object-contain"
+            />
           </div>
           <h2 className="mb-2 text-3xl font-black text-[#25282b]">라오타에 오신것을<br />환영합니다!</h2>
           <p className="text-sm text-[#7e7e7e]">라멘을 사랑하는 미식가들의 공간</p>

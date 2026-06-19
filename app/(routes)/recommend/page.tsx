@@ -353,7 +353,7 @@ export default function RecommendPage() {
       <section className="relative h-32 overflow-hidden md:h-[14rem]">
         <div className="absolute inset-0">
           <Image
-            src="/header-recommend.png"
+            src="/header-recommend.webp"
             alt="Recommend background"
             fill
             priority
@@ -652,7 +652,13 @@ function RecommendResultLoading({ mode }: { mode: ModeId }) {
     <div className="flex min-h-[24rem] flex-col items-center justify-center border border-stone-200 bg-stone-50 px-6 py-12 text-center">
       <div className="relative mb-6">
         <div className="absolute inset-0 rounded-full bg-[#e60000]/10 blur-xl" />
-        <img src="/logo.png" alt="RAOTA Loading" className="relative h-14 w-14 animate-bounce-slow object-contain" />
+        <Image
+          src="/logo.png"
+          alt="RAOTA Loading"
+          width={56}
+          height={56}
+          className="relative h-14 w-14 animate-bounce-slow object-contain"
+        />
       </div>
       <h3 className="text-lg font-black text-[#25282b]">
         {loadingCopy.title}<span className="text-[#e60000]">.</span>

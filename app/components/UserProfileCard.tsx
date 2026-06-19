@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { Users, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
 import { useMemberSummary } from '@/hooks/queries/useUser';
 import { getAccessToken } from '@/lib/auth/accessToken';
 import { useEffect, useState } from 'react';
+import ResilientImage from './ResilientImage';
 
 export default function UserProfileCard() {
   const [hasAccessToken, setHasAccessToken] = useState(false);
@@ -36,7 +36,13 @@ export default function UserProfileCard() {
       <div className="flex items-center gap-3 min-w-0">
         {user?.profileImageUrl ? (
           <div className="relative h-10 w-10 md:h-12 md:w-12 overflow-hidden rounded-full ring-1 ring-black/5 flex-shrink-0">
-            <Image src={user.profileImageUrl} alt="프로필" fill className="object-cover" sizes="48px" />
+            <ResilientImage
+              src={user.profileImageUrl}
+              alt="프로필"
+              fill
+              sizes="48px"
+              className="object-cover"
+            />
           </div>
         ) : (
           <div className="h-10 w-10 md:h-12 md:w-12 flex-shrink-0 rounded-full bg-[#f2f2f2] flex items-center justify-center text-[#e60000]">

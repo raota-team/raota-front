@@ -12,6 +12,12 @@ import TrendingTagsRanking from './TrendingTagsRanking';
 import WeekendRecommendation from './WeekendRecommendation';
 import { Do_Hyeon } from 'next/font/google';
 import { useDiscoveryStats, useRecentVerifiedShops, useHomeTips } from '@/hooks/queries/useDiscovery';
+import type {
+  DiscoveryStatsResponse,
+  RecentVerifiedShopResponse,
+  WeekendRecommendationResponse,
+} from '@/lib/api/discovery';
+import ResilientImage from './ResilientImage';
 import {
   Sparkles,
   MessageSquare,
@@ -44,7 +50,17 @@ const doHyeon = Do_Hyeon({
   preload: false,
 });
 
-export default function LandingContent() {
+export type HomeInitialData = {
+  stats?: { success: boolean; data: DiscoveryStatsResponse };
+  recentShops?: { success: boolean; data: RecentVerifiedShopResponse[] };
+  weekendRecommendations?: { success: boolean; data: WeekendRecommendationResponse[] };
+};
+
+export default function LandingContent({
+  initialData,
+}: {
+  initialData?: HomeInitialData;
+}) {
   const [heroRef, heroVisible] = useScrollReveal();
   const [contentRef, contentVisible] = useScrollReveal({ threshold: 0.05 });
   const [startPCAnim, setStartPCAnim] = useState(false);
@@ -55,8 +71,11 @@ export default function LandingContent() {
   }, []);
   
   // 서버 연동 데이터
-  const { data: statsData } = useDiscoveryStats();
-  const { data: recentShopsData, isLoading: isLoadingShops } = useRecentVerifiedShops(4);
+  const { data: statsData } = useDiscoveryStats(initialData?.stats);
+  const { data: recentShopsData, isLoading: isLoadingShops } = useRecentVerifiedShops(
+    4,
+    initialData?.recentShops,
+  );
   const { data: homeTipsData, isLoading: isLoadingTips } = useHomeTips('tip', 3);
 
   const stats = statsData?.data || { totalShops: 0, totalReviews: 0, totalUsers: 0 };
@@ -191,7 +210,7 @@ export default function LandingContent() {
         <main className="flex flex-col gap-4 md:gap-8 lg:h-full">
           
           {/* Weekend Recommendation */}
-          <WeekendRecommendation />
+          <WeekendRecommendation initialData={initialData?.weekendRecommendations} />
 
           {/* Mobile: Move Profile Card under recommendation for dashboard feel */}
           <div className="lg:hidden">
@@ -220,7 +239,7 @@ export default function LandingContent() {
                 >
                   <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-[0px_8px_0px_0px] bg-stone-100 ring-1 ring-stone-100">
                     {shop.imageUrl ? (
-                      <Image
+                      <ResilientImage
                         src={shop.imageUrl}
                         alt={shop.name}
                         fill

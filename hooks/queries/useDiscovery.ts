@@ -2,6 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  type DiscoveryStatsResponse,
+  type RecentVerifiedShopResponse,
+  type WeekendRecommendationResponse,
   getDiscoveryStats,
   getRecentVerifiedShops,
   getPopularShopsToday,
@@ -10,19 +13,28 @@ import {
   generateWeekendRecommendations,
 } from "@/lib/api/discovery";
 
-export const useDiscoveryStats = () => {
+type DiscoveryResponse<T> = { success: boolean; data: T };
+
+export const useDiscoveryStats = (
+  initialData?: DiscoveryResponse<DiscoveryStatsResponse>,
+) => {
   return useQuery({
     queryKey: ["discovery", "stats"],
     queryFn: () => getDiscoveryStats(),
     staleTime: 1000 * 60 * 5, // 5 minutes
+    initialData,
   });
 };
 
-export const useRecentVerifiedShops = (limit: number = 4) => {
+export const useRecentVerifiedShops = (
+  limit: number = 4,
+  initialData?: DiscoveryResponse<RecentVerifiedShopResponse[]>,
+) => {
   return useQuery({
     queryKey: ["discovery", "recent-verified-shops", limit],
     queryFn: () => getRecentVerifiedShops(limit),
     staleTime: 1000 * 60 * 1, // 1 minute
+    initialData,
   });
 };
 
@@ -42,11 +54,14 @@ export const useHomeTips = (category: string = "tip", limit: number = 3) => {
   });
 };
 
-export const useWeekendRecommendations = () => {
+export const useWeekendRecommendations = (
+  initialData?: DiscoveryResponse<WeekendRecommendationResponse[]>,
+) => {
   return useQuery({
     queryKey: ["discovery", "weekend-recommendations"],
     queryFn: () => getWeekendRecommendations(),
     staleTime: 1000 * 60 * 60, // 1 hour
+    initialData,
   });
 };
 

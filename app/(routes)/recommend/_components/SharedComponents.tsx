@@ -1,9 +1,9 @@
 import React, { type ReactNode } from "react";
-import Image from "next/image";
 import { UtensilsCrossed, MapPin, Bookmark, Map } from "lucide-react";
 import type { Shop } from "@/app/types";
 import { getKakaoMapSearchUrl } from "../utils";
 import { useShopBookmark } from "./useShopBookmark";
+import ResilientImage from "@/app/components/ResilientImage";
 
 export function QuestionCard({
   step,
@@ -116,7 +116,13 @@ export function CompareShopCard({ shop, label, accent }: { shop: Shop; label: st
       </div>
       <h4 className="mt-3 truncate text-xl font-extrabold text-[#25282b] sm:text-2xl">{shop.name}</h4>
       <div className="mt-4 hidden aspect-[2/1] relative overflow-hidden rounded-[6px] bg-stone-100 sm:block">
-        <Image src={shop.imageUrl} alt={shop.name} fill className="object-cover" sizes="(max-width: 1024px) 50vw, 33vw" />
+        <ResilientImage
+          src={shop.imageUrl}
+          alt={shop.name}
+          fill
+          className="object-cover"
+          sizes="(max-width: 1024px) 50vw, 33vw"
+        />
       </div>
       <div className="mt-4 space-y-2 sm:mt-5 sm:space-y-3 flex-1">
         <div className="flex min-w-0 items-center gap-3 text-sm font-medium text-[#7e7e7e]">

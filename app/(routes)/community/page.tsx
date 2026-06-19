@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   MessageCircle,
@@ -30,6 +31,7 @@ import {
 } from '@/lib/api/community';
 import Loading from '@/app/loading';
 import { useApp } from '@/app/context/AppContext';
+import ResilientImage from '@/app/components/ResilientImage';
 
 const getCategoryLabel = (category: string) => {
   switch (category) {
@@ -90,7 +92,14 @@ function AuthorChip({ post }: { post: CommunityPostCard }) {
     >
       <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200 bg-stone-100">
         {post.authorImageUrl ? (
-          <img src={post.authorImageUrl} alt={post.authorName} className="h-full w-full object-cover" />
+          <ResilientImage
+            src={post.authorImageUrl}
+            alt={post.authorName}
+            width={28}
+            height={28}
+            sizes="28px"
+            className="h-full w-full object-cover"
+          />
         ) : (
           <UserRound className="h-3.5 w-3.5 text-stone-400" />
         )}
@@ -155,7 +164,14 @@ function PostListCard({ post }: { post: CommunityPostCard }) {
       </div>
       {post.imageUrl && (
         <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-sm bg-stone-100 sm:h-24 sm:w-28">
-          <img src={post.imageUrl} alt={post.title} loading="lazy" className="h-full w-full object-cover" />
+          <ResilientImage
+            src={post.imageUrl}
+            alt={post.title}
+            width={112}
+            height={96}
+            sizes="(min-width: 640px) 112px, 80px"
+            className="h-full w-full object-cover"
+          />
         </div>
       )}
     </article>
@@ -282,7 +298,14 @@ export default function CommunityPage() {
     <div className="min-h-screen bg-white">
       <section className="relative h-32 overflow-hidden md:h-[14rem]">
         <div className="absolute inset-0">
-          <img src="/header-community-anime.png" alt="Community" className="h-full w-full object-cover" />
+          <Image
+            src="/header-community-anime.webp"
+            alt="Community"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
           <div className="absolute inset-0 bg-[#25282b]/55" />
         </div>
         <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-6 text-center text-white md:pt-16 md:pb-6">

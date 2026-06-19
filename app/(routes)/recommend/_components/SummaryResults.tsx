@@ -1,8 +1,8 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, MapPin, ThumbsUp, ThumbsDown, Star, Bookmark, Map, Share2, type LucideIcon } from "lucide-react";
 import { FocusCard } from "./SharedComponents";
+import ResilientImage from "@/app/components/ResilientImage";
 import { AIFollowUpChat } from "./AIFollowUpChat";
 import { getKakaoMapSearchUrl, shareResult } from "../utils";
 import type { Shop } from "@/app/types";
@@ -385,7 +385,13 @@ export function SummaryResults({
             </Link>
           </div>
         </div>
-        <Image src={displayShop.imageUrl} alt={displayShop.name} fill className="absolute inset-0 object-cover opacity-10" />
+        <ResilientImage
+          src={displayShop.imageUrl}
+          alt={displayShop.name}
+          fill
+          sizes="100vw"
+          className="absolute inset-0 object-cover opacity-10"
+        />
       </div>
 
       {/* Analysis Banner */}

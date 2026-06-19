@@ -1,7 +1,6 @@
 'use client';
 
 import { memo, useState, use, useEffect, useMemo, useRef, useCallback } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Eye, Heart, MessageCircle, Send, Store, Loader2, Trash2, Edit3, CornerDownRight, X } from 'lucide-react';
@@ -18,6 +17,7 @@ import {
 } from '@/lib/api/community';
 import { useApp } from '@/app/context/AppContext';
 import Loading from '@/app/loading';
+import ResilientImage from '@/app/components/ResilientImage';
 
 
 
@@ -90,7 +90,7 @@ const CommentItem = memo(function CommentItem({
           <Link href={`/user/${comment.authorId}`} className="flex-shrink-0">
             <div className="relative h-9 w-9 overflow-hidden rounded-full border border-stone-200 bg-stone-100 md:h-10 md:w-10">
               {comment.authorImageUrl ? (
-                <Image
+                <ResilientImage
                   src={comment.authorImageUrl}
                   alt={comment.authorNickname}
                   fill
@@ -434,7 +434,7 @@ export default function CommunityDetailPage({ params, initialPost }: CommunityDe
             <Link href={`/user/${post.authorId}`} className="flex items-center gap-3 group">
               <div className="relative h-9 w-9 overflow-hidden rounded-full border border-stone-200 bg-stone-100 md:h-10 md:w-10">
                 {post.authorImageUrl ? (
-                  <Image
+                  <ResilientImage
                     src={post.authorImageUrl}
                     alt={post.authorName}
                     fill
@@ -455,7 +455,7 @@ export default function CommunityDetailPage({ params, initialPost }: CommunityDe
 
           {post.imageUrl && (
             <div className="relative mb-6 aspect-[4/3] overflow-hidden rounded-md border border-stone-100 md:mb-8">
-              <Image
+              <ResilientImage
                 src={post.imageUrl}
                 alt={`${post.title} 게시글 이미지`}
                 fill

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUp, ChevronDown, ChevronLeft, ChevronRight, Sparkles, X, Search } from "lucide-react";
 import ShopCard from "../../components/ShopCard";
@@ -261,7 +262,14 @@ export default function ShopsListPage() {
       {/* Header Section */}
       <section className="relative h-32 overflow-hidden md:h-[14rem]">
         <div className="absolute inset-0">
-          <img src="/header-shoplist-anime.png" alt="Ramen Shops" className="w-full h-full object-cover" />
+          <Image
+            src="/header-shoplist-anime.webp"
+            alt="Ramen Shops"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
           <div className="absolute inset-0 bg-[#25282b]/45"></div>
         </div>
         <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-4 text-center text-white sm:px-6 md:pt-16 md:pb-6 lg:px-8">
@@ -660,7 +668,13 @@ function ShopListLoading() {
       <div className="flex flex-col items-center gap-5 rounded-sm border border-stone-200 bg-white px-10 py-8 shadow-none">
         <div className="relative">
           <div className="absolute inset-0 rounded-full bg-red-500/20 blur-md animate-ping"></div>
-          <img src="/logo.png" alt="RAOTA Loading" className="relative h-14 w-14 animate-bounce-slow object-contain" />
+          <Image
+            src="/logo.png"
+            alt="RAOTA Loading"
+            width={56}
+            height={56}
+            className="relative h-14 w-14 animate-bounce-slow object-contain"
+          />
         </div>
         <div className="flex flex-col items-center gap-3">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-stone-500">Loading shops</p>

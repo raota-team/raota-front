@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -29,6 +28,7 @@ import { toggleBookmark, voteMenu, getVoteStatus, increaseShopViewCount } from "
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
 import { ApiClientError } from "@/lib/api/client";
+import ResilientImage from "@/app/components/ResilientImage";
 
 const ReportModal = dynamic(() => import("../../../components/ReportModal"), { ssr: false });
 const VoteMenuModal = dynamic(() => import("../../../components/VoteMenuModal"), { ssr: false });
@@ -220,7 +220,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       <div className="mb-10 grid grid-cols-1 gap-6 lg:mb-12 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-8">
           <div className="group relative h-72 w-full overflow-hidden rounded-md bg-stone-100 md:h-80 lg:h-96">
-            <Image
+            <ResilientImage
               src={shop.imageUrl} 
               alt={shop.name} 
               fill
