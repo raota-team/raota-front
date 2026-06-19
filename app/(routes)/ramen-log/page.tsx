@@ -416,7 +416,7 @@ export default function RamenLogPage() {
               {Array.from({ length: 6 }, (_, index) => (
                 <div
                   key={index}
-                  className={`animate-pulse rounded-xl border border-stone-200 bg-stone-100 ${
+                  className={`animate-pulse rounded-md border border-stone-200 bg-stone-100 ${
                     index === 0 ? 'h-[28rem] sm:col-span-2 lg:h-[30rem]' : 'h-[28rem]'
                   }`}
                 />

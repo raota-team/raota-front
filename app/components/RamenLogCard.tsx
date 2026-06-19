@@ -61,9 +61,9 @@ export default function RamenLogCard({
   return (
     <article
       onClick={() => onClick?.(log)}
-      className={`group flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-stone-200 bg-white shadow-[0_8px_30px_rgba(28,25,23,0.04)] transition duration-300 hover:-translate-y-1 hover:border-stone-300 hover:shadow-[0_18px_44px_rgba(28,25,23,0.12)] ${onClick ? 'cursor-pointer' : ''}`}
+      className={`group isolate flex h-full min-w-0 flex-col overflow-hidden rounded-md border border-stone-200 bg-white transition-colors hover:border-[#e60000] focus-within:border-[#e60000] ${onClick ? 'cursor-pointer' : ''}`}
     >
-      <div className={`relative w-full overflow-hidden bg-stone-100 ${featured ? 'aspect-[4/3] sm:aspect-[16/9]' : 'aspect-[4/3] sm:aspect-[4/5]'}`}>
+      <div className={`relative w-full overflow-hidden rounded-t-md bg-stone-100 ${featured ? 'aspect-[4/3] sm:aspect-video' : 'aspect-[4/3] sm:aspect-square'}`}>
         <Image
           src={log.imageUrl}
           alt={`${log.shop.name} ${log.menuName}`}
@@ -71,21 +71,20 @@ export default function RamenLogCard({
           sizes={featured
             ? '(min-width: 1024px) 66vw, (min-width: 640px) 100vw, 100vw'
             : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'}
-          className="object-cover transition duration-500 group-hover:scale-[1.025]"
+          className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/5" />
 
         <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2 sm:left-4 sm:right-4 sm:top-4">
-          <span className="rounded-full bg-black/35 px-2.5 py-1 text-[10px] font-black text-white/90 backdrop-blur-md sm:text-xs">
+          <span className="rounded-full bg-[#25282b]/70 px-2.5 py-1 text-[10px] font-bold text-white/90 sm:text-xs">
             {formatRamenLogDate(log.date)}
           </span>
-          <span className="flex items-center gap-1 rounded-full bg-black/35 px-2.5 py-1 text-[10px] font-black text-white backdrop-blur-md sm:text-xs">
-            <Heart className={`h-3 w-3 ${log.isLiked ? 'fill-current text-[#ff473d]' : ''}`} />
+          <span className="flex items-center gap-1 rounded-full bg-[#25282b]/70 px-2.5 py-1 text-[10px] font-bold text-white sm:text-xs">
+            <Heart className={`h-3 w-3 ${log.isLiked ? 'fill-current text-[#e60000]' : ''}`} />
             {log.likes ?? 0}
           </span>
         </div>
 
-        <div className={`absolute inset-x-0 bottom-0 p-4 text-white ${featured ? 'sm:p-7' : 'sm:p-5'}`}>
+        <div className={`absolute inset-x-0 bottom-0 bg-[#25282b]/80 p-4 text-white ${featured ? 'sm:p-7' : 'sm:p-5'}`}>
           <div className="mb-1.5 flex min-w-0 items-center gap-1.5">
             {log.shop.id ? (
               <Link
@@ -94,18 +93,18 @@ export default function RamenLogCard({
                 onClick={(event) => event.stopPropagation()}
               >
                 <Store className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate text-xs font-black sm:text-sm">
+                <span className="truncate text-xs font-bold sm:text-sm">
                   {log.shop.name}
                 </span>
               </Link>
             ) : (
               <span className="flex min-w-0 items-center gap-1.5 text-white/80">
                 <Store className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate text-xs font-black sm:text-sm">{log.shop.name}</span>
+                <span className="truncate text-xs font-bold sm:text-sm">{log.shop.name}</span>
               </span>
             )}
           </div>
-          <h2 className={`line-clamp-2 font-black tracking-[-0.02em] ${featured ? 'text-2xl leading-tight sm:text-4xl' : 'text-xl leading-tight sm:text-2xl'}`}>
+          <h2 className={`line-clamp-2 font-bold tracking-[-0.02em] ${featured ? 'text-2xl leading-tight sm:text-4xl' : 'text-xl leading-tight sm:text-2xl'}`}>
             {log.menuName}
           </h2>
           {log.shop.location && (
@@ -116,7 +115,7 @@ export default function RamenLogCard({
 
       <div className={`flex min-w-0 flex-1 flex-col ${featured ? 'p-4 sm:p-6' : 'p-4 sm:p-5'}`}>
         {log.note && (
-          <p className={`font-medium text-stone-600 ${featured ? 'line-clamp-2 text-sm leading-6 sm:text-base sm:leading-7' : 'line-clamp-2 text-sm leading-6'}`}>
+          <p className={`font-normal text-[#7e7e7e] ${featured ? 'line-clamp-2 text-sm leading-6 sm:text-base sm:leading-7' : 'line-clamp-2 text-sm leading-6'}`}>
             {log.note}
           </p>
         )}
@@ -124,12 +123,12 @@ export default function RamenLogCard({
         {visibleTasteNotes.length > 0 && (
           <div className="mt-3 flex min-w-0 flex-wrap items-center gap-1.5">
             {visibleTasteNotes.map((note) => (
-              <span key={note} className="max-w-28 truncate rounded-full bg-stone-100 px-2.5 py-1 text-[10px] font-bold text-stone-600 sm:text-xs">
+              <span key={note} className="max-w-28 truncate rounded-full bg-[#f2f2f2] px-2.5 py-1 text-[10px] font-bold text-[#25282b] sm:text-xs">
                 {note}
               </span>
             ))}
             {tasteSummary.length > visibleTasteNotes.length && (
-              <span className="text-[10px] font-black text-stone-400 sm:text-xs">+{tasteSummary.length - visibleTasteNotes.length}</span>
+              <span className="text-[10px] font-semibold text-[#7e7e7e] sm:text-xs">+{tasteSummary.length - visibleTasteNotes.length}</span>
             )}
           </div>
         )}
@@ -147,7 +146,7 @@ export default function RamenLogCard({
                 <UserRound className="h-3 w-3 text-stone-400 sm:h-3.5 sm:w-3.5" />
               )}
             </span>
-            <span className="truncate text-[11px] font-black text-stone-500 sm:text-xs">{log.author.name}</span>
+            <span className="truncate text-[11px] font-semibold text-[#7e7e7e] sm:text-xs">{log.author.name}</span>
           </Link>
         </div>
       </div>
