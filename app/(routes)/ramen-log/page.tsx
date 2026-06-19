@@ -36,7 +36,9 @@ import {
 
 const PhotoModal = dynamic(() => import('@/app/components/PhotoModal'), { ssr: false });
 
-const PAGE_SIZE = 8;
+const MOBILE_PAGE_SIZE = 5;
+const DESKTOP_PAGE_SIZE = 8;
+const MOBILE_MEDIA_QUERY = '(max-width: 639px)';
 const FEATURED_INTERVAL = 8;
 
 const sortOptions = [
@@ -84,6 +86,7 @@ export default function RamenLogPage() {
   const [selectedLog, setSelectedLog] = useState<RamenLog | null>(null);
   const [editingLog, setEditingLog] = useState<RamenLog | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [pageSize, setPageSize] = useState<number | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const requestSequenceRef = useRef(0);
 
@@ -114,7 +117,20 @@ export default function RamenLogPage() {
     return () => window.clearTimeout(timer);
   }, [searchQuery]);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
+    const updatePageSize = () => {
+      setPageSize(mediaQuery.matches ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE);
+    };
+
+    updatePageSize();
+    mediaQuery.addEventListener('change', updatePageSize);
+    return () => mediaQuery.removeEventListener('change', updatePageSize);
+  }, []);
+
   const loadLogs = useCallback(async (page: number, replace: boolean) => {
+    if (pageSize === null) return;
+
     const requestSequence = replace
       ? ++requestSequenceRef.current
       : requestSequenceRef.current;
@@ -125,7 +141,7 @@ export default function RamenLogPage() {
     try {
       const result = await getRamenLogs({
         page,
-        size: PAGE_SIZE,
+        size: pageSize,
         sort: sortBy,
         shopId: selectedShopId || undefined,
         keyword: debouncedSearchQuery || undefined,
@@ -147,11 +163,12 @@ export default function RamenLogPage() {
         setIsLoadingMore(false);
       }
     }
-  }, [debouncedSearchQuery, selectedShopId, showToast, sortBy]);
+  }, [debouncedSearchQuery, pageSize, selectedShopId, showToast, sortBy]);
 
   useEffect(() => {
+    if (pageSize === null) return;
     loadLogs(0, true);
-  }, [loadLogs]);
+  }, [loadLogs, pageSize]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -412,37 +429,42 @@ export default function RamenLogPage() {
           </div>
 
           {isInitialLoading ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-label="라멘로그 불러오는 중">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3" aria-label="라멘로그 불러오는 중">
               {Array.from({ length: 6 }, (_, index) => (
                 <div
                   key={index}
                   className={`animate-pulse rounded-md border border-stone-200 bg-stone-100 ${
-                    index === 0 ? 'h-[28rem] sm:col-span-2 lg:h-[30rem]' : 'h-[28rem]'
+                    index % 5 === 0 ? 'col-span-2 h-[28rem] sm:col-span-1 sm:h-[28rem]' : 'h-72 sm:h-[28rem]'
+                  } ${
+                    index === 0 ? 'lg:col-span-2 lg:h-[30rem]' : ''
                   }`}
                 />
               ))}
             </div>
           ) : logItems.length > 0 ? (
-            <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-2 items-stretch gap-3 sm:gap-6 lg:grid-cols-3">
               {logItems.map((log, index) => {
                 const featureBlock = Math.floor(index / FEATURED_INTERVAL);
                 const positionInBlock = index % FEATURED_INTERVAL;
                 const featureOnRight = featureBlock % 2 === 1;
                 const featuredPosition = featureOnRight ? 1 : 0;
                 const isFeatured = !hasActiveFilter && positionInBlock === featuredPosition;
+                const isFeaturedMobile = index % 5 === 0;
 
                 return (
                   <div
                     key={log.id}
-                    className={
+                    className={`${isFeaturedMobile ? 'col-span-2 sm:col-span-1' : ''} ${
                       isFeatured
                         ? `lg:col-span-2 ${featureOnRight ? 'lg:col-start-2' : 'lg:col-start-1'}`
                         : ''
-                    }
+                    }`}
                   >
                     <RamenLogCard
                       log={log}
                       featured={isFeatured}
+                      compactMobile
+                      featuredMobile={isFeaturedMobile}
                       onClick={(item) => setSelectedLog(item as RamenLog)}
                     />
                   </div>
