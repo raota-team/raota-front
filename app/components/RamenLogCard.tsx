@@ -73,6 +73,7 @@ export default function RamenLogCard({
             : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'}
           className="object-cover"
         />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/5" />
 
         <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2 sm:left-4 sm:right-4 sm:top-4">
           <span className="rounded-full bg-[#25282b]/70 px-2.5 py-1 text-[10px] font-bold text-white/90 sm:text-xs">
@@ -84,7 +85,7 @@ export default function RamenLogCard({
           </span>
         </div>
 
-        <div className={`absolute inset-x-0 bottom-0 bg-[#25282b]/80 p-4 text-white ${featured ? 'sm:p-7' : 'sm:p-5'}`}>
+        <div className={`absolute inset-x-0 bottom-0 p-4 text-white ${featured ? 'sm:p-7' : 'sm:p-5'}`}>
           <div className="mb-1.5 flex min-w-0 items-center gap-1.5">
             {log.shop.id ? (
               <Link
