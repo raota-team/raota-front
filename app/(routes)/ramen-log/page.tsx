@@ -72,6 +72,7 @@ export default function RamenLogPage() {
   
   // Custom dropdown states
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
+  const [selectedShopName, setSelectedShopName] = useState('');
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
   const [shopSearchQuery, setShopSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -95,6 +96,16 @@ export default function RamenLogPage() {
   const listShops = shopsData?.shops ?? [];
   const selectedShop = listShops.find(s => s.id === selectedShopId);
   const hasActiveFilter = Boolean(selectedShopId || debouncedSearchQuery);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shopId = Number(params.get('shopId'));
+
+    if (Number.isInteger(shopId) && shopId > 0) {
+      setSelectedShopId(shopId);
+      setSelectedShopName(params.get('shopName') ?? '');
+    }
+  }, []);
 
   // Click outside to close dropdowns
   useEffect(() => {
@@ -323,7 +334,7 @@ export default function RamenLogPage() {
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       <Store className="w-4 h-4 text-[#e60000] shrink-0" />
-                      <span className="truncate">{selectedShop ? selectedShop.name : '가게 선택'}</span>
+                      <span className="truncate">{selectedShop?.name || selectedShopName || '가게 선택'}</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-stone-400 shrink-0 transition-transform ${isShopDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -346,7 +357,11 @@ export default function RamenLogPage() {
                       <div className="overflow-y-auto">
                         <button
                           type="button"
-                          onClick={() => { setSelectedShopId(null); setIsShopDropdownOpen(false); }}
+                          onClick={() => {
+                            setSelectedShopId(null);
+                            setSelectedShopName('');
+                            setIsShopDropdownOpen(false);
+                          }}
                           className={`w-full px-4 py-2.5 text-left text-sm hover:bg-stone-50 ${!selectedShopId ? 'text-[#e60000] font-semibold' : 'text-stone-700'}`}
                         >
                           전체 가게
@@ -357,7 +372,11 @@ export default function RamenLogPage() {
                             <button
                               key={shop.id}
                               type="button"
-                              onClick={() => { setSelectedShopId(shop.id); setIsShopDropdownOpen(false); }}
+                              onClick={() => {
+                                setSelectedShopId(shop.id);
+                                setSelectedShopName(shop.name);
+                                setIsShopDropdownOpen(false);
+                              }}
                               className={`w-full border-t border-stone-100 px-4 py-2.5 text-left text-sm hover:bg-stone-50 ${selectedShopId === shop.id ? 'font-semibold text-[#e60000]' : 'text-stone-700'}`}
                             >
                               <div className="font-medium truncate">{shop.name}</div>

@@ -38,6 +38,8 @@ interface ApiRamenShop {
   votes?: number | string;
   visits?: number | string; // 신규 필드 추가
   viewCount?: number | string;
+  ramenLogCount?: number | string;
+  ramenLogPreviewImageUrls?: string[] | null;
   menus?: Array<{ name?: string; votes?: number | string }>;
   menu_list?: ApiMenuItem[];
   normal_menus?: ApiMenuItem[];
@@ -229,6 +231,10 @@ const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
       view_count: toNumber(shop.stats?.view_count ?? shop.viewCount, 0),
       bookmark_count: toNumber(shop.stats?.bookmark_count, 0),
     },
+    ramenLogCount: toNumber(shop.ramenLogCount, 0),
+    ramenLogPreviewImageUrls: Array.isArray(shop.ramenLogPreviewImageUrls)
+      ? shop.ramenLogPreviewImageUrls.filter((url): url is string => typeof url === "string" && url.length > 0).slice(0, 3)
+      : [],
     instagram_url: shop.instagram_url || "",
     catchTableUrl: shop.catchTableUrl || "",
     isBookmarked: Boolean(shop.isBookmarked ?? shop.is_bookmarked),
