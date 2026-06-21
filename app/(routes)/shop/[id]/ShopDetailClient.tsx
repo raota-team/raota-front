@@ -29,6 +29,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useApp } from "@/app/context/AppContext";
 import { ApiClientError } from "@/lib/api/client";
 import ResilientImage from "@/app/components/ResilientImage";
+import ShopRamenLogPreview from "@/app/components/ShopRamenLogPreview";
 
 const ReportModal = dynamic(() => import("../../../components/ReportModal"), { ssr: false });
 const VoteMenuModal = dynamic(() => import("../../../components/VoteMenuModal"), { ssr: false });
@@ -365,7 +366,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
           <div className="space-y-6 md:space-y-8">
             <div className="relative overflow-hidden rounded-md bg-[#25282b] p-5 text-white md:p-8">
               <div className="relative z-10">
-                <h2 className="text-lg font-black mb-4 uppercase tracking-tighter italic">Information</h2>
+                <h2 className="mb-4 text-lg font-black">가게 정보</h2>
                 <div className="space-y-4 text-sm font-mono text-stone-300">
                   <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">주소</span><span className="text-right break-keep text-white/90">{formatInfoValue(shop.address)}</span></p>
                   <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">영업시간</span><span className="text-right text-white/90">{formatOperatingHours(shop.business_hours)}</span></p>
@@ -432,6 +433,18 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                 )}
               </div>
             </div>
+
+            <ShopRamenLogPreview
+              shopId={shop.id}
+              shopName={shop.name}
+              onWrite={() => {
+                if (!isLoggedIn) {
+                  showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login"));
+                  return;
+                }
+                setIsRamenLogModalOpen(true);
+              }}
+            />
 
             <div className="text-center">
               <button 

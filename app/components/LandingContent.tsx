@@ -88,7 +88,7 @@ export default function LandingContent({
       <h1 className="sr-only">라오타 - 라멘의 모든 것을 기록하고 나누는 커뮤니티</h1>
       
       {/* 1. Portal Hero Section */}
-      <section ref={heroRef} className="relative h-[380px] min-h-[380px] w-full overflow-hidden bg-[#25282b] md:h-[500px] md:min-h-0">
+      <section ref={heroRef} className="relative h-[330px] min-h-[330px] w-full overflow-hidden bg-[#25282b] md:h-[500px] md:min-h-0">
         <div className="absolute inset-0">
           <Image
             src="/hero-home.webp"
@@ -101,14 +101,14 @@ export default function LandingContent({
           />
         </div>
 
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-7 pt-16 md:flex-row md:items-center md:justify-between md:px-12 md:pt-0 md:pb-0">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-5 pt-12 md:flex-row md:items-center md:justify-between md:px-12 md:pt-0 md:pb-0">
           <div className="max-w-2xl">
 
             <h1 className={`mb-3 text-[clamp(2rem,8vw,4.5rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-white md:mb-6 ${doHyeon.className}`}>
               라멘을 사랑하는 <br />
               <span>사람들, 라오타.</span>
             </h1>
-            <p className="mb-7 max-w-lg break-keep text-sm font-medium leading-relaxed text-white/80 md:mb-12 md:text-lg">
+            <p className="mb-5 max-w-lg break-keep text-sm font-medium leading-relaxed text-white/80 md:mb-12 md:text-lg">
               가게를 찾고, 한 그릇을 기록하고, <br className="hidden md:block" />
               라멘을 좋아하는 사람들과 이야기를 나눠보세요
             </p>

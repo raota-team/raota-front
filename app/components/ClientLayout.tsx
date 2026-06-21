@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useSelectedLayoutSegments } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import Header from './Header';
@@ -10,10 +10,9 @@ import { CheckCircle2, AlertCircle, Info, HelpCircle } from 'lucide-react';
 import { getMyProfile } from '@/lib/api/user';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
+  const routeSegments = useSelectedLayoutSegments();
   const { isLoggedIn, isAuthChecking, handleLogout, toast, confirm, setConfirm, currentUser, setCurrentUser } = useApp();
-  const isHomePage = pathname === '/';
+  const isHomePage = routeSegments.length === 0;
 
   // 실제 프로필 정보 동기화
   useEffect(() => {
