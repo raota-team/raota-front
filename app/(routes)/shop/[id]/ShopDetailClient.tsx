@@ -8,20 +8,17 @@ import {
   Star,
   Menu,
   MapPin,
-  Award,
   ArrowLeft,
   Instagram,
   Sparkles,
   Utensils,
   Heart,
-  Check,
   PenSquare,
   ChevronDown,
   Users,
   NotebookPen,
 } from "lucide-react";
 import { Shop } from "../../../types";
-import ProgressBar from "../../../components/ProgressBar";
 import Loading from "@/app/loading";
 import { useRamenShopDetail } from "@/hooks/queries/useRamenShopDetail";
 import { toggleBookmark, voteMenu, getVoteStatus, increaseShopViewCount } from "@/lib/api/ramen-shops";
@@ -187,6 +184,10 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     if (maxVotes === 0) return null;
     return votingMenus.find(m => m.votes === maxVotes)?.id;
   }, [votingMenus, maxVotes]);
+  const bestMenu = useMemo(
+    () => votingMenus.find((menu) => menu.id === bestMenuId) ?? null,
+    [bestMenuId, votingMenus],
+  );
   const ramenLogInitialShop = useMemo(() => {
     if (!shop) return undefined;
 
@@ -381,58 +382,112 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               </div>
             </div>
 
-            <div className="rounded-md border border-stone-200 bg-white p-4 md:p-6">
-              <button 
+            <section className="overflow-hidden rounded-md border border-stone-200 bg-white">
+              <button
+                type="button"
                 onClick={() => setIsVoteAccordionOpen(!isVoteAccordionOpen)}
-                className="flex w-full items-center justify-between"
+                aria-expanded={isVoteAccordionOpen}
+                className="w-full p-4 text-left md:p-6"
               >
-                <h2 className="flex items-center text-lg font-bold text-[#25282b] md:text-xl"><Award className="mr-2 h-5 w-5 text-[#e60000]" /> 베스트 메뉴 투표</h2>
-                <ChevronDown className={`h-5 w-5 transition-transform ${isVoteAccordionOpen ? "rotate-180" : ""}`} />
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[10px] font-black tracking-[0.14em] text-[#e60000]">메뉴 투표</p>
+                  <span className="text-[10px] font-bold text-stone-500">
+                    {totalVotes > 0 ? `${totalVotes.toLocaleString("ko-KR")}표` : "아직 투표 없음"}
+                  </span>
+                </div>
+                <h2 className="mt-1 text-lg font-black text-[#25282b] md:text-xl">
+                  가장 사랑받는 한 그릇
+                </h2>
+
+                <div className="mt-5">
+                  {bestMenu ? (
+                    <>
+                      <div className="flex items-end justify-between gap-4">
+                        <span className="min-w-0 truncate text-sm font-black text-[#25282b]">
+                          {bestMenu.name}
+                        </span>
+                        <span className="shrink-0 font-mono text-sm font-black text-[#e60000]">
+                          {Math.round(bestMenu.percentage)}%
+                        </span>
+                      </div>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-100">
+                        <div
+                          className="h-full rounded-full bg-[#e60000]"
+                          style={{ width: `${Math.max(bestMenu.percentage, 2)}%` }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <p className="break-keep text-sm leading-6 text-stone-600">
+                      가장 맛있었던 메뉴에 첫 표를 남겨보세요.
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-4 text-xs font-bold text-stone-600">
+                  <span>{isVoteAccordionOpen ? "투표 접기" : "전체 메뉴 보고 투표하기"}</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isVoteAccordionOpen ? "rotate-180" : ""}`} />
+                </div>
               </button>
-              
-              <div className={isVoteAccordionOpen ? "mt-6" : "mt-4"}>
-                <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#e60000]">실시간 투표</p>
-                <p className={`text-sm leading-relaxed text-stone-700 ${isVoteAccordionOpen ? "mb-6 md:mb-8" : "mb-0"}`}>이 가게에서 제일 맛있었던 메뉴는?</p>
-                
-                {isVoteAccordionOpen && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="space-y-5 md:space-y-6">
-                      {votingMenus.map((menu) => (
-                        <div key={menu.id || menu.name} className="relative">
-                          <div className="flex justify-between items-center mb-2">
-                            <div className="flex items-center">
-                              {menu.id === bestMenuId && <span className="mr-2 text-yellow-500 animate-pulse"><Star className="w-4 h-4" fill="currentColor" /></span>}
-                              <span className={`transition-colors font-bold ${menu.id === bestMenuId ? "text-stone-950 scale-105 inline-block" : "text-stone-700"}`}>
-                                {menu.name}
-                              </span>
-                            </div>
-                            <button 
-                              onClick={() => handleVote(menu)} 
-                              aria-label={`${menu.name} 메뉴에 투표하기`}
-                              className={`flex items-center gap-1 rounded-sm px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
-                                menu.isVoted 
-                                  ? "bg-[#e60000] text-white" 
-                                  : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                              }`}
-                            >
-                              {menu.isVoted && <Check className="w-3 h-3" />}
-                              {menu.isVoted ? "내 투표" : "투표"}
-                            </button>
-                          </div>
-                          <ProgressBar votes={menu.votes} totalVotes={totalVotes} isSelected={menu.id === bestMenuId} />
-                          <div className="flex justify-between items-center mt-1">
-                            <span className={`text-[10px] font-black ${menu.id === bestMenuId ? "text-[#e60000]" : "text-stone-600"}`}>
-                              {menu.id === bestMenuId ? "가장 많은 투표" : ""}
-                            </span>
-                            <div className="text-right text-[10px] font-mono font-bold text-stone-600">{menu.votes} 표</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+
+              {isVoteAccordionOpen && (
+                <div className="border-t border-stone-200 px-4 py-2 md:px-6 md:py-3">
+                  <div className="flex items-start justify-between gap-4 py-3">
+                    <p className="break-keep text-xs leading-5 text-stone-500">
+                      <span className="block">메뉴를 누르면 바로 투표돼요.</span>
+                      <span className="block">다시 누르면 취소할 수 있어요.</span>
+                    </p>
+                    <span className="shrink-0 text-[10px] font-bold text-stone-400">
+                      {votingMenus.length}개 메뉴
+                    </span>
                   </div>
-                )}
-              </div>
-            </div>
+                  <div className="max-h-[28rem] divide-y divide-stone-100 overflow-y-auto overscroll-contain pr-1">
+                    {votingMenus.map((menu) => {
+                      const percentage = totalVotes === 0
+                        ? 0
+                        : Math.round((menu.votes / totalVotes) * 100);
+
+                      return (
+                        <button
+                          key={menu.id || menu.name}
+                          type="button"
+                          onClick={() => handleVote(menu)}
+                          aria-label={`${menu.name} 메뉴에 투표하기`}
+                          className="group w-full py-4 text-left"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <span className={`min-w-0 truncate text-sm font-bold ${
+                              menu.isVoted ? "text-[#e60000]" : "text-[#25282b]"
+                            }`}>
+                              {menu.name}
+                            </span>
+                            <span className={`shrink-0 text-[10px] font-black ${
+                              menu.isVoted
+                                ? "text-[#e60000]"
+                                : menu.id === bestMenuId
+                                  ? "text-stone-700"
+                                  : "text-stone-400"
+                            }`}>
+                              {menu.isVoted ? "내 투표" : `${menu.votes}표 · ${percentage}%`}
+                            </span>
+                          </div>
+                          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-stone-100">
+                            <div
+                              className={`h-full rounded-full ${
+                                menu.isVoted || menu.id === bestMenuId
+                                  ? "bg-[#e60000]"
+                                  : "bg-stone-300"
+                              }`}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </section>
 
             <ShopRamenLogPreview
               shopId={shop.id}

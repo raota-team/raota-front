@@ -72,14 +72,6 @@ const TYPES = [
 const isSortOption = (value: string | null): value is SortOption =>
   SORT_OPTIONS.some((option) => option.value === value);
 
-const getInitialSearchParams = () => {
-  if (typeof window === "undefined") {
-    return new URLSearchParams();
-  }
-
-  return new URLSearchParams(window.location.search);
-};
-
 const getInitialPage = (params: URLSearchParams) => {
   const page = Number(params.get("page"));
   return Number.isInteger(page) && page > 0 ? page - 1 : 0;
@@ -101,6 +93,22 @@ const getInitialType = (params: URLSearchParams) => {
   return tag && TYPES.some((type) => type.value === tag) ? tag : ALL_TYPE_FILTER;
 };
 
+const getFilterStateKey = ({
+  region,
+  district,
+  type,
+  ramenTypeId,
+  sort,
+  keyword,
+}: {
+  region: string;
+  district: string;
+  type: string;
+  ramenTypeId?: string;
+  sort: SortOption;
+  keyword: string;
+}) => [region, district, type, ramenTypeId ?? "", sort, keyword].join("|");
+
 export default function ShopsListPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [activeRegion, setActiveRegion] = useState(ALL_FILTER);
@@ -112,7 +120,8 @@ export default function ShopsListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [pageWindowStart, setPageWindowStart] = useState(0);
-  const isFirstFilterSyncRef = useRef(true);
+  const [isUrlStateReady, setIsUrlStateReady] = useState(false);
+  const previousFilterStateKeyRef = useRef<string | null>(null);
 
   // URL 파라미터에서 초기 상태 설정 (Hydration Mismatch 방지)
   useEffect(() => {
@@ -140,9 +149,15 @@ export default function ShopsListPage() {
     }
     if (page !== 0) setPageWindowStart(Math.floor(page / MAX_VISIBLE_PAGES) * MAX_VISIBLE_PAGES);
 
-    setTimeout(() => {
-      isFirstFilterSyncRef.current = false;
-    }, 0);
+    previousFilterStateKeyRef.current = getFilterStateKey({
+      region,
+      district,
+      type,
+      ramenTypeId,
+      sort: parsedSortBy,
+      keyword,
+    });
+    setIsUrlStateReady(true);
   }, []);
 
   useEffect(() => {
@@ -153,18 +168,26 @@ export default function ShopsListPage() {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (isFirstFilterSyncRef.current) {
-      return;
-    }
+    if (!isUrlStateReady) return;
 
+    const nextFilterStateKey = getFilterStateKey({
+      region: activeRegion,
+      district: activeDistrict,
+      type: activeType,
+      ramenTypeId: activeRamenTypeId,
+      sort: sortBy,
+      keyword: debouncedSearchQuery,
+    });
+
+    if (previousFilterStateKeyRef.current === nextFilterStateKey) return;
+
+    previousFilterStateKeyRef.current = nextFilterStateKey;
     setCurrentPage(0);
     setPageWindowStart(0);
-  }, [activeRegion, activeDistrict, activeType, activeRamenTypeId, sortBy, debouncedSearchQuery]);
+  }, [activeRegion, activeDistrict, activeType, activeRamenTypeId, sortBy, debouncedSearchQuery, isUrlStateReady]);
 
   useEffect(() => {
-    if (isFirstFilterSyncRef.current) {
-      return;
-    }
+    if (!isUrlStateReady) return;
 
     const params = new URLSearchParams();
 
@@ -184,7 +207,7 @@ export default function ShopsListPage() {
     if (nextUrl !== currentUrl) {
       window.history.replaceState(null, "", nextUrl);
     }
-  }, [activeDistrict, activeRamenTypeId, activeRamenTypeName, activeRegion, activeType, currentPage, debouncedSearchQuery, sortBy]);
+  }, [activeDistrict, activeRamenTypeId, activeRamenTypeName, activeRegion, activeType, currentPage, debouncedSearchQuery, isUrlStateReady, sortBy]);
 
   const clearRamenTypeFilter = (resetType = false) => {
     if (resetType) {
