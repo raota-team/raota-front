@@ -14,7 +14,6 @@ import {
   Utensils,
   Heart,
   PenSquare,
-  ChevronDown,
   Users,
   NotebookPen,
 } from "lucide-react";
@@ -27,6 +26,8 @@ import { useApp } from "@/app/context/AppContext";
 import { ApiClientError } from "@/lib/api/client";
 import ResilientImage from "@/app/components/ResilientImage";
 import ShopRamenLogPreview from "@/app/components/ShopRamenLogPreview";
+import type { RamenLogFormData } from "@/app/components/RamenLogModal";
+import { createRamenLog, toRevisitValue } from "@/lib/api/ramen-logs";
 
 const ReportModal = dynamic(() => import("../../../components/ReportModal"), { ssr: false });
 const VoteMenuModal = dynamic(() => import("../../../components/VoteMenuModal"), { ssr: false });
@@ -72,7 +73,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [isRamenLogModalOpen, setIsRamenLogModalOpen] = useState(false);
-  const [isVoteAccordionOpen, setIsVoteAccordionOpen] = useState(false);
+  const [ramenLogRefreshKey, setRamenLogRefreshKey] = useState(0);
   const lastIncrementedId = useRef<number | null>(null);
 
   const refreshShopData = async () => {
@@ -153,6 +154,31 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     } catch (error) {
       showToast("북마크 처리 중 오류가 발생했습니다.", "error");
     }
+  };
+
+  const handleCreateRamenLog = async (data: RamenLogFormData) => {
+    if (!data.shopId) {
+      throw new Error("라멘 가게를 선택해주세요.");
+    }
+
+    await createRamenLog({
+      shopId: data.shopId,
+      menuName: data.menuName,
+      ramenType: data.ramenType,
+      imageUrl: data.imageUrl,
+      note: data.note || undefined,
+      tasteNotes: data.tasteNotes,
+      revisit: toRevisitValue(data.revisit),
+      public: data.isPublic,
+    });
+
+    setRamenLogRefreshKey((current) => current + 1);
+    setShopDetail((current) => current ? {
+      ...current,
+      ramenLogCount: current.ramenLogCount + 1,
+    } : current);
+    queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
+    showToast("라멘로그를 저장했습니다.", "success");
   };
 
   const reviewWriteUrl = `/community/write?category=REVIEW&shopId=${shopId}&title=${encodeURIComponent(`${shopDetail?.name ?? ""} 후기 남기기`)}&content=${encodeURIComponent(`<p>${shopDetail?.name ?? ""}에서 먹어본 메뉴와 분위기를 공유해볼게요.</p>`)}`;
@@ -364,8 +390,8 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
         </div>
 
         <div className="lg:col-span-4">
-          <div className="space-y-6 md:space-y-8">
-            <div className="relative overflow-hidden rounded-md bg-[#25282b] p-5 text-white md:p-8">
+          <div className="flex flex-col gap-6 md:gap-8">
+            <div className="relative order-1 overflow-hidden rounded-md bg-[#25282b] p-5 text-white md:p-8">
               <div className="relative z-10">
                 <h2 className="mb-4 text-lg font-black">가게 정보</h2>
                 <div className="space-y-4 text-sm font-mono text-stone-300">
@@ -382,13 +408,8 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               </div>
             </div>
 
-            <section className="overflow-hidden rounded-md border border-stone-200 bg-white">
-              <button
-                type="button"
-                onClick={() => setIsVoteAccordionOpen(!isVoteAccordionOpen)}
-                aria-expanded={isVoteAccordionOpen}
-                className="w-full p-4 text-left md:p-6"
-              >
+            <section className="order-3 overflow-hidden rounded-md border border-stone-200 bg-white lg:order-2">
+              <div className="p-4 md:p-6">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-[10px] font-black tracking-[0.14em] text-[#e60000]">메뉴 투표</p>
                   <span className="text-[10px] font-bold text-stone-500">
@@ -424,84 +445,33 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                   )}
                 </div>
 
-                <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-4 text-xs font-bold text-stone-600">
-                  <span>{isVoteAccordionOpen ? "투표 접기" : "전체 메뉴 보고 투표하기"}</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isVoteAccordionOpen ? "rotate-180" : ""}`} />
-                </div>
-              </button>
-
-              {isVoteAccordionOpen && (
-                <div className="border-t border-stone-200 px-4 py-2 md:px-6 md:py-3">
-                  <div className="flex items-start justify-between gap-4 py-3">
-                    <p className="break-keep text-xs leading-5 text-stone-500">
-                      <span className="block">메뉴를 누르면 바로 투표돼요.</span>
-                      <span className="block">다시 누르면 취소할 수 있어요.</span>
-                    </p>
-                    <span className="shrink-0 text-[10px] font-bold text-stone-400">
-                      {votingMenus.length}개 메뉴
-                    </span>
-                  </div>
-                  <div className="max-h-[28rem] divide-y divide-stone-100 overflow-y-auto overscroll-contain pr-1">
-                    {votingMenus.map((menu) => {
-                      const percentage = totalVotes === 0
-                        ? 0
-                        : Math.round((menu.votes / totalVotes) * 100);
-
-                      return (
-                        <button
-                          key={menu.id || menu.name}
-                          type="button"
-                          onClick={() => handleVote(menu)}
-                          aria-label={`${menu.name} 메뉴에 투표하기`}
-                          className="group w-full py-4 text-left"
-                        >
-                          <div className="flex items-center justify-between gap-4">
-                            <span className={`min-w-0 truncate text-sm font-bold ${
-                              menu.isVoted ? "text-[#e60000]" : "text-[#25282b]"
-                            }`}>
-                              {menu.name}
-                            </span>
-                            <span className={`shrink-0 text-[10px] font-black ${
-                              menu.isVoted
-                                ? "text-[#e60000]"
-                                : menu.id === bestMenuId
-                                  ? "text-stone-700"
-                                  : "text-stone-400"
-                            }`}>
-                              {menu.isVoted ? "내 투표" : `${menu.votes}표 · ${percentage}%`}
-                            </span>
-                          </div>
-                          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-stone-100">
-                            <div
-                              className={`h-full rounded-full ${
-                                menu.isVoted || menu.id === bestMenuId
-                                  ? "bg-[#e60000]"
-                                  : "bg-stone-300"
-                              }`}
-                              style={{ width: `${percentage}%` }}
-                            />
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                <button
+                  type="button"
+                  onClick={() => setIsVoteModalOpen(true)}
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-sm border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-black text-[#25282b] transition-colors hover:border-[#e60000] hover:bg-white hover:text-[#e60000]"
+                >
+                  <Star className="h-4 w-4" />
+                  {bestMenu ? "전체 메뉴 보고 투표하기" : "첫 투표 남기기"}
+                </button>
+              </div>
             </section>
 
-            <ShopRamenLogPreview
-              shopId={shop.id}
-              shopName={shop.name}
-              onWrite={() => {
-                if (!isLoggedIn) {
-                  showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login"));
-                  return;
-                }
-                setIsRamenLogModalOpen(true);
-              }}
-            />
+            <div className="order-2 lg:order-3">
+              <ShopRamenLogPreview
+                key={`${shop.id}-${ramenLogRefreshKey}`}
+                shopId={shop.id}
+                shopName={shop.name}
+                onWrite={() => {
+                  if (!isLoggedIn) {
+                    showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login"));
+                    return;
+                  }
+                  setIsRamenLogModalOpen(true);
+                }}
+              />
+            </div>
 
-            <div className="text-center">
+            <div className="order-4 text-center">
               <button 
                 onClick={() => setIsReportModalOpen(true)}
                 className="text-xs text-stone-600 hover:text-stone-800 underline transition-colors underline-offset-4"
@@ -536,6 +506,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       <RamenLogModal
         isOpen={isRamenLogModalOpen}
         onClose={() => setIsRamenLogModalOpen(false)}
+        onCreate={handleCreateRamenLog}
         initialShop={ramenLogInitialShop}
       />
     </div>
