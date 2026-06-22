@@ -31,15 +31,15 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ votes, totalVotes, isSelected
   }, [targetPercentage]);
 
   return (
-    <div className="w-full mb-3 group cursor-pointer">
-      <div className="flex justify-between mb-1 text-sm font-medium">
+    <div className="group w-full cursor-pointer md:mb-3">
+      <div className="mb-1 hidden justify-between text-sm font-medium md:flex">
         <span className={`${isSelected ? 'text-[#e60000]' : 'text-stone-600'} font-bold tabular-nums`}>
           {displayPercentage}%
         </span>
       </div>
-      <div className="h-2.5 w-full overflow-hidden rounded-full bg-stone-200">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-stone-200 md:h-2.5">
         <div
-          className={`h-2.5 rounded-full transition-all duration-1000 ease-out ${isSelected ? 'bg-[#e60000]' : 'bg-stone-400 group-hover:bg-stone-500'}`}
+          className={`h-full rounded-full transition-all duration-1000 ease-out ${isSelected ? 'bg-[#e60000]' : 'bg-stone-400 group-hover:bg-stone-500'}`}
           style={{ width: `${targetPercentage}%` }}
         ></div>
       </div>
