@@ -105,7 +105,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // 2. 최종적으로 저장된 토큰(신규 또는 기존) 기반으로 상태 동기화
+      // 2. Access Token이 없고 Refresh Token 쿠키만 남은 세션을 복구
+      if (!getAccessToken()) {
+        try {
+          await refreshAuthSession();
+        } catch {
+          clearAccessToken();
+        }
+      }
+
+      // 3. 최종적으로 저장된 토큰(신규 또는 복구된 토큰) 기반으로 상태 동기화
       syncAuthFromStorage();
       setIsAuthChecking(false);
     };
