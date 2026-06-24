@@ -5,8 +5,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import {
+  ArrowRight,
   Camera,
   ChevronDown,
+  Gift,
   Loader2,
   Plus,
   Search,
@@ -305,6 +307,37 @@ export default function RamenLogPage() {
             <p className="mx-auto max-w-lg break-keep text-sm font-medium leading-relaxed text-white/85 sm:text-lg">
               유저들의 생생한 라멘 기록을 둘러보세요
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white px-4 py-4 sm:px-6 md:py-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col gap-4 rounded-md bg-[#25282b] px-4 py-4 text-white shadow-sm md:flex-row md:items-center md:justify-between md:px-5">
+            <div className="flex min-w-0 items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-[#e60000] text-white">
+                <Gift className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <span className="mb-1 inline-flex rounded-sm bg-white/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-white/80">
+                  RAMEN LOG EVENT
+                </span>
+                <h2 className="break-keep text-base font-black leading-snug md:text-lg">
+                  라멘로그 남기고 커피 한 잔 받아가세요.
+                </h2>
+                <p className="mt-1 break-keep text-xs leading-relaxed text-white/70 md:text-sm">
+                  라멘로그를 작성한 분들 중 추첨을 통해 메가커피 기프티콘을 드립니다.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={openCreateModal}
+              className="vodafone-button-pill inline-flex h-11 shrink-0 items-center justify-center gap-1.5 border border-white/20 bg-white px-5 text-sm font-black text-[#25282b] transition-opacity hover:opacity-90 active:opacity-80 md:self-center"
+            >
+              라멘로그 작성하기
+              <ArrowRight className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </section>
