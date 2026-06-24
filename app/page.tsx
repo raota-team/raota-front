@@ -36,7 +36,7 @@ export default async function HomePage() {
     fetchPublicHomeData<HomeInitialData['stats']>('/api/v1/discovery/stats', 300),
     fetchPublicHomeData<HomeInitialData['recentShops']>('/api/v1/shops/recent-verified?limit=4', 60),
     fetchPublicHomeData<HomeInitialData['weekendRecommendations']>(
-      '/api/v1/discovery/weekend-recommendations',
+      '/api/v1/discovery/today-recommendations',
       3600,
     ),
   ]);

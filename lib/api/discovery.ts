@@ -57,7 +57,7 @@ export const getHomeTips = async (category: string = "tip", limit: number = 3): 
 };
 
 export const getWeekendRecommendations = async (): Promise<{ success: boolean; data: WeekendRecommendationResponse[] }> => {
-  return apiClient<{ success: boolean; data: WeekendRecommendationResponse[] }>("/api/v1/discovery/weekend-recommendations");
+  return apiClient<{ success: boolean; data: WeekendRecommendationResponse[] }>("/api/v1/discovery/today-recommendations");
 };
 
 export const generateWeekendRecommendations = async (): Promise<{ success: boolean; data: WeekendRecommendationResponse[] }> => {

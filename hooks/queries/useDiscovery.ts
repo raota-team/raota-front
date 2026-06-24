@@ -58,7 +58,7 @@ export const useWeekendRecommendations = (
   initialData?: DiscoveryResponse<WeekendRecommendationResponse[]>,
 ) => {
   return useQuery({
-    queryKey: ["discovery", "weekend-recommendations"],
+    queryKey: ["discovery", "today-recommendations"],
     queryFn: () => getWeekendRecommendations(),
     staleTime: 1000 * 60 * 60, // 1 hour
     initialData,
@@ -71,7 +71,7 @@ export const useGenerateWeekendRecommendations = () => {
   return useMutation({
     mutationFn: () => generateWeekendRecommendations(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["discovery", "weekend-recommendations"] });
+      queryClient.invalidateQueries({ queryKey: ["discovery", "today-recommendations"] });
     },
   });
 };
