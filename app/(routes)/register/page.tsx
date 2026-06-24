@@ -70,8 +70,10 @@ export default function RegisterPage() {
       // 3. 프론트엔드 로그인 상태 동기화 및 newMember 플래그 해제
       completeRegistration();
       
-      // 4. 메인 페이지로 이동
-      router.push('/');
+      // 4. 로그인 전 작성 중이던 작업이 있으면 해당 화면으로 복귀
+      const returnTo = sessionStorage.getItem('raota_login_return_to');
+      sessionStorage.removeItem('raota_login_return_to');
+      router.push(returnTo?.startsWith('/') ? returnTo : '/');
       showToast('반갑습니다! 회원가입이 완료되었습니다.', 'success');
     } catch (error: any) {
       console.error('Registration failed:', error);

@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Camera, Check, ChevronDown, Upload, X } from 'lucide-react';
 import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
 import { getRamenShops } from '@/lib/api/ramen-shops';
+import { isRamenLogFallbackImage } from '@/lib/constants/images';
 
 export type RamenLogFormData = {
   shopName: string;
@@ -104,6 +105,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     seasoning: [],
     topping: [],
   });
+  const [isTasteDetailsOpen, setIsTasteDetailsOpen] = useState(false);
   const [isPublic, setIsPublic] = useState(true);
 
   // Shop name search API states
@@ -119,9 +121,11 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isImageRemoved, setIsImageRemoved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollThumb, setScrollThumb] = useState({ height: 0, top: 0, visible: false });
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const scrollTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -143,6 +147,10 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     setRevisit(initialLog?.revisit || '자주 감');
     setNote(initialLog?.note || '');
     setTasteNotes(initialLog?.tasteNotes || { broth: [], noodle: [], seasoning: [], topping: [] });
+    setIsTasteDetailsOpen(Boolean(
+      initialLog?.note ||
+      Object.values(initialLog?.tasteNotes || {}).some((notes) => (notes?.length ?? 0) > 0),
+    ));
     setIsPublic(initialLog?.isPublic ?? true);
 
     setShopQuery(initialShopName);
@@ -156,6 +164,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
 
     setSelectedFile(null);
     setPreviewUrl(initialLog?.imageUrl || null);
+    setIsImageRemoved(false);
     setIsSubmitting(false);
     setIsScrolling(false);
     setScrollThumb({ height: 0, top: 0, visible: false });
@@ -193,12 +202,18 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
 
   if (!isOpen) return null;
 
+  const hasRequiredImage = Boolean(
+    selectedFile ||
+    (initialLog?.imageUrl && !isImageRemoved && !isRamenLogFallbackImage(initialLog.imageUrl)),
+  );
+
   const canSubmit = Boolean(
     selectedShopId &&
     menuName.trim() &&
     ramenType &&
     revisit &&
-    (selectedFile || initialLog?.imageUrl),
+    note.trim() &&
+    hasRequiredImage,
   );
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -206,9 +221,21 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     if (!file) return;
 
     setSelectedFile(file);
+    setIsImageRemoved(false);
     const reader = new FileReader();
     reader.onloadend = () => setPreviewUrl(reader.result as string);
     reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setIsImageRemoved(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const toggleTasteNote = (key: TasteNoteKey, note: string) => {
@@ -294,13 +321,15 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#25282b]/60" onClick={onClose} />
 
       <div className="relative max-h-[90dvh] w-full max-w-5xl overflow-hidden rounded-t-md border border-stone-200 bg-white animate-scale-in sm:max-h-[92vh] sm:rounded-sm">
         <div className="flex items-center justify-between border-b border-stone-100 bg-white px-4 py-3 sm:px-5 sm:py-4 md:px-6">
           <div>
             <h2 className="text-base font-black text-stone-900 sm:text-lg">{initialLog ? '라멘로그 수정' : '라멘로그 쓰기'}</h2>
-            <p className="mt-0.5 text-[11px] font-medium text-stone-500 sm:text-xs">사진과 선택형 취향 기록을 남겨보세요.</p>
+            <p className="mt-0.5 text-[11px] font-medium text-stone-500 sm:text-xs">
+              메뉴, 재방문 의사와 기억해둘 점을 남겨주세요.
+            </p>
           </div>
           <button
             type="button"
@@ -321,21 +350,30 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
             <section className="border-b border-stone-200 bg-stone-50 p-4 sm:p-5 md:border-b-0 md:border-r md:p-6">
               <div>
                 <div className="mb-2 flex items-center gap-2 sm:mb-3">
-                  <span className="text-[10px] font-black uppercase text-[#e60000]">Step 1</span>
+                  <span className="text-[10px] font-black uppercase text-[#e60000]">필수</span>
                   <label className="text-xs font-bold uppercase text-stone-500">
-                    사진 업로드 <span className="text-red-500">*</span>
+                    사진 추가
                   </label>
                 </div>
-                <div className="group relative aspect-[16/9] cursor-pointer overflow-hidden rounded-sm border border-dashed border-stone-300 bg-white transition-colors hover:border-[#e60000] sm:aspect-[4/3] md:aspect-[4/5]">
+                <label className="group relative block aspect-[16/9] cursor-pointer overflow-hidden rounded-sm border border-dashed border-stone-300 bg-white transition-colors hover:border-[#e60000] sm:aspect-[4/3] md:aspect-[3/2]">
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}
-                    className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                    className="sr-only"
                   />
                   {previewUrl ? (
                     <div className="absolute inset-0">
                       <img src={previewUrl} alt="라멘로그 미리보기" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-[#25282b]/75 text-white transition-colors hover:bg-[#e60000] focus:outline-none focus:ring-2 focus:ring-white"
+                        aria-label="선택한 사진 제거"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                       <div className="absolute inset-0 flex items-center justify-center bg-[#25282b]/60 opacity-0 transition-opacity group-hover:opacity-100">
                         <div className="flex items-center rounded-sm border border-white/30 bg-[#25282b] px-4 py-2 text-sm font-bold text-white">
                           <Camera className="mr-2 h-4 w-4" /> 사진 변경하기
@@ -347,23 +385,23 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                       <div className="mb-2 rounded-sm border border-stone-200 bg-stone-100 p-2.5 transition-colors group-hover:border-[#e60000] group-hover:text-[#e60000] sm:mb-3 sm:p-3">
                         <Upload className="h-5 w-5 sm:h-6 sm:w-6" />
                       </div>
-                      <span className="text-xs font-bold sm:text-sm">사진을 선택해주세요</span>
-                      <span className="mt-1 hidden text-xs leading-5 sm:block">세로 사진도 원본 비율에 맞춰 피드에 표시됩니다.</span>
+                      <span className="text-xs font-bold sm:text-sm">사진을 추가해주세요</span>
+                      <span className="mt-1 text-xs leading-5">사진이 있어야 라멘로그를 저장할 수 있어요.</span>
                     </div>
                   )}
-                </div>
+                </label>
               </div>
             </section>
 
-            <div className="space-y-5 p-4 sm:space-y-6 sm:p-5 md:p-6">
+            <div className="space-y-5 p-4 sm:space-y-6 sm:p-5 md:space-y-4 md:p-5">
               <section>
                 <div className="mb-3 flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase text-[#e60000]">Step 2</span>
-                  <span className="text-xs font-bold uppercase text-stone-500">기본 정보</span>
+                  <span className="text-[10px] font-black uppercase text-[#e60000]">필수</span>
+                  <span className="text-xs font-bold uppercase text-stone-500">한 그릇 기록</span>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
                   <div className="relative sm:col-span-2">
-                    <label className="mb-2 block text-xs font-bold uppercase text-stone-500">가게 이름 <span className="text-red-500">*</span></label>
+                    <label className="mb-2 block text-xs font-bold uppercase text-stone-500">가게 이름 <span className="text-[#e60000]">*</span></label>
                     <input
                       type="text"
                       value={shopQuery}
@@ -427,7 +465,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-xs font-bold uppercase text-stone-500">먹은 메뉴 <span className="text-red-500">*</span></label>
+                    <label className="mb-2 block text-xs font-bold uppercase text-stone-500">먹은 메뉴 <span className="text-[#e60000]">*</span></label>
                     <div className="space-y-2">
                       <MenuSelect
                         value={isCustomMenu ? '직접 입력' : menuName}
@@ -465,7 +503,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                           key={option}
                           type="button"
                           onClick={() => setRevisit(option)}
-                          className={`min-h-11 rounded-sm border px-2 text-xs font-black transition-colors ${revisit === option
+                          className={`min-h-11 min-w-0 rounded-sm border px-1.5 text-[11px] font-black leading-tight transition-colors sm:px-2 sm:text-xs ${revisit === option
                               ? 'border-[#e60000] bg-[#e60000] text-white'
                               : 'border-stone-200 bg-white text-stone-500 hover:border-stone-300'
                             }`}
@@ -478,57 +516,75 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                 </div>
               </section>
 
-              <section className="border-t border-stone-200 pt-5">
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase text-[#e60000]">Step 3</span>
-                  <span className="text-xs font-bold uppercase text-stone-500">맛 기록 <span className="text-stone-400 font-medium">(선택)</span></span>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {tasteFields.map((field) => (
-                    <div key={field.key} className="rounded-sm border border-stone-200 bg-stone-50 p-3">
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <span className="text-sm font-black text-[#25282b]">{field.label}</span>
-                        <span className="text-[10px] font-black text-stone-400">{tasteNotes[field.key].length}개</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {field.options.map((option) => {
-                          const isSelected = tasteNotes[field.key].includes(option);
-                          return (
-                            <button
-                              key={option}
-                              type="button"
-                              onClick={() => toggleTasteNote(field.key, option)}
-                              className={`rounded-full border px-3 py-1.5 text-xs font-black transition-colors ${isSelected
-                                  ? 'border-[#e60000] bg-red-50 text-[#e60000]'
-                                  : 'border-stone-200 bg-white text-stone-500 hover:border-stone-300'
-                                }`}
-                            >
-                              {option}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="border-t border-stone-200 pt-5">
-                <label className="mb-2 block text-xs font-bold uppercase text-stone-500">기억해둘 점 (선택)</label>
+              <section>
+                <label htmlFor="ramen-log-note" className="mb-2 block text-xs font-bold uppercase text-stone-500">
+                  기억해둘 점 <span className="text-[#e60000]">*</span>
+                </label>
                 <textarea
+                  id="ramen-log-note"
                   value={note}
                   onChange={(event) => setNote(event.target.value.slice(0, 200))}
-                  placeholder="예: 다음엔 면을 단단하게 부탁해보기"
-                  className="min-h-24 w-full resize-none border border-stone-200 bg-white px-4 py-3 text-sm font-medium leading-6 text-stone-700 outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000]"
+                  placeholder="예: 카라이 변경이 잘 어울렸고 다음엔 면을 단단하게 부탁하기"
+                  className="min-h-24 w-full resize-none border border-stone-200 bg-white px-4 py-3 text-sm font-medium leading-6 text-stone-700 outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000] md:min-h-20"
                   maxLength={200}
                   rows={3}
+                  required
                 />
-                <div className="mt-1 text-right">
+                <div className="mt-1 flex items-center justify-between gap-3">
+                  <span className="text-[11px] font-medium text-stone-400">나중에 다시 떠올릴 한 줄이면 충분해요.</span>
                   <span className="font-mono text-xs text-stone-400">{note.length}/200</span>
                 </div>
               </section>
 
-              <section className="border-t border-stone-200 pt-5">
+              <details
+                className="group overflow-hidden rounded-sm border border-stone-200 bg-stone-50"
+                open={isTasteDetailsOpen}
+                onToggle={(event) => setIsTasteDetailsOpen(event.currentTarget.open)}
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 md:py-3">
+                  <span>
+                    <span className="block text-sm font-black text-[#25282b]">맛을 더 남길까요?</span>
+                    <span className="mt-0.5 block text-[11px] font-medium text-stone-400">
+                      기존 국물·면·간·토핑 기록을 선택해서 남길 수 있어요.
+                    </span>
+                  </span>
+                  <span className="text-xl font-light text-stone-400 transition-transform group-open:rotate-45">+</span>
+                </summary>
+
+                <div className="space-y-5 border-t border-stone-200 bg-white p-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {tasteFields.map((field) => (
+                      <div key={field.key} className="rounded-sm border border-stone-200 bg-stone-50 p-3">
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                          <span className="text-sm font-black text-[#25282b]">{field.label}</span>
+                          <span className="text-[10px] font-black text-stone-400">{tasteNotes[field.key].length}개</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {field.options.map((option) => {
+                            const isSelected = tasteNotes[field.key].includes(option);
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                onClick={() => toggleTasteNote(field.key, option)}
+                                className={`rounded-full border px-3 py-1.5 text-xs font-black transition-colors ${isSelected
+                                    ? 'border-[#e60000] bg-white text-[#e60000]'
+                                    : 'border-stone-200 bg-white text-stone-500 hover:border-stone-300'
+                                  }`}
+                              >
+                                {option}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
+              </details>
+
+              <section className="border-t border-stone-200 pt-5 md:pt-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <label className="block text-xs font-bold uppercase text-stone-500">내 기록 공개하기</label>

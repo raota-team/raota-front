@@ -60,7 +60,7 @@ export default function VoteMenuModal({
       <div className="absolute inset-0 bg-[#25282b]/70" />
 
       <div
-        className="relative z-10 flex max-h-[88dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-md border border-stone-200 bg-white sm:max-h-[90vh] sm:rounded-sm"
+        className="relative z-10 flex max-h-[calc(100dvh-0.75rem)] w-full max-w-4xl flex-col overflow-hidden rounded-t-md border border-stone-200 bg-white sm:max-h-[calc(100dvh-2rem)] sm:rounded-sm"
         onClick={(event) => event.stopPropagation()}
       >
         <button
@@ -72,7 +72,7 @@ export default function VoteMenuModal({
           <X className="h-4 w-4" />
         </button>
 
-        <div className="grid min-h-0 flex-1 md:grid-cols-[19.5rem_minmax(0,1fr)] lg:grid-cols-[21rem_minmax(0,1fr)]">
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] md:grid-cols-[19.5rem_minmax(0,1fr)] md:grid-rows-1 lg:grid-cols-[21rem_minmax(0,1fr)]">
           <div className="shrink-0 border-b border-stone-200 bg-stone-50 px-4 pb-4 pt-4 md:min-h-full md:border-b-0 md:border-r md:px-6 md:py-6 lg:px-7">
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#e60000]">메뉴 투표</p>
             <h2 className="mt-1.5 pr-10 text-lg font-black leading-tight text-[#25282b] sm:text-xl md:mt-2 md:pr-0 md:text-2xl">
@@ -96,7 +96,7 @@ export default function VoteMenuModal({
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2 [scrollbar-color:#a8a29e_transparent] [scrollbar-width:thin] md:max-h-[70vh] md:px-6 md:py-6">
+          <div className="min-h-0 overflow-y-auto overscroll-contain px-4 py-2 [scrollbar-color:#a8a29e_transparent] [scrollbar-width:thin] md:px-6 md:py-6">
             <div className="divide-y divide-stone-200 md:grid md:grid-cols-2 md:gap-4 md:divide-y-0">
               {menus.map((menu) => (
                 <div
@@ -107,11 +107,11 @@ export default function VoteMenuModal({
                     <div className="min-w-0">
                       <div className="flex min-h-6 items-center">
                         {menu.id === bestMenuId && (
-                          <span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-50 text-[#e60000]">
+                          <span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#e60000] bg-white text-[#e60000]">
                             <Star className="h-3 w-3" fill="currentColor" />
                           </span>
                         )}
-                        <span className={`truncate text-sm font-bold md:break-words ${
+                        <span className={`min-w-0 break-words text-sm font-bold [overflow-wrap:anywhere] ${
                           menu.id === bestMenuId ? "text-[#25282b]" : "text-stone-700"
                         }`}>
                           {menu.name}

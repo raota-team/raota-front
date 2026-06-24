@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Heart, Store, UserRound } from 'lucide-react';
 import type { TasteNoteKey, TasteNotes } from '@/app/components/RamenLogModal';
 import ResilientImage from './ResilientImage';
+import RamenLogImage from './RamenLogImage';
 
 export type RamenLogItem = {
   id: number;
@@ -73,7 +74,7 @@ export default function RamenLogCard({
           ? featured ? 'aspect-[4/5] sm:aspect-video' : 'aspect-[4/5] sm:aspect-square'
           : featured ? 'aspect-[4/3] sm:aspect-video' : 'aspect-[4/3] sm:aspect-square'
       }`}>
-        <ResilientImage
+        <RamenLogImage
           src={log.imageUrl}
           alt={`${log.shop.name} ${log.menuName}`}
           fill
@@ -82,7 +83,7 @@ export default function RamenLogCard({
             : `(min-width: 1024px) 33vw, (min-width: 640px) 50vw, ${isCompactMobile ? '50vw' : '100vw'}`}
           className="object-cover"
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/5" />
+        <div className="pointer-events-none absolute inset-0 bg-[#25282b]/40" />
 
         <div className={`absolute flex items-center justify-between gap-1.5 sm:left-4 sm:right-4 sm:top-4 ${
           isCompactMobile ? 'left-2 right-2 top-2' : 'left-3 right-3 top-3'

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -13,7 +13,6 @@ import {
   Sparkles,
   Utensils,
   Heart,
-  PenSquare,
   Users,
   NotebookPen,
 } from "lucide-react";
@@ -54,6 +53,8 @@ const formatBreakTime = (hours: Shop["business_hours"]) => {
 };
 
 const formatCount = (value?: number) => (value ?? 0).toLocaleString("ko-KR");
+const PENDING_RAMEN_LOG_KEY = "raota_pending_ramen_log";
+const LOGIN_RETURN_TO_KEY = "raota_login_return_to";
 
 export default function ShopDetailClient({ initialShop }: ShopDetailClientProps) {
   const router = useRouter();
@@ -75,6 +76,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   const [isRamenLogModalOpen, setIsRamenLogModalOpen] = useState(false);
   const [ramenLogRefreshKey, setRamenLogRefreshKey] = useState(0);
   const lastIncrementedId = useRef<number | null>(null);
+  const resumedRamenLogRef = useRef(false);
 
   const refreshShopData = async () => {
     try {
@@ -156,7 +158,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     }
   };
 
-  const handleCreateRamenLog = async (data: RamenLogFormData) => {
+  const completeRamenLogCreate = useCallback(async (data: RamenLogFormData) => {
     if (!data.shopId) {
       throw new Error("라멘 가게를 선택해주세요.");
     }
@@ -179,9 +181,52 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     } : current);
     queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
     showToast("라멘로그를 저장했습니다.", "success");
+  }, [queryClient, shopId, showToast]);
+
+  const handleCreateRamenLog = async (data: RamenLogFormData) => {
+    if (!isLoggedIn) {
+      const returnTo = `/shop/${shopId}?resumeRamenLog=1`;
+      sessionStorage.setItem(PENDING_RAMEN_LOG_KEY, JSON.stringify(data));
+      sessionStorage.setItem(LOGIN_RETURN_TO_KEY, returnTo);
+      router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+      return;
+    }
+
+    await completeRamenLogCreate(data);
   };
 
-  const reviewWriteUrl = `/community/write?category=REVIEW&shopId=${shopId}&title=${encodeURIComponent(`${shopDetail?.name ?? ""} 후기 남기기`)}&content=${encodeURIComponent(`<p>${shopDetail?.name ?? ""}에서 먹어본 메뉴와 분위기를 공유해볼게요.</p>`)}`;
+  useEffect(() => {
+    if (!isLoggedIn || resumedRamenLogRef.current || !shopId) return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("resumeRamenLog") !== "1") return;
+
+    const pendingLog = sessionStorage.getItem(PENDING_RAMEN_LOG_KEY);
+    if (!pendingLog) return;
+
+    resumedRamenLogRef.current = true;
+
+    try {
+      const data = JSON.parse(pendingLog) as RamenLogFormData;
+      if (data.shopId !== shopId) {
+        resumedRamenLogRef.current = false;
+        return;
+      }
+
+      void completeRamenLogCreate(data)
+        .then(() => {
+          sessionStorage.removeItem(PENDING_RAMEN_LOG_KEY);
+          sessionStorage.removeItem(LOGIN_RETURN_TO_KEY);
+          window.history.replaceState(null, "", `/shop/${shopId}`);
+        })
+        .catch(() => {
+          resumedRamenLogRef.current = false;
+          showToast("작성한 라멘로그를 저장하지 못했습니다. 다시 시도해주세요.", "error");
+        });
+    } catch {
+      sessionStorage.removeItem(PENDING_RAMEN_LOG_KEY);
+    }
+  }, [completeRamenLogCreate, isLoggedIn, shopId, showToast]);
 
   const shop = shopDetail;
   
@@ -294,49 +339,33 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               </span>
             </div>
 
-            <div className="mt-6 rounded-sm border border-stone-200 bg-stone-50 p-4">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#e60000]">바로 참여</p>
-              <h2 className="mt-2 text-lg font-black text-[#25282b]">{shop.name} 방문 후기를 들려주세요!</h2>
-              <p className="mt-1 text-sm leading-6 text-stone-500">
-                먹어봤다면 10초면 충분해요. 투표하고, 라멘로그나 방문 후기를 남겨보세요.
-              </p>
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                <button
-                  type="button"
-                  onClick={() => setIsVoteModalOpen(true)}
-                  className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]"
-                >
-                  <Star className="h-4 w-4" />
-                  메뉴 투표하기
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!isLoggedIn) {
-                      showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login"));
-                      return;
-                    }
-                    setIsRamenLogModalOpen(true);
-                  }}
-                  className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]"
-                >
-                  <NotebookPen className="h-4 w-4" />
-                  라멘로그 쓰러가기
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!isLoggedIn) {
-                      showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login"));
-                      return;
-                    }
-                    router.push(reviewWriteUrl);
-                  }}
-                  className="inline-flex items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-                >
-                  <PenSquare className="h-4 w-4" />
-                  이 가게 후기 쓰기
-                </button>
+            <div className="mt-6 overflow-hidden rounded-sm border border-stone-200 bg-white">
+              <div className="grid md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                <div className="p-4 md:p-5">
+                  <div className="flex items-center gap-2 text-[#e60000]">
+                    <NotebookPen className="h-4 w-4" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em]">오늘 먹었다면</p>
+                  </div>
+                  <h2 className="mt-2 text-lg font-black text-[#25282b] md:text-xl">
+                    한 그릇만 가볍게 기록해두세요
+                  </h2>
+                  <p className="mt-1 text-sm leading-6 text-stone-500">
+                    사진과 메뉴, 재방문 의사와 기억해둘 점을 남기면 돼요.
+                  </p>
+                </div>
+                <div className="border-t border-stone-200 p-4 md:border-l md:border-t-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsRamenLogModalOpen(true)}
+                    className="inline-flex w-full min-w-52 items-center justify-center gap-2 rounded-sm bg-[#e60000] px-5 py-3.5 text-sm font-black text-white transition-opacity hover:opacity-90"
+                  >
+                    먹은 라멘 기록하기
+                    <NotebookPen className="h-4 w-4" />
+                  </button>
+                  <p className="mt-2 text-center text-[11px] font-medium text-stone-400">
+                    약 15초 · 로그인은 저장할 때
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -461,13 +490,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                 key={`${shop.id}-${ramenLogRefreshKey}`}
                 shopId={shop.id}
                 shopName={shop.name}
-                onWrite={() => {
-                  if (!isLoggedIn) {
-                    showConfirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?", () => router.push("/login"));
-                    return;
-                  }
-                  setIsRamenLogModalOpen(true);
-                }}
+                onWrite={() => setIsRamenLogModalOpen(true)}
               />
             </div>
 

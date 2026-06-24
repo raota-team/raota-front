@@ -9,12 +9,21 @@ export default function LoginPage() {
   const router = useRouter();
   const { showToast } = useApp();
 
+  const rememberReturnTo = () => {
+    const returnTo = new URLSearchParams(window.location.search).get('returnTo');
+    if (returnTo?.startsWith('/')) {
+      sessionStorage.setItem('raota_login_return_to', returnTo);
+    }
+  };
+
   const onKaKaoLogin = () => {
+    rememberReturnTo();
     const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
     window.location.href = `https://api.raota.net/oauth2/authorization/kakao?redirect_uri=${redirectUri}`;
   };
 
   const onGoogleLogin = () => {
+    rememberReturnTo();
     const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
     window.location.href = `https://api.raota.net/oauth2/authorization/google?redirect_uri=${redirectUri}`;
   };

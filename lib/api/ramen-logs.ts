@@ -1,6 +1,7 @@
 import type { TasteNotes } from "@/app/components/RamenLogModal";
 import type { RamenLogItem } from "@/app/components/RamenLogCard";
 import { apiClient } from "@/lib/api/client";
+import { isRamenLogFallbackImage } from "@/lib/constants/images";
 
 export type RamenLogSort = "LATEST" | "POPULAR";
 export type RamenLogRevisit = "DEFINITELY" | "SOMETIMES" | "ONCE_ENOUGH";
@@ -151,6 +152,23 @@ const normalizePage = (page: RamenLogPageInfo): RamenLogPageInfo => ({
   hasPrevious: Boolean(page?.hasPrevious),
 });
 
+const normalizeRamenLogPage = (
+  items: RamenLogDto[] = [],
+  page?: RamenLogPageInfo,
+): RamenLogPage => {
+  const visibleItems = items.filter((log) => !isRamenLogFallbackImage(log.imageUrl));
+  const hiddenCount = items.length - visibleItems.length;
+  const normalizedPage = normalizePage(page);
+
+  return {
+    items: visibleItems.map(normalizeRamenLog),
+    page: {
+      ...normalizedPage,
+      totalElements: Math.max(0, normalizedPage.totalElements - hiddenCount),
+    },
+  };
+};
+
 export const getRamenLogs = async (params: {
   page?: number;
   size?: number;
@@ -162,10 +180,7 @@ export const getRamenLogs = async (params: {
     query: params,
   });
 
-  return {
-    items: (response.data?.items ?? []).map(normalizeRamenLog),
-    page: normalizePage(response.data?.page),
-  };
+  return normalizeRamenLogPage(response.data?.items ?? [], response.data?.page);
 };
 
 export const getRamenLog = async (logId: number): Promise<RamenLog> => {
@@ -214,10 +229,7 @@ export const getMyRamenLogs = async (params: {
   const response = await apiClient<ApiPageResponse<RamenLogDto>>("/users/me/ramen-logs", {
     query: params,
   });
-  return {
-    items: (response.data?.items ?? []).map(normalizeRamenLog),
-    page: normalizePage(response.data?.page),
-  };
+  return normalizeRamenLogPage(response.data?.items ?? [], response.data?.page);
 };
 
 export const getUserRamenLogs = async (
@@ -228,10 +240,7 @@ export const getUserRamenLogs = async (
     `/users/${userId}/ramen-logs`,
     { query: params },
   );
-  return {
-    items: (response.data?.items ?? []).map(normalizeRamenLog),
-    page: normalizePage(response.data?.page),
-  };
+  return normalizeRamenLogPage(response.data?.items ?? [], response.data?.page);
 };
 
 export const getMyRamenLogShops = async (): Promise<RamenLogShop[]> => {

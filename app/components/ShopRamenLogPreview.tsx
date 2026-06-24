@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, NotebookPen, RefreshCw } from "lucide-react";
 import { getRamenLogs, type RamenLog } from "@/lib/api/ramen-logs";
-import ResilientImage from "./ResilientImage";
+import RamenLogImage from "./RamenLogImage";
 
 interface ShopRamenLogPreviewProps {
   shopId: number;
@@ -29,9 +29,9 @@ export default function ShopRamenLogPreview({
     setHasError(false);
 
     try {
-      const result = await getRamenLogs({ page: 0, size: 3, sort: "POPULAR", shopId });
+      const result = await getRamenLogs({ page: 0, size: 6, sort: "POPULAR", shopId });
       if (requestSequence !== requestSequenceRef.current) return;
-      setLogs(result.items);
+      setLogs(result.items.slice(0, 3));
       setTotalCount(result.page.totalElements);
     } catch (error) {
       console.error("Failed to fetch shop ramen logs:", error);
@@ -104,7 +104,7 @@ export default function ShopRamenLogPreview({
                   logs.length === 2 && index === 1 ? "!row-span-2" : ""
                 }`}
               >
-                <ResilientImage
+                <RamenLogImage
                   src={log.imageUrl}
                   alt={`${log.menuName} 라멘로그`}
                   fill

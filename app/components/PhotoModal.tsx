@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, User, MapPin, Calendar, Trash2, Flame, ThumbsUp, CircleCheck, Heart, Pencil } from 'lucide-react';
 import { useApp } from '@/app/context/AppContext';
+import { RAMEN_LOG_FALLBACK_IMAGE, isRamenLogFallbackImage } from '@/lib/constants/images';
 
 interface Photo {
   id?: number;            // 삭제를 위한 고유 ID
@@ -94,6 +95,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
   };
 
   const hasComment = Boolean(photo.comment?.trim());
+  const showFallbackImage = imgError || isRamenLogFallbackImage(photo.imageUrl);
   const hasDetails = !photo.isUserPhoto && Boolean(
     photo.restaurantName || photo.user || hasComment || photo.tasteNotes?.length,
   );
@@ -127,7 +129,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
         className={`relative w-full animate-scale-in ${
           hasDetails
             ? 'max-h-[92dvh] max-w-5xl touch-pan-y overflow-y-auto overscroll-contain rounded-md bg-white md:grid md:max-h-[92vh] md:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.75fr)] md:overflow-hidden md:rounded-sm'
-            : 'flex max-w-2xl aspect-[5/4] items-center justify-center overflow-hidden rounded-sm bg-black'
+            : 'flex max-w-2xl aspect-[5/4] items-center justify-center overflow-hidden rounded-sm bg-[#25282b]'
         }`}
         style={hasDetails ? { WebkitOverflowScrolling: 'touch' } : undefined}
       >
@@ -139,7 +141,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                 if (!photo.id) return;
                 onEdit(photo.id);
               }}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-black/65 text-white transition-colors hover:bg-[#e60000] sm:h-10 sm:w-10"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25282b]/65 text-white transition-colors hover:bg-[#e60000] sm:h-10 sm:w-10"
               title="라멘로그 수정"
             >
               <Pencil className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -148,7 +150,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
           {isMine && onDelete && !photo.isUserPhoto && (
             <button
               onClick={handleDeleteClick}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-black/65 text-white transition-colors hover:bg-[#e60000] sm:h-10 sm:w-10"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25282b]/65 text-white transition-colors hover:bg-[#e60000] sm:h-10 sm:w-10"
               title="사진 삭제"
             >
               <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -156,7 +158,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
           )}
           <button
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/65 text-white transition-colors hover:bg-[#e60000] sm:h-10 sm:w-10"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25282b]/65 text-white transition-colors hover:bg-[#e60000] sm:h-10 sm:w-10"
             aria-label="사진 상세 닫기"
           >
             <X className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -167,9 +169,9 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
           hasDetails ? 'aspect-[4/3] min-h-0 shrink-0 md:aspect-auto md:h-[min(92vh,48rem)]' : 'h-full'
         }`}>
           <img
-            src={imgError ? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" : photo.imageUrl}
+            src={showFallbackImage ? RAMEN_LOG_FALLBACK_IMAGE : photo.imageUrl}
             alt={photo.menuName}
-            className="h-full w-full object-cover"
+            className={`h-full w-full ${showFallbackImage ? "bg-[#f2f2f2] object-contain p-[18%]" : "object-cover"}`}
             onError={() => setImgError(true)}
           />
         </div>

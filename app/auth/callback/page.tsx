@@ -18,6 +18,12 @@ export default function AuthCallbackPage() {
   const [view, setView] = useState<ViewState>({ phase: 'loading' });
 
   useEffect(() => {
+    const getReturnTo = () => {
+      const returnTo = sessionStorage.getItem('raota_login_return_to');
+      sessionStorage.removeItem('raota_login_return_to');
+      return returnTo?.startsWith('/') ? returnTo : '/';
+    };
+
     let parsed = parseOAuthCallbackHash();
 
     // 1. AppContext가 이미 지웠거나 파싱된 경우 대비: 로컬스토리지 메타 확인
@@ -40,7 +46,7 @@ export default function AuthCallbackPage() {
         if (parsed.newMember) {
           window.location.href = '/register';
         } else {
-          window.location.href = '/';
+          window.location.href = getReturnTo();
         }
       }
       return;
@@ -51,7 +57,7 @@ export default function AuthCallbackPage() {
         if (isNewFromMeta) {
           window.location.href = '/register';
         } else {
-          window.location.href = '/';
+          window.location.href = getReturnTo();
         }
       }
       return;
