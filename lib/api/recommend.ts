@@ -12,29 +12,12 @@ export interface CompareShopsResponse {
     shopA: {
       id: number;
       name: string;
-      scores: {
-        soup: number;
-        noodle: number;
-        topping: number;
-        mood: number;
-        access: number;
-        revisit: number;
-      };
-      totalIndex: number;
     };
     shopB: {
       id: number;
       name: string;
-      scores: {
-        soup: number;
-        noodle: number;
-        topping: number;
-        mood: number;
-        access: number;
-        revisit: number;
-      };
-      totalIndex: number;
     };
+    focus?: string;
     narratives: {
       title: string;
       body: string;
@@ -45,7 +28,7 @@ export interface CompareShopsResponse {
 export const compareShops = async (data: CompareShopsRequest) => {
   console.log("비교 요청 데이터", data);
 
-  return apiClient("/recommendations/compare", {
+  return apiClient<CompareShopsResponse>("/ramen-shops/compare", {
     method: "POST",
     body: data,
   });

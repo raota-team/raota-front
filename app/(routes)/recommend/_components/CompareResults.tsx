@@ -1,6 +1,5 @@
 import React from "react";
-import { CompareShopCard, CompareIndexRow, FocusCard } from "./SharedComponents";
-import { AIFollowUpChat } from "./AIFollowUpChat";
+import { CompareShopCard, FocusCard } from "./SharedComponents";
 import { compareAxes } from "../constants";
 import { shareResult } from "../utils";
 import { Share2 } from "lucide-react";
@@ -167,19 +166,6 @@ export function CompareResults({
   const secondaryTotalIndex =
     compareData?.shopB.totalIndex ?? secondaryScores.reduce((a, b) => a + b, 0) / 6;
 
-  const primaryPolygon = primaryScores
-    .map((value, index) => {
-      const point = polarPoint(index, compareAxes.length, value * 0.52);
-      return `${point.x},${point.y}`;
-    })
-    .join(" ");
-  const secondaryPolygon = secondaryScores
-    .map((value, index) => {
-      const point = polarPoint(index, compareAxes.length, value * 0.52);
-      return `${point.x},${point.y}`;
-    })
-    .join(" ");
-
   const handleShare = () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
     shareResult(`라오타 AI 매장 비교 - ${primaryShop.name} vs ${secondaryShop.name}`, `${primaryShop.name}와 ${secondaryShop.name}의 비교 분석 결과입니다.`, url);
@@ -199,55 +185,6 @@ export function CompareResults({
       <div className="grid min-w-0 gap-px overflow-hidden border border-stone-200 bg-stone-200 lg:grid-cols-2">
         <CompareShopCard shop={primaryShop} label="A" accent="#e60000" />
         <CompareShopCard shop={secondaryShop} label="B" accent="#25282b" />
-      </div>
-
-      {/* Radar Chart Section */}
-      <div className="min-w-0 border border-stone-200 bg-white p-5 lg:p-8">
-        <div className="grid min-w-0 gap-6 lg:grid-cols-[1fr_18rem] lg:items-center">
-          <div className="flex justify-center">
-            <svg viewBox="0 0 160 160" className="h-52 w-52 sm:h-72 sm:w-72 lg:h-80 lg:w-80" aria-label="매장 비교 레이더 차트">
-              {[24, 42, 60, 78, 96].map((radius) => {
-                const gridPoints = compareAxes
-                  .map((_, index) => {
-                    const point = polarPoint(index, compareAxes.length, radius * 0.52);
-                    return `${point.x},${point.y}`;
-                  })
-                  .join(" ");
-                return <polygon key={radius} points={gridPoints} fill="none" stroke="#f2f2f2" strokeWidth="1" />;
-              })}
-
-              {compareAxes.map((label, index) => {
-                const point = polarPoint(index, compareAxes.length, 60);
-                const outer = polarPoint(index, compareAxes.length, 58);
-                return (
-                  <g key={label}>
-                    <line x1={80} y1={80} x2={outer.x} y2={outer.y} stroke="#f2f2f2" strokeWidth="1" />
-                    <text x={point.x} y={point.y} textAnchor="middle" dominantBaseline="middle" fill="#7e7e7e" fontSize="8" fontWeight="700">
-                      {label}
-                    </text>
-                  </g>
-                );
-              })}
-
-              <polygon points={secondaryPolygon} fill="rgba(37,40,43,0.1)" stroke="#25282b" strokeWidth="2.5" />
-              <polygon points={primaryPolygon} fill="rgba(230,0,0,0.1)" stroke="#e60000" strokeWidth="2.5" />
-            </svg>
-          </div>
-
-          <div className="min-w-0 space-y-6">
-            <div className="space-y-4">
-              <h5 className="text-xs font-extrabold tracking-[0.2em] text-[#e60000]">비교 지표</h5>
-              <div className="space-y-3">
-                <CompareIndexRow name={compareData?.shopA.name ?? primaryShop.name} color="#e60000" score={primaryTotalIndex} />
-                <CompareIndexRow name={compareData?.shopB.name ?? secondaryShop.name} color="#25282b" score={secondaryTotalIndex} />
-              </div>
-            </div>
-
-            <p className="text-sm font-medium leading-relaxed text-[#7e7e7e]">
-              커뮤니티 반응과 방문 흐름을 기준으로 비교한 요약 지표입니다.
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* Narrative Analysis */}
@@ -271,15 +208,6 @@ export function CompareResults({
           ))}
         </div>
       </div>
-
-      <AIFollowUpChat
-        contextLabel={`${primaryShop.name} vs ${secondaryShop.name}`}
-        shopIds={[
-          compareData?.shopA.id ?? primaryShop.id,
-          compareData?.shopB.id ?? secondaryShop.id,
-        ]}
-        contextType="compare"
-      />
 
       <button
         onClick={handleShare}

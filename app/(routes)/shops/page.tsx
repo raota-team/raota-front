@@ -2,10 +2,12 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight, ArrowUp, ChevronDown, ChevronLeft, ChevronRight, Sparkles, X, Search } from "lucide-react";
+import { ArrowUp, ChevronDown, ChevronLeft, ChevronRight, X, Search } from "lucide-react";
 import ShopCard from "../../components/ShopCard";
 import { useRamenShops } from "@/hooks/queries/useRamenShops";
+import { searchAiRamenShops } from "@/lib/api/ramen-shops";
+import TasteRecommendationPanel, { type AiTasteCriteria } from "@/app/components/TasteRecommendationPanel";
+import type { Shop } from "@/app/types";
 
 const PAGE_SIZE = 12;
 const MAX_VISIBLE_PAGES = 5;
@@ -69,6 +71,9 @@ const TYPES = [
   { value: "중화소바", label: "중화소바" },
 ];
 
+const getAiCriteriaQuery = (criteria: AiTasteCriteria | null) =>
+  criteria ? [criteria.prompt, ...criteria.chips].filter(Boolean).join(" ").trim() : "";
+
 const isSortOption = (value: string | null): value is SortOption =>
   SORT_OPTIONS.some((option) => option.value === value);
 
@@ -121,7 +126,12 @@ export default function ShopsListPage() {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [pageWindowStart, setPageWindowStart] = useState(0);
   const [isUrlStateReady, setIsUrlStateReady] = useState(false);
+  const [aiTasteCriteria, setAiTasteCriteria] = useState<AiTasteCriteria | null>(null);
+  const [aiSearchShops, setAiSearchShops] = useState<Shop[]>([]);
+  const [isAiSearching, setIsAiSearching] = useState(false);
+  const [aiSearchError, setAiSearchError] = useState<string | null>(null);
   const previousFilterStateKeyRef = useRef<string | null>(null);
+  const aiSearchQuery = useMemo(() => getAiCriteriaQuery(aiTasteCriteria), [aiTasteCriteria]);
 
   // URL 파라미터에서 초기 상태 설정 (Hydration Mismatch 방지)
   useEffect(() => {
@@ -144,8 +154,7 @@ export default function ShopsListPage() {
     if (ramenTypeName !== undefined) setActiveRamenTypeName(ramenTypeName);
     if (parsedSortBy !== DEFAULT_SORT) setSortBy(parsedSortBy);
     if (keyword !== "") {
-      setSearchQuery(keyword);
-      setDebouncedSearchQuery(keyword);
+      setAiTasteCriteria({ prompt: keyword, chips: [] });
     }
     if (page !== 0) setPageWindowStart(Math.floor(page / MAX_VISIBLE_PAGES) * MAX_VISIBLE_PAGES);
 
@@ -192,7 +201,8 @@ export default function ShopsListPage() {
     const params = new URLSearchParams();
 
     if (currentPage > 0) params.set("page", String(currentPage + 1));
-    if (debouncedSearchQuery) params.set("keyword", debouncedSearchQuery);
+    if (aiSearchQuery) params.set("keyword", aiSearchQuery);
+    else if (debouncedSearchQuery) params.set("keyword", debouncedSearchQuery);
     if (activeRegion !== ALL_FILTER) params.set("city", activeRegion);
     if (activeDistrict !== ALL_FILTER) params.set("district", activeDistrict);
     if (activeType !== ALL_TYPE_FILTER) params.set("tag", activeType);
@@ -207,7 +217,7 @@ export default function ShopsListPage() {
     if (nextUrl !== currentUrl) {
       window.history.replaceState(null, "", nextUrl);
     }
-  }, [activeDistrict, activeRamenTypeId, activeRamenTypeName, activeRegion, activeType, currentPage, debouncedSearchQuery, isUrlStateReady, sortBy]);
+  }, [activeDistrict, activeRamenTypeId, activeRamenTypeName, activeRegion, activeType, aiSearchQuery, currentPage, debouncedSearchQuery, isUrlStateReady, sortBy]);
 
   const clearRamenTypeFilter = (resetType = false) => {
     if (resetType) {
@@ -218,7 +228,39 @@ export default function ShopsListPage() {
     setActiveRamenTypeName(undefined);
   };
 
-  const { data, isLoading, isFetching, isError } = useRamenShops({
+  useEffect(() => {
+    if (!aiSearchQuery) {
+      setAiSearchShops([]);
+      setAiSearchError(null);
+      setIsAiSearching(false);
+      return;
+    }
+
+    let ignoreResult = false;
+
+    setIsAiSearching(true);
+    setAiSearchError(null);
+
+    searchAiRamenShops(aiSearchQuery)
+      .then((result) => {
+        if (ignoreResult) return;
+        setAiSearchShops(result.shops.slice(0, 6));
+      })
+      .catch(() => {
+        if (ignoreResult) return;
+        setAiSearchShops([]);
+        setAiSearchError("AI 라멘 가게 검색 결과를 불러오지 못했습니다.");
+      })
+      .finally(() => {
+        if (!ignoreResult) setIsAiSearching(false);
+      });
+
+    return () => {
+      ignoreResult = true;
+    };
+  }, [aiSearchQuery]);
+
+  const { data, isLoading, isFetching, isError: isListError } = useRamenShops({
     page: currentPage,
     size: PAGE_SIZE,
     city: activeRegion === ALL_FILTER ? undefined : activeRegion,
@@ -242,6 +284,8 @@ export default function ShopsListPage() {
   const shops = data?.shops ?? [];
   const totalPages = Math.max(data?.page?.totalPages ?? 1, 1);
   const totalElements = data?.page?.totalElements ?? 0;
+  const displayShops = aiTasteCriteria ? aiSearchShops : shops;
+  const displayTotalElements = aiTasteCriteria ? aiSearchShops.length : totalElements;
   const visiblePageNumbers = useMemo(() => {
     const pageCount = Math.min(MAX_VISIBLE_PAGES, totalPages - pageWindowStart);
     return Array.from({ length: pageCount }, (_, index) => pageWindowStart + index);
@@ -278,7 +322,8 @@ export default function ShopsListPage() {
     });
   };
 
-  const showListLoading = isLoading || isFetching;
+  const showListLoading = aiTasteCriteria ? isAiSearching : isLoading || isFetching;
+  const showListError = aiTasteCriteria ? Boolean(aiSearchError) : isListError;
 
   return (
     <div className="min-h-screen">
@@ -309,6 +354,19 @@ export default function ShopsListPage() {
 
       <div className="max-w-7xl mx-auto px-4 pb-10 pt-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6">
+          <TasteRecommendationPanel
+            activeCriteria={aiTasteCriteria}
+            onApply={(criteria) => {
+              setAiTasteCriteria(criteria);
+              setCurrentPage(0);
+              window.requestAnimationFrame(() => {
+                const resultSection = document.getElementById("shops-results");
+                resultSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+              });
+            }}
+            onClear={() => setAiTasteCriteria(null)}
+          />
+
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 items-end gap-3 md:flex md:flex-wrap">
               {/* Search Box */}
@@ -425,11 +483,20 @@ export default function ShopsListPage() {
                     <X className="h-3 w-3" />
                   </button>
                 )}
-                {debouncedSearchQuery === "" && activeRegion === ALL_FILTER && activeDistrict === ALL_FILTER && activeType === ALL_TYPE_FILTER && !activeRamenTypeId && sortBy === DEFAULT_SORT && (
+                {aiTasteCriteria && (
+                  <button
+                    onClick={() => setAiTasteCriteria(null)}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-red-50 px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
+                  >
+                    AI 검색: {aiSearchQuery}
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+                {debouncedSearchQuery === "" && activeRegion === ALL_FILTER && activeDistrict === ALL_FILTER && activeType === ALL_TYPE_FILTER && !activeRamenTypeId && sortBy === DEFAULT_SORT && !aiTasteCriteria && (
                   <p className="shrink-0 text-sm text-stone-400">아직 선택된 필터 조건이 없습니다.</p>
                 )}
               </div>
-              {(debouncedSearchQuery || activeRegion !== ALL_FILTER || activeDistrict !== ALL_FILTER || activeType !== ALL_TYPE_FILTER || activeRamenTypeId || sortBy !== DEFAULT_SORT) && (
+              {(debouncedSearchQuery || activeRegion !== ALL_FILTER || activeDistrict !== ALL_FILTER || activeType !== ALL_TYPE_FILTER || activeRamenTypeId || sortBy !== DEFAULT_SORT || aiTasteCriteria) && (
                 <button
                   onClick={() => {
                     setSearchQuery("");
@@ -438,6 +505,7 @@ export default function ShopsListPage() {
                     setActiveDistrict(ALL_FILTER);
                     clearRamenTypeFilter(true);
                     setSortBy(DEFAULT_SORT);
+                    setAiTasteCriteria(null);
                   }}
                   className="shrink-0 whitespace-nowrap text-[11px] font-black uppercase tracking-[0.12em] text-stone-400 transition-colors hover:text-[#e60000]"
                 >
@@ -450,21 +518,21 @@ export default function ShopsListPage() {
           {/* Results Summary */}
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs font-black text-stone-400 uppercase tracking-[0.1em]">
-              검색 결과: <span className="text-stone-900">{totalElements}</span>
+              {aiTasteCriteria ? "AI 검색 결과" : "검색 결과"}: <span className="text-stone-900">{displayTotalElements}</span>
             </p>
             <div className="h-[1px] flex-1 mx-6 bg-stone-200 hidden md:block"></div>
           </div>
 
-          <section className="relative min-h-[360px]">
-            {isError ? (
+          <section id="shops-results" className="relative min-h-[360px] scroll-mt-24">
+            {showListError ? (
               <div className="text-center py-24 bg-white rounded-2xl border border-stone-200">
                 <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">연결 오류</h3>
-                <p className="text-stone-400 text-sm">가게 목록을 불러오지 못했습니다.</p>
+                <p className="text-stone-400 text-sm">{aiSearchError ?? "가게 목록을 불러오지 못했습니다."}</p>
               </div>
-            ) : shops.length > 0 ? (
+            ) : displayShops.length > 0 ? (
               <div className={`transition-opacity duration-200 ${showListLoading ? "opacity-35" : "opacity-100"}`}>
                 <div className="mt-4 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                  {shops.map((shop) => (
+                  {displayShops.map((shop) => (
                     <ShopCard key={shop.id} shop={shop} />
                   ))}
                 </div>
@@ -473,14 +541,16 @@ export default function ShopsListPage() {
               <div className="text-center py-32 bg-white rounded-2xl border border-dashed border-stone-200">
                 <div className="text-5xl mb-6 opacity-10">🍜</div>
                 <h3 className="text-lg font-black text-stone-700 mb-2 uppercase tracking-tighter">결과 없음</h3>
-                <p className="text-stone-400 text-sm font-medium">검색어와 필터를 다시 확인해보세요</p>
+                <p className="text-stone-400 text-sm font-medium">
+                  {aiTasteCriteria ? "AI 조건을 조금 넓혀보세요" : "검색어와 필터를 다시 확인해보세요"}
+                </p>
               </div>
             ) : null}
 
             {showListLoading && <ShopListLoading />}
 
             {/* Pagination - Clean Style */}
-            {totalPages > 1 && (
+            {!aiTasteCriteria && totalPages > 1 && (
                 <div className={`mt-16 flex flex-col items-center gap-6 pb-20 border-t border-stone-200 pt-10 transition-opacity duration-200 md:flex-row md:justify-between ${showListLoading ? "opacity-35 pointer-events-none" : "opacity-100"}`}>
                 <div className="text-center text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 md:text-left">페이지 {currentPage + 1} / {totalPages}</div>
                 <div className="flex max-w-full items-center justify-center gap-2 overflow-x-auto pb-1">
@@ -540,21 +610,6 @@ export default function ShopsListPage() {
         </div>
       </div>
 
-      <div className="fixed bottom-5 left-4 right-4 z-30 rounded-full border border-stone-200 bg-white py-2 pl-3 pr-3 text-[#25282b] shadow-[0_12px_32px_rgba(37,40,43,0.14)] md:bottom-6 md:left-auto md:right-6 md:w-auto md:border-0 md:bg-transparent md:p-0 md:shadow-none">
-        <Link
-          href="/recommend"
-          className="group flex min-w-0 items-center gap-3 py-1.5 md:rounded-full md:border md:border-[#e60000] md:bg-white md:px-5 md:py-3 md:text-[#25282b] md:shadow-[0_8px_22px_rgba(37,40,43,0.12)] md:transition-colors md:hover:bg-[#e60000] md:hover:text-white"
-        >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e60000] text-white md:h-auto md:w-auto md:bg-transparent md:text-[#e60000] md:transition-colors md:group-hover:text-white">
-            <Sparkles className="h-4 w-4" />
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-extrabold">고르기 어렵다면 추천받기</span>
-            <span className="block truncate text-xs font-medium text-[#7e7e7e] md:hidden">취향으로 라멘집을 좁혀보세요</span>
-          </span>
-          <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-[#e60000] transition-colors md:group-hover:text-white" />
-        </Link>
-      </div>
     </div>
   );
 }

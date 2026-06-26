@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import HomeHeroActions from './HomeHeroActions';
 import UserProfileCard from './UserProfileCard';
 import AnimatedCounter from './AnimatedCounter';
 import ContactUsBanner from './ContactUsBanner';
@@ -20,28 +19,14 @@ import type {
 import ResilientImage from './ResilientImage';
 import {
   Sparkles,
-  MessageSquare,
-  MessageCircleMore,
   Camera,
-  ChevronLeft,
-  ChevronRight,
   Users,
-  UtensilsCrossed,
-  Heart,
-  MessageCircle,
-  TrendingUp,
-  Map,
   Search,
   ArrowRight,
-  Zap,
   LayoutGrid,
   Store,
-  Clock,
-  ChevronUp,
-  Star,
   BadgeCheck
 } from 'lucide-react';
-import { mockCommunityPosts } from '@/app/lib/community-data';
 
 const doHyeon = Do_Hyeon({
   weight: '400',
@@ -64,6 +49,8 @@ export default function LandingContent({
   const [heroRef, heroVisible] = useScrollReveal();
   const [contentRef, contentVisible] = useScrollReveal({ threshold: 0.05 });
   const [startPCAnim, setStartPCAnim] = useState(false);
+  const [heroSearchQuery, setHeroSearchQuery] = useState("");
+  const heroSearchInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
     const timer = setTimeout(() => setStartPCAnim(true), 300);
@@ -72,23 +59,40 @@ export default function LandingContent({
   
   // 서버 연동 데이터
   const { data: statsData } = useDiscoveryStats(initialData?.stats);
-  const { data: recentShopsData, isLoading: isLoadingShops } = useRecentVerifiedShops(
+  const { data: recentShopsData } = useRecentVerifiedShops(
     4,
     initialData?.recentShops,
   );
-  const { data: homeTipsData, isLoading: isLoadingTips } = useHomeTips('tip', 3);
+  const { data: homeTipsData } = useHomeTips('tip', 3);
 
   const stats = statsData?.data || { totalShops: 0, totalReviews: 0, totalUsers: 0 };
   const quickTips = homeTipsData?.data || [];
   const recentVerifiedShops = recentShopsData?.data || [];
+  const heroSearchHref = heroSearchQuery.trim()
+    ? `/shops?keyword=${encodeURIComponent(heroSearchQuery.trim())}`
+    : "/shops";
+  const quickExploreItems = [
+    "혼밥 좋은 곳",
+    "진한 국물",
+    "웨이팅 적은 곳",
+    "데이트 라멘",
+  ];
+  const selectHeroSearchSuggestion = (suggestion: string) => {
+    setHeroSearchQuery(suggestion);
+    heroSearchInputRef.current?.focus();
+  };
+  const submitHeroSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    window.location.href = heroSearchHref;
+  };
 
   return (
-    <div className="min-h-screen bg-white pb-6 md:pb-10">
+    <div className="min-h-screen bg-stone-50 pb-6 md:pb-10">
       {/* SEO용 숨겨진 제목 */}
       <h1 className="sr-only">라오타 - 라멘의 모든 것을 기록하고 나누는 커뮤니티</h1>
       
       {/* 1. Portal Hero Section */}
-      <section ref={heroRef} className="relative h-[330px] min-h-[330px] w-full overflow-hidden bg-[#25282b] md:h-[500px] md:min-h-0">
+      <section ref={heroRef} className="relative min-h-[430px] w-full overflow-hidden bg-[#25282b] md:min-h-[500px]">
         <div className="absolute inset-0">
           <Image
             src="/hero-home.webp"
@@ -97,13 +101,13 @@ export default function LandingContent({
             priority
             fetchPriority="high"
             sizes="100vw"
-            className="object-cover opacity-50 saturate-[0.8]"
+            className="object-cover opacity-45 saturate-[0.85]"
           />
+          <div className="absolute inset-0 bg-[#25282b]/55" />
         </div>
 
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-5 pt-12 md:flex-row md:items-center md:justify-between md:px-12 md:pt-0 md:pb-0">
-          <div className="max-w-2xl">
-
+        <div className="relative z-10 mx-auto flex min-h-[430px] max-w-7xl flex-col justify-end px-4 pb-5 pt-16 md:min-h-[500px] md:flex-row md:items-center md:justify-between md:gap-10 md:px-12 md:pb-10 md:pt-24">
+          <div className="w-full max-w-2xl">
             <h1 className={`mb-3 text-[clamp(2rem,8vw,4.5rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-white md:mb-6 ${doHyeon.className}`}>
               라멘을 사랑하는 <br />
               <span>사람들, 라오타.</span>
@@ -113,61 +117,58 @@ export default function LandingContent({
               라멘을 좋아하는 사람들과 이야기를 나눠보세요
             </p>
 
-            {/* Mobile Only: Stats Counter under "도와드립니다." (Hidden to reduce clutter on mobile) */}
-            {/* Removed the stats block on mobile to make the view cleaner and less cluttered */}
-            
-            {/* Mobile: Hero CTA buttons */}
-            <div className="grid max-w-[360px] grid-cols-2 gap-2.5 sm:hidden">
-              <Link 
-                href="/shops"
-                aria-label="라멘 가게 둘러보기"
-                className="group flex h-12 items-center justify-between rounded-full bg-[#e60000] px-4 text-white transition-opacity hover:opacity-95 active:opacity-90"
+            <div className="mb-4 max-w-2xl rounded-sm border border-stone-200 bg-white p-1.5 md:mb-6 md:p-2">
+              <form
+                action={heroSearchHref}
+                className="grid grid-cols-[minmax(0,1fr)_auto] gap-1.5 md:gap-2"
+                onSubmit={submitHeroSearch}
               >
-                <span className="text-sm font-bold tracking-[0.01em]">
-                  가게 둘러보기
-                </span>
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#e60000]">
-                  <Store className="h-4 w-4" />
-                </span>
-              </Link>
-              
-              <Link 
-                href="/ramen-log"
-                aria-label="라멘로그 둘러보기"
-                className="group flex h-12 items-center justify-between rounded-full border border-white/35 bg-white/10 px-4 text-white transition-colors hover:bg-white/20 active:bg-white/15"
-              >
-                <span className="text-sm font-bold tracking-[0.01em]">
-                  라멘로그
-                </span>
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white">
-                  <Camera className="h-4 w-4" />
-                </span>
-              </Link>
+                <div className="flex min-h-11 flex-1 items-center gap-2 px-2 md:min-h-12">
+                  <Search className="h-3.5 w-3.5 shrink-0 text-stone-400 md:h-4 md:w-4" />
+                  <input
+                    ref={heroSearchInputRef}
+                    value={heroSearchQuery}
+                    onChange={(event) => setHeroSearchQuery(event.target.value)}
+                    placeholder="동네, 메뉴, 취향 검색"
+                    className="min-w-0 flex-1 bg-transparent text-xs font-bold text-[#25282b] outline-none placeholder:text-stone-400 md:text-sm"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="inline-flex h-11 items-center justify-center gap-1.5 rounded-sm bg-[#e60000] px-3 text-xs font-black text-white transition-opacity hover:opacity-90 md:h-12 md:gap-2 md:px-5 md:text-sm"
+                >
+                  <span className="md:hidden">찾기</span>
+                  <span className="hidden md:inline">찾아보기</span>
+                  <ArrowRight className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                </button>
+              </form>
             </div>
 
-            {/* PC: Original Pill Button Style */}
-            <div className="hidden sm:flex flex-row gap-3 md:gap-4">
-              <Link 
-                href="/shops"
-                className="vodafone-button-pill bg-[#e60000] px-6 py-3.5 text-center transition-opacity hover:opacity-95 active:opacity-90 md:px-8 md:py-4"
-              >
-                <span className="flex items-center justify-center gap-2 text-white font-bold text-sm md:text-base">
-                  라멘 가게 둘러보기 <Store className="h-4 w-4 md:h-5 md:w-5" />
-                </span>
-              </Link>
-              <Link 
-                href="/ramen-log"
-                className="vodafone-button-pill border border-white/30 bg-white/10 px-6 py-3.5 text-center transition-colors hover:bg-white/20 md:px-8 md:py-4"
-              >
-                <span className="flex items-center justify-center gap-2 text-white font-bold text-sm md:text-base">
-                  라멘로그 둘러보기 <Camera className="h-4 w-4 md:h-5 md:w-5" />
-                </span>
-              </Link>
+            <div className="mb-5 flex max-w-2xl gap-2 overflow-x-auto pb-1 md:mb-0 md:flex-wrap md:overflow-visible md:pb-0">
+              {quickExploreItems.map((item) => {
+                const isSelected = heroSearchQuery.trim() === item;
+
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => selectHeroSearchSuggestion(item)}
+                    className={`shrink-0 rounded-sm border px-3 py-1.5 text-xs font-bold backdrop-blur-sm transition-colors ${
+                      isSelected
+                        ? "border-white bg-white text-[#25282b]"
+                        : "border-white/20 bg-white/10 text-white/85 hover:bg-white hover:text-[#25282b]"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                );
+              })}
             </div>
+
           </div>
 
           {/* PC 전용 서비스 통계 패널 (오른쪽 배치 - 맨처음 디자인처럼 깔끔한 가로바 형태) */}
-          <div className="hidden md:flex items-center gap-6 lg:gap-10 text-[11px] md:text-xs text-white/50 border-t border-b border-white/10 py-4 px-1 max-w-none">
+          <div className="hidden md:flex items-center gap-6 lg:gap-10 text-[11px] md:text-xs text-white/60 border-t border-b border-white/10 py-4 px-1 max-w-none">
             <div className="flex-shrink-0 whitespace-nowrap">
               <AnimatedCounter 
                 value={stats.totalShops || 0} 
@@ -187,16 +188,6 @@ export default function LandingContent({
               />
               참고한 리뷰
             </div>
-            <div className="h-8 w-px bg-white/10 flex-shrink-0"></div>
-            <div className="flex-shrink-0 whitespace-nowrap">
-              <AnimatedCounter 
-                value={stats.totalUsers || 0}
-                suffix="개+"
-                className="text-white text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
-                shouldStart={startPCAnim && stats.totalUsers > 0}
-              />
-              라멘 인증샷
-            </div>
           </div>
         </div>
       </section>
@@ -204,7 +195,7 @@ export default function LandingContent({
       {/* 2. Portal Main Content Area */}
       <div 
         ref={contentRef}
-        className={`relative z-20 mx-auto mt-8 grid max-w-7xl gap-4 px-4 md:mt-12 md:gap-8 md:px-12 lg:grid-cols-[1fr_320px] reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
+        className={`relative z-20 mx-auto mt-5 grid max-w-7xl gap-4 px-4 md:mt-8 md:gap-8 md:px-12 lg:grid-cols-[minmax(0,1fr)_320px] reveal-hidden ${contentVisible ? 'reveal-visible' : ''}`}
       >
         {/* Left Column: Community & Feeds */}
         <main className="flex flex-col gap-4 md:gap-8 lg:h-full">
@@ -219,7 +210,7 @@ export default function LandingContent({
 
           {/* Recently Verified Shops */}
 
-          <section className="rounded-md bg-white p-4 md:p-8">
+          <section className="rounded-md bg-white p-4 ring-1 ring-stone-200 md:p-6">
             <div className="mb-4 md:mb-8 flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="h-6 md:h-8 w-1 md:w-1.5 rounded-full bg-[#e60000]"></div>
@@ -230,21 +221,21 @@ export default function LandingContent({
               </Link>
             </div>
 
-            <div className="grid gap-4 md:gap-6 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2 md:gap-4">
               {recentVerifiedShops.map((shop) => (
                 <Link 
                   key={shop.id}
                   href={`/shop/${shop.id}`}
-                  className="group flex items-start gap-4 border-b border-[#f2f2f2] pb-4 md:pb-6 last:border-0 last:pb-0"
+                  className="group overflow-hidden rounded-sm border border-stone-200 bg-white transition-colors hover:border-[#e60000]"
                 >
-                  <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-[0px_8px_0px_0px] bg-stone-100 ring-1 ring-stone-100">
+                  <div className="relative h-32 overflow-hidden bg-stone-100 md:h-40">
                     {shop.imageUrl ? (
                       <ResilientImage
                         src={shop.imageUrl}
                         alt={shop.name}
                         fill
                         className="object-cover"
-                        sizes="(min-width: 768px) 80px, 64px"
+                        sizes="(min-width: 768px) 360px, 100vw"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-stone-300 group-hover:text-[#e60000] transition-colors">
@@ -252,13 +243,17 @@ export default function LandingContent({
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col min-w-0 justify-center h-full py-1">
-                    <h3 className="mb-1.5 md:mb-2 truncate text-sm md:text-base font-bold text-[#25282b] group-hover:text-[#e60000]">
+                  <div className="min-w-0 p-3 md:p-4">
+                    <div className="mb-2 inline-flex items-center gap-1 rounded-sm bg-red-50 px-2 py-1 text-[10px] font-black text-[#e60000]">
+                      <BadgeCheck className="h-3 w-3" />
+                      방문 인증
+                    </div>
+                    <h3 className="mb-1 truncate text-base font-black text-[#25282b] group-hover:text-[#e60000] md:text-lg">
                       {shop.name}
                     </h3>
-                    <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-xs text-[#666666]">
-                      <span className="font-bold text-[#25282b]">{shop.location}</span>
-                      <div className="flex items-center gap-1 text-[#666666]">
+                    <div className="flex min-w-0 items-center justify-between gap-2 text-[11px] text-[#666666] md:text-xs">
+                      <span className="truncate font-bold text-[#25282b]">{shop.location}</span>
+                      <div className="flex shrink-0 items-center gap-1 text-[#666666]">
                         <Camera className="h-3 w-3" />
                         <span className="font-medium">인증샷 <b className="text-[#25282b]">{shop.photoCount || 0}</b>개</span>
                       </div>
@@ -272,53 +267,30 @@ export default function LandingContent({
           {/* Quick Menu Grid */}
           <section className="grid grid-cols-2 gap-3 md:gap-4 sm:grid-cols-4">
             {[
-              { label: '전체 맛집', icon: Store, href: '/shops', color: 'bg-stone-50 text-[#25282b]' },
-              { label: '라멘로그', icon: Camera, href: '/ramen-log', color: 'bg-stone-50 text-[#25282b]' },
-              { label: '커뮤니티', icon: Users, href: '/community', color: 'bg-stone-50 text-[#25282b]' },
-              { label: '내 정보', icon: LayoutGrid, href: '/mypage', color: 'bg-stone-50 text-[#25282b]' },
+              { label: '전체 맛집', icon: Store, href: '/shops', color: 'bg-white text-[#25282b]' },
+              { label: '라멘로그', icon: Camera, href: '/ramen-log', color: 'bg-white text-[#25282b]' },
+              { label: '커뮤니티', icon: Users, href: '/community', color: 'bg-white text-[#25282b]' },
+              { label: '내 정보', icon: LayoutGrid, href: '/mypage', color: 'bg-white text-[#25282b]' },
             ].map((item) => (
               <Link 
                 key={item.label}
                 href={item.href}
-                className="group flex flex-col items-center justify-center rounded-md bg-white py-3 px-2 ring-1 ring-[#f2f2f2] transition-colors hover:ring-[#e60000]/20 md:py-4 md:px-4"
+                className="group flex items-center justify-between rounded-md bg-white px-3 py-3 ring-1 ring-stone-200 transition-colors hover:ring-[#e60000]/30 md:px-4 md:py-4"
               >
-                <div className={`mb-2 flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full ${item.color} group-hover:bg-[#e60000] group-hover:text-white transition-colors`}>
-                  <item.icon className="h-4 w-4 md:h-5 md:w-5" />
+                <div className="flex items-center gap-2">
+                  <div className={`flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full ${item.color} ring-1 ring-stone-100 group-hover:bg-[#e60000] group-hover:text-white transition-colors`}>
+                    <item.icon className="h-4 w-4 md:h-5 md:w-5" />
+                  </div>
+                  <span className="text-[11px] md:text-sm font-bold text-[#25282b] group-hover:text-[#e60000]">{item.label}</span>
                 </div>
-                <span className="text-[11px] md:text-sm font-bold text-[#25282b] group-hover:text-[#e60000]">{item.label}</span>
+                <ArrowRight className="h-3.5 w-3.5 text-stone-300 transition-transform group-hover:translate-x-0.5 group-hover:text-[#e60000]" />
               </Link>
             ))}
           </section>
 
-          {/* Bottom Banner Group: AI Summary & Ramen Log Event */}
-          <div className="lg:mt-auto flex flex-col gap-4 md:gap-8 w-full">
-            {/* AI Feature Summary Banner */}
-            <section className="relative overflow-hidden rounded-md bg-[#e60000] p-5 text-white md:p-8">
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
-                <div className="mb-4 md:mb-0">
-                  <h2 className="mb-2 text-xl md:text-2xl font-black leading-tight">
-                    길게 읽지 마세요, <br />
-                    AI가 3줄 요약해 드립니다.
-                  </h2>
-                  <p className="text-sm md:text-base text-white/95">수많은 리뷰 속 핵심 장단점만 쏙쏙!</p>
-                </div>
-                <Link 
-                  href="/recommend?mode=summary"
-                  className="vodafone-button-pill bg-white px-8 py-3 text-center text-sm font-bold text-[#e60000] transition-opacity hover:opacity-90 active:opacity-95"
-                >
-                  지금 요약 보기
-                </Link>
-              </div>
-
-              <div className="absolute -right-8 -top-8 opacity-10">
-                <MessageSquare className="h-32 md:h-48 w-32 md:w-48" />
-              </div>
-            </section>
-
-            {/* PC Only: Ramen Log Event Banner aligned to the bottom */}
-            <div className="hidden lg:block">
-              <ContactUsBanner />
-            </div>
+          {/* PC Only: Ramen Log Event Banner aligned to the bottom */}
+          <div className="hidden lg:mt-auto lg:block">
+            <ContactUsBanner />
           </div>
         </main>
 
@@ -333,7 +305,7 @@ export default function LandingContent({
           <TrendingTagsRanking />
 
           {/* Quick Tips Portal */}
-          <div className="rounded-md bg-white p-4 md:p-6">
+          <div className="rounded-md bg-white p-4 ring-1 ring-stone-200 md:p-6">
             <div className="mb-3 flex items-center justify-between gap-3 border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[#e60000]" />

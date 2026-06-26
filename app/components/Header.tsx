@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronRight, LogIn, LogOut, Menu, X, Home, MessageSquare, User, UtensilsCrossed, Sparkles, NotebookPen } from 'lucide-react';
+import { ChevronRight, LogIn, LogOut, Menu, X, Home, MessageSquare, User, UtensilsCrossed, NotebookPen } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 interface HeaderProps {
@@ -86,14 +86,6 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
       active: isActive('/community'),
     },
     {
-      href: '/recommend',
-      label: '추천받기',
-      description: '취향과 기분에 맞는 한 그릇 찾기',
-      icon: Sparkles,
-      active: isActive('/recommend'),
-      featured: true,
-    },
-    {
       href: myPagePath,
       label: '마이페이지',
       description: isLoggedIn ? '내 방문 기록과 활동 모아보기' : '로그인 후 내 활동을 확인해요',
@@ -129,12 +121,6 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
                   <Link href="/shops" className={`text-sm transition-colors ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
                   <Link href="/ramen-log" className={`text-sm transition-colors ${currentPath === '/ramen-log' ? activeTextColor : navTextColor}`}>라멘로그</Link>
                   <Link href="/community" className={`text-sm transition-colors ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
-                  <Link
-                    href="/recommend"
-                    className={`text-sm transition-colors ${currentPath === '/recommend' ? activeTextColor : navTextColor}`}
-                  >
-                    추천받기
-                  </Link>
                   <Link href={myPagePath} className={`text-sm transition-colors ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
 
                   {isAuthChecking && !isLoggedIn ? (
@@ -218,7 +204,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
                     onClick={closeMobileMenu}
                     className={`group flex items-center gap-3 rounded-sm border px-3 py-3.5 transition-colors ${
                       item.active
-                        ? 'border-[#e60000] bg-white text-[#e60000] shadow-sm'
+                        ? 'border-[#e60000] bg-white text-[#e60000]'
                         : 'border-stone-200 bg-white text-[#25282b] hover:border-stone-300 hover:text-[#e60000]'
                     }`}
                   >
@@ -230,9 +216,6 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2 text-base font-bold">
                         {item.label}
-                        {item.featured && (
-                          <span className="rounded-sm bg-red-50 px-1.5 py-0.5 text-[10px] font-black text-[#e60000]">AI</span>
-                        )}
                       </span>
                       <span className="mt-0.5 block truncate text-xs font-medium text-stone-500">{item.description}</span>
                     </span>

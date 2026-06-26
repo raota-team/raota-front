@@ -187,6 +187,57 @@ Vodafone's corporate site does not expose many inline form controls on the homep
 - Padding: 12px 10px
 - Error state (when shown): the 1px border shifts to Vodafone Red (`#e60000`) and error message text inherits the same red at 12px weight 600
 
+### Home Discovery Page
+
+RAOTA's home page should feel like a ramen discovery dashboard, not a marketing-only landing page. Lead with search, curated recommendations, and recent verified activity.
+
+- Hero: use a real ramen/shop image background with a dark overlay and concise brand copy. Avoid extra eyebrow badges when the brand and search intent are already clear
+- Hero spacing: desktop hero copy must sit clearly below the global header; use a top safe area around `96px` when the header overlays the hero image
+- Primary action: place a large search field in the hero so users can start by neighborhood, menu, or taste. Keep quick discovery chips directly under the search field
+- Mobile hero search: keep the search control compact and one-line, around `44px` tall with a short label such as "찾기". Avoid stacked input/button cards that make the hero feel too long
+- Hero quick chips: treat chips as search suggestions, not direct navigation. Tapping a chip writes that phrase into the hero search input; submitting the form sends the exact phrase to the shop list via `keyword`
+- Content order: show the daily AI recommendation and recently verified shops before generic navigation shortcuts or explanatory feature banners
+- AI messaging: avoid standalone red promotional banners that only explain AI features. If AI is mentioned, tie it to an actual recommendation, summary, or search result the user can act on
+- Section surfaces: daily recommendations, recent activity, quick shortcuts, and sidebar modules should share the same white surface with a thin neutral outline (`ring-stone-200` or equivalent) so one section does not appear unfinished
+- Recent activity: prefer image-led cards for recently verified shops so the home page feels alive and food-specific
+
+### Community Post Detail
+
+Community post detail pages are reading surfaces, not brand hero moments. The post title should lead the article without overpowering author metadata, images, or the body.
+
+- Title scale: use a compact article title around `21px-24px` on mobile and about `30px` on desktop. Avoid hero-scale `48px+` titles inside the article card
+- Title rhythm: keep line-height relaxed enough for Korean wrapping (`1.3-1.4`) and use normal letter spacing
+- Surface hierarchy: category/store chips and author metadata should remain close to the title so the page reads as one article header, not a separate landing section
+
+### AI Taste Search Panel
+
+RAOTA's shop-list AI taste search is a compact utility panel, not a hero. It should help users narrow the current list without making the page feel like a second landing page.
+
+- Container: full-width within the shop-list content column, Pure White (`#ffffff`) background, 1px `stone-200` outline, `2px` radius, no shadow and no gradient
+- Desktop layout: two-column grid with a fixed left intro rail around `23rem` and a flexible right control area. The left rail uses a right hairline divider; the right side contains the input, CTA, chips, and examples
+- Mobile layout: stack the intro rail above controls with a bottom hairline divider, but compress the rail to a compact label/header area. Use `12px` padding, keep one short supporting sentence such as "문장이나 조건으로 취향에 가까운 가게를 찾아보세요.", and keep the search controls visible without requiring a long scroll
+- Tablet layout: stack the intro rail above controls with a bottom hairline divider; preserve `16px-20px` internal padding and 44px minimum touch targets
+- Intro copy: keep the eyebrow red and compact, then use a short 18-27px bold Charcoal headline with one concise support sentence. Avoid hero-scale display type and avoid long Korean phrases that break after one or two syllables inside this panel
+- Search input: 44px high on mobile and 48px high from tablet up, `2px` radius, white fill, 1px neutral border, search icon at the left, red border on focus, bold 14px input text
+- Primary action: use the Primary Red Rectangle treatment, 48px high, compact Korean label such as "찾아보기", and a right arrow icon. The disabled state may use Disabled Grey (`#bebebe`) or `stone-300`
+- Reset action: ghost rectangle with a reset icon; only show it when an AI condition is active
+- Quick chips: `2px` radius outlined buttons, 12px bold text, white default state, solid Vodafone Red (`#e60000`) selected state. Treat them as a single-select category row: selecting one chip clears the previous chip and writes that chip label into the input; editing or clearing the input clears the chip selection. On mobile, keep them in a horizontal scroll row; from tablet up they may wrap
+- Example prompts: quiet filled neutral chips using Light Neutral (`#f2f2f2`) with grey text; they should read as suggestions, not primary filters. Keep the full example set in a horizontal scroll row on mobile
+- Active summary: do not repeat the active AI query inside the panel intro. Show the applied query only once in the shop-list filter chip row below the controls
+
+### Shop Detail Compare Panel
+
+The shop-detail 1:1 compare panel is a secondary action at the bottom of a detail page, so it should feel compact and utilitarian rather than like a full recommendation workflow.
+
+- Mobile shop-detail content: when the main and side columns collapse into one column, keep the column gap compact (`16px`) and use a shorter bottom margin after the regular menu section (`24px`) so the ramen-log preview reads as the next related section rather than a distant block
+- Mobile shop-detail top rhythm: keep the back navigation close to the app header and keep only about `20px` between the back action and hero image; do not let the back link float in a large blank band
+- Container: white surface, 1px neutral border, `2px` radius, no shadow, no gradient
+- Header: compact eyebrow with chart icon, 16-18px title, and a small "기준: {shop name}" summary chip instead of a full comparison-A card
+- Controls: use compact dropdown/input heights around 44px on mobile and keep vertical gaps around 12px
+- Prompt examples: horizontal scroll on mobile; wrapping is acceptable on wider screens
+- CTA: single full-width red rectangle labeled "비교하기"; avoid oversized explanatory copy in this context
+- Results: when shown, replace the setup controls with the compact result state rather than stacking the full form above the result. Do not reuse the full recommendation-page visual comparison cards. Use the A/B names, all returned narrative rows, and a small "다시 비교하기" action; omit score cards, score-like text inside narratives, large shop images, and secondary action icons. Do not line-clamp or truncate mobile comparison result text
+
 ### Navigation
 
 **Top bar**

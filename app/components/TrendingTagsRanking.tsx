@@ -59,7 +59,7 @@ export default function TrendingTagsRanking() {
   }, [currentIndex, shops.length]);
 
   return (
-    <div className="rounded-md bg-white p-4 ring-1 ring-[#f2f2f2] md:p-6">
+    <div className="rounded-md bg-white p-4 ring-1 ring-stone-200 md:p-6">
       <div className="mb-3 flex items-center justify-between border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
         <h2 className="font-black text-base md:text-lg text-[#25282b] flex items-center gap-2">
           <Flame className="h-[18px] w-[18px] text-[#e60000] fill-[#e60000]/10 animate-pulse" />

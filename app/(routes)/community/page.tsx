@@ -582,10 +582,10 @@ export default function CommunityPage() {
               후기들을 둘러보다 다음 한 그릇이 궁금해지면 취향에 맞는 가게를 찾아보세요.
             </p>
             <Link
-              href="/recommend"
+              href="/shops"
               className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 py-3 text-sm font-black text-white transition-opacity hover:opacity-90"
             >
-              추천받기
+              가게 목록에서 추천받기
             </Link>
           </section>
         </aside>

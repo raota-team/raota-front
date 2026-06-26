@@ -81,6 +81,14 @@ interface RamenShopDetailResponse {
   status: string;
 }
 
+interface AiRamenShopSearchResponse {
+  data: {
+    recommendedShops: ApiRamenShop[];
+  };
+  success?: boolean;
+  status?: string;
+}
+
 export interface RamenShopsParams {
   page?: number;
   size?: number;
@@ -104,6 +112,10 @@ export interface RamenShopsPageInfo {
 export interface RamenShopsResult {
   shops: Shop[];
   page: RamenShopsPageInfo;
+}
+
+export interface AiRamenShopSearchResult {
+  shops: Shop[];
 }
 
 const FALLBACK_IMAGE_URL = "/hero-home.jpg";
@@ -260,6 +272,17 @@ export const getRamenShops = async (
   return {
     shops: payload.data.items.map(normalizeShop),
     page: normalizePage(payload.data.page),
+  };
+};
+
+export const searchAiRamenShops = async (query: string): Promise<AiRamenShopSearchResult> => {
+  const payload = await apiClient<AiRamenShopSearchResponse>("/ramen-shops/ai-search", {
+    method: "POST",
+    body: { query },
+  });
+
+  return {
+    shops: (payload.data.recommendedShops ?? []).map(normalizeShop),
   };
 };
 

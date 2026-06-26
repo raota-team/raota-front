@@ -428,7 +428,7 @@ export default function CommunityDetailPage({ params, initialPost }: CommunityDe
             )}
           </div>
 
-          <h1 className="mb-5 text-2xl font-black leading-snug tracking-tight text-[#25282b] md:mb-6 md:text-5xl md:leading-tight">{post.title}</h1>
+          <h1 className="mb-4 text-[1.35rem] font-black leading-snug text-[#25282b] sm:text-2xl md:mb-5 md:text-3xl md:leading-snug">{post.title}</h1>
 
           <div className="mb-6 flex items-center justify-between border-b border-stone-100 pb-5 md:mb-8 md:pb-6">
             <Link href={`/user/${post.authorId}`} className="flex items-center gap-3 group">

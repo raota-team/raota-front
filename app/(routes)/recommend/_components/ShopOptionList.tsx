@@ -16,11 +16,13 @@ export function ShopOptionList({
   selectedOption,
   onSelect,
   disabledOptionIds = [],
+  compact = false,
 }: {
   label: string;
   selectedOption: ShopOption | null;
   onSelect: (option: ShopOption) => void;
   disabledOptionIds?: number[];
+  compact?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,11 +59,13 @@ export function ShopOptionList({
 
   return (
     <div className="relative">
-      <span className="mb-2 block text-[12px] font-bold uppercase tracking-widest text-[#7e7e7e]">{label}</span>
+      <span className={`${compact ? "mb-1.5 text-[11px] tracking-[0.14em]" : "mb-2 text-[12px] tracking-widest"} block font-bold uppercase text-[#7e7e7e]`}>{label}</span>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-[2px] border px-4 py-3 text-left transition-colors sm:min-h-[4.375rem] ${
+        className={`flex w-full items-center justify-between gap-3 rounded-[2px] border text-left transition-colors ${
+          compact ? "min-h-11 px-3 py-2.5" : "min-h-12 px-4 py-3 sm:min-h-[4.375rem]"
+        } ${
           isOpen ? "border-[#e60000]" : "border-[#333333] hover:border-[#e60000]"
         }`}
         aria-haspopup="listbox"
@@ -71,7 +75,7 @@ export function ShopOptionList({
           <span className={`block truncate text-[14.4px] font-bold ${selectedOption ? "text-[#25282b]" : "text-[#bebebe]"}`}>
             {selectedOption ? selectedOption.name : "매장 선택"}
           </span>
-          {selectedOption && (
+          {selectedOption && !compact && (
             <span className="mt-0.5 hidden truncate text-[12px] font-medium text-[#7e7e7e] sm:block">{selectedOption.region}</span>
           )}
         </span>

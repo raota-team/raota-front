@@ -27,6 +27,7 @@ import ResilientImage from "@/app/components/ResilientImage";
 import ShopRamenLogPreview from "@/app/components/ShopRamenLogPreview";
 import type { RamenLogFormData } from "@/app/components/RamenLogModal";
 import { createRamenLog, toRevisitValue } from "@/lib/api/ramen-logs";
+import ShopComparePanel from "@/app/components/ShopComparePanel";
 
 const ReportModal = dynamic(() => import("../../../components/ReportModal"), { ssr: false });
 const VoteMenuModal = dynamic(() => import("../../../components/VoteMenuModal"), { ssr: false });
@@ -279,18 +280,37 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   if (isLoading && !shop) return <Loading />;
   if (isError || !shop) return <div className="text-center py-20">가게 정보를 찾을 수 없습니다.</div>;
 
+  const shopInfoCard = (
+    <div className="relative overflow-hidden rounded-md bg-[#25282b] p-5 text-white md:p-8">
+      <div className="relative z-10">
+        <h2 className="mb-4 text-lg font-black">가게 정보</h2>
+        <div className="space-y-4 text-sm font-mono text-stone-300">
+          <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">주소</span><span className="text-right break-keep text-white/90">{formatInfoValue(shop.address)}</span></p>
+          <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">영업시간</span><span className="text-right text-white/90">{formatOperatingHours(shop.business_hours)}</span></p>
+          <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">브레이크</span><span className="text-right text-white/90">{formatBreakTime(shop.business_hours)}</span></p>
+          <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">휴무일</span><span className="text-right break-keep text-white/90">{formatInfoValue(shop.business_hours?.closed_days)}</span></p>
+          <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">주차</span><span className="text-right break-keep text-white/90">{formatInfoValue(shop.business_hours?.parking_info)}</span></p>
+        </div>
+        <div className="mt-8 flex gap-3">
+          {shop.instagram_url && <a href={shop.instagram_url} target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 p-3 text-xs font-bold transition-colors hover:bg-[#e60000]"><Instagram className="h-4 w-4" /> Instagram</a>}
+          {shop.catchTableUrl && <a href={shop.catchTableUrl} target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 p-3 text-xs font-bold transition-colors hover:bg-white hover:text-[#25282b]"><Utensils className="h-4 w-4" /> CatchTable</a>}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 pb-8 pt-0 sm:px-6 md:py-12 lg:px-8">
       <button 
         onClick={() => router.push("/shops")} 
-        className="group mb-8 flex items-center text-stone-600 transition-colors hover:text-[#e60000]"
+        className="group mb-5 flex items-center text-stone-600 transition-colors hover:text-[#e60000] md:mb-8"
         aria-label="라멘 가게 목록으로 돌아가기"
       >
         <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
         <span className="font-bold text-sm uppercase tracking-widest">목록으로 돌아가기</span>
       </button>
 
-      <div className="mb-10 grid grid-cols-1 gap-6 lg:mb-12 lg:grid-cols-12 lg:gap-8">
+      <div className="mb-10 grid grid-cols-1 gap-4 lg:mb-12 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-8">
           <div className="group relative h-72 w-full overflow-hidden rounded-md bg-stone-100 md:h-80 lg:h-96">
             <ResilientImage
@@ -305,7 +325,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
             />
           </div>
 
-          <div className="mb-10 border-b border-stone-200 bg-white py-5 md:mb-12 md:py-7">
+          <div className="mb-6 border-b border-stone-200 bg-white py-5 md:mb-8 md:py-7">
             <div className="mb-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
               <h1 className="vodafone-display min-w-0 max-w-full break-words text-4xl leading-none text-[#25282b] [overflow-wrap:anywhere] sm:text-5xl md:text-6xl">{shop.name}</h1>
               <button onClick={handleBookmarkToggle} className={`flex w-fit items-center gap-2 rounded-sm border px-4 py-2 text-sm font-bold transition-colors ${isBookmarked ? "border-[#e60000] bg-[#e60000] text-white" : "border-stone-200 bg-white text-stone-700 hover:border-[#e60000]"}`}>
@@ -370,11 +390,18 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
             </div>
           </div>
 
-          <div className="prose prose-stone mb-10 max-w-none md:mb-12">
-            <div className="mb-4 flex items-center border-l-4 border-[#e60000] pl-4">
-              <h2 className="m-0 text-lg font-bold text-[#25282b] md:text-xl">한줄평</h2>
+          <div className="mb-10 max-w-none rounded-md border border-stone-200 bg-white p-5 md:mb-12 md:p-6">
+            <div className="mb-4 flex items-center gap-2 text-[#e60000]">
+              <Sparkles className="h-4 w-4" />
+              <p className="text-[10px] font-black tracking-[0.18em]">AI 리뷰 요약</p>
             </div>
-            <p className="text-base leading-relaxed text-stone-700 md:text-lg">{shop.description}</p>
+            <h2 className="text-lg font-black text-[#25282b] md:text-xl">
+              AI가 리뷰 흐름을 요약했어요
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-stone-700 md:text-lg">{shop.description}</p>
+            <p className="mt-4 border-t border-stone-100 pt-3 text-xs font-medium leading-5 text-stone-500">
+              라멘로그와 리뷰를 바탕으로 핵심 인상을 짧게 정리한 내용입니다.
+            </p>
           </div>
 
           {shop.event_menus && shop.event_menus.length > 0 && (
@@ -399,8 +426,12 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
             </div>
           )}
 
+          <div className="mb-10 lg:hidden">
+            {shopInfoCard}
+          </div>
+
           {shop.menu_list && shop.menu_list.length > 0 && (
-            <div className="mb-10 md:mb-12">
+            <div className="mb-6 md:mb-12">
               <h2 className="mb-4 flex items-center text-lg font-bold text-[#25282b] md:mb-6 md:text-xl"><Utensils className="mr-2 h-5 w-5 text-stone-500" /> 일반 메뉴</h2>
               <div className="rounded-md border border-stone-200 bg-white p-2">
                 {shop.menu_list.map((menu, idx) => (
@@ -416,25 +447,16 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               </div>
             </div>
           )}
+
+          <div className="mb-10 hidden md:mb-12 lg:block">
+            <ShopComparePanel shop={shop} />
+          </div>
         </div>
 
         <div className="lg:col-span-4">
           <div className="flex flex-col gap-6 md:gap-8">
-            <div className="relative order-1 overflow-hidden rounded-md bg-[#25282b] p-5 text-white md:p-8">
-              <div className="relative z-10">
-                <h2 className="mb-4 text-lg font-black">가게 정보</h2>
-                <div className="space-y-4 text-sm font-mono text-stone-300">
-                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">주소</span><span className="text-right break-keep text-white/90">{formatInfoValue(shop.address)}</span></p>
-                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">영업시간</span><span className="text-right text-white/90">{formatOperatingHours(shop.business_hours)}</span></p>
-                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">브레이크</span><span className="text-right text-white/90">{formatBreakTime(shop.business_hours)}</span></p>
-                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">휴무일</span><span className="text-right break-keep text-white/90">{formatInfoValue(shop.business_hours?.closed_days)}</span></p>
-                  <p className="flex justify-between gap-4 border-b border-white/10 pb-2"><span className="text-stone-300 flex-shrink-0">주차</span><span className="text-right break-keep text-white/90">{formatInfoValue(shop.business_hours?.parking_info)}</span></p>
-                </div>
-                <div className="mt-8 flex gap-3">
-                  {shop.instagram_url && <a href={shop.instagram_url} target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 p-3 text-xs font-bold transition-colors hover:bg-[#e60000]"><Instagram className="h-4 w-4" /> Instagram</a>}
-                  {shop.catchTableUrl && <a href={shop.catchTableUrl} target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-sm bg-white/10 p-3 text-xs font-bold transition-colors hover:bg-white hover:text-[#25282b]"><Utensils className="h-4 w-4" /> CatchTable</a>}
-                </div>
-              </div>
+            <div className="order-1 hidden lg:block">
+              {shopInfoCard}
             </div>
 
             <section className="order-3 overflow-hidden rounded-md border border-stone-200 bg-white lg:order-2">
@@ -494,7 +516,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               />
             </div>
 
-            <div className="order-4 text-center">
+            <div className="order-4 hidden text-center lg:block">
               <button 
                 onClick={() => setIsReportModalOpen(true)}
                 className="text-xs text-stone-600 hover:text-stone-800 underline transition-colors underline-offset-4"
@@ -505,6 +527,20 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mb-10 lg:hidden">
+        <ShopComparePanel shop={shop} />
+      </div>
+
+      <div className="mb-10 text-center lg:hidden">
+        <button
+          onClick={() => setIsReportModalOpen(true)}
+          className="text-xs text-stone-600 hover:text-stone-800 underline transition-colors underline-offset-4"
+          aria-label="가게 정보 수정 및 이벤트 제보하기"
+        >
+          정보 수정 및 새로운 이벤트 제보하기
+        </button>
       </div>
 
       {isReportModalOpen && (

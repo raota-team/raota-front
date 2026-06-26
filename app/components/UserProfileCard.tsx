@@ -19,7 +19,7 @@ export default function UserProfileCard() {
 
   if (hasAccessToken && isLoading) {
     return (
-      <div className="rounded-md bg-white p-3 md:p-4 ring-1 ring-[#f2f2f2] flex items-center justify-between">
+      <div className="rounded-md bg-white p-3 ring-1 ring-stone-200 md:p-4 flex items-center justify-between">
          <div className="flex items-center gap-3 animate-pulse">
            <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-stone-200" />
            <div className="space-y-2">
@@ -32,7 +32,7 @@ export default function UserProfileCard() {
   }
 
   return (
-    <div className="rounded-md bg-white p-3 md:p-4 ring-1 ring-[#f2f2f2] flex flex-row items-center justify-between">
+    <div className="rounded-md bg-white p-3 ring-1 ring-stone-200 md:p-4 flex flex-row items-center justify-between">
       <div className="flex items-center gap-3 min-w-0">
         {user?.profileImageUrl ? (
           <div className="relative h-10 w-10 md:h-12 md:w-12 overflow-hidden rounded-full ring-1 ring-black/5 flex-shrink-0">

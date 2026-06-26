@@ -35,30 +35,34 @@ export function PromptField({
   onChange,
   placeholder,
   examples,
+  compact = false,
 }: {
   label?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
   examples: string[];
+  compact?: boolean;
 }) {
   return (
-    <div className="space-y-3">
-      {label && <label className="block text-[12px] font-bold tracking-widest text-[#7e7e7e]">{label}</label>}
+    <div className={compact ? "space-y-2" : "space-y-3"}>
+      {label && <label className={`${compact ? "text-[11px] tracking-[0.14em]" : "text-[12px] tracking-widest"} block font-bold text-[#7e7e7e]`}>{label}</label>}
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        rows={3}
-        className="w-full resize-none rounded-[2px] border border-stone-200 bg-white px-4 py-3 text-sm font-medium leading-6 text-[#25282b] outline-none transition-colors placeholder:text-[#bebebe] focus:border-[#e60000]"
+        rows={compact ? 2 : 3}
+        className={`w-full resize-none rounded-[2px] border border-stone-200 bg-white text-sm font-medium text-[#25282b] outline-none transition-colors placeholder:text-[#bebebe] focus:border-[#e60000] ${
+          compact ? "px-3 py-2.5 leading-5" : "px-4 py-3 leading-6"
+        }`}
       />
-      <div className="flex flex-wrap gap-2">
+      <div className={`${compact ? "flex-nowrap overflow-x-auto pb-1" : "flex-wrap"} flex gap-2`}>
         {examples.map((example) => (
           <button
             key={example}
             type="button"
             onClick={() => onChange(example)}
-            className="rounded-[2px] border border-stone-200 bg-[#f7f7f7] px-3 py-2 text-xs font-bold text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+            className={`${compact ? "shrink-0 px-3 py-1.5" : "px-3 py-2"} rounded-[2px] border border-stone-200 bg-[#f7f7f7] text-xs font-bold text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]`}
           >
             {example}
           </button>
