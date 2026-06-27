@@ -77,7 +77,7 @@ const highlightShopNames = (text: string, shopA: string, shopB: string) => {
 
     if (part === shopB) {
       return (
-        <strong key={`${part}-${index}`} className="rounded-sm bg-sky-50 px-1 py-0.5 font-extrabold text-sky-700">
+        <strong key={`${part}-${index}`} className="rounded-sm bg-stone-100 px-1 py-0.5 font-extrabold text-stone-800">
           {part}
         </strong>
       );
@@ -126,6 +126,10 @@ function CompactCompareResult({
           </article>
         ))}
       </div>
+
+      <p className="rounded-sm bg-white px-3 py-2 text-[11px] font-bold leading-5 text-stone-500">
+        AI 비교 결과는 가게 정보와 리뷰를 바탕으로 생성되며, 실제 방문 경험과 다를 수 있어요.
+      </p>
     </div>
   );
 }
