@@ -60,6 +60,33 @@ const getCompactNarratives = ({
   ].map(sanitizeCompareNarrative);
 };
 
+const highlightShopNames = (text: string, shopA: string, shopB: string) => {
+  if (!text) return "";
+
+  const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escapeRegExp(shopA)}|${escapeRegExp(shopB)})`, "g");
+
+  return text.split(regex).map((part, index) => {
+    if (part === shopA) {
+      return (
+        <strong key={`${part}-${index}`} className="rounded-sm bg-red-50/80 px-1 py-0.5 font-extrabold text-[#e60000]">
+          {part}
+        </strong>
+      );
+    }
+
+    if (part === shopB) {
+      return (
+        <strong key={`${part}-${index}`} className="rounded-sm bg-sky-50 px-1 py-0.5 font-extrabold text-sky-700">
+          {part}
+        </strong>
+      );
+    }
+
+    return part;
+  });
+};
+
 function CompactCompareResult({
   primaryName,
   secondaryName,
@@ -93,7 +120,9 @@ function CompactCompareResult({
         {narratives.map((item) => (
           <article key={item.title} className="rounded-sm border border-stone-200 bg-white px-3 py-2.5">
             <p className="text-xs font-black text-[#25282b]">{item.title}</p>
-            <p className="mt-1 text-xs font-medium leading-5 text-stone-600">{item.body}</p>
+            <p className="mt-1 text-xs font-medium leading-5 text-stone-600">
+              {highlightShopNames(item.body, primaryName, secondaryName)}
+            </p>
           </article>
         ))}
       </div>
