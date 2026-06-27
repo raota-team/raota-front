@@ -145,6 +145,7 @@ export default function ShopsListPage() {
     const sort = params.get("sort");
     const parsedSortBy = isSortOption(sort) ? sort : DEFAULT_SORT;
     const keyword = params.get("keyword") ?? params.get("q") ?? "";
+    const aiKeyword = params.get("aiKeyword") ?? "";
 
     if (page !== 0) setCurrentPage(page);
     if (region !== ALL_FILTER) setActiveRegion(region);
@@ -154,7 +155,11 @@ export default function ShopsListPage() {
     if (ramenTypeName !== undefined) setActiveRamenTypeName(ramenTypeName);
     if (parsedSortBy !== DEFAULT_SORT) setSortBy(parsedSortBy);
     if (keyword !== "") {
-      setAiTasteCriteria({ prompt: keyword, chips: [] });
+      setSearchQuery(keyword);
+      setDebouncedSearchQuery(keyword);
+    }
+    if (aiKeyword !== "") {
+      setAiTasteCriteria({ prompt: aiKeyword, chips: [] });
     }
     if (page !== 0) setPageWindowStart(Math.floor(page / MAX_VISIBLE_PAGES) * MAX_VISIBLE_PAGES);
 
@@ -201,8 +206,8 @@ export default function ShopsListPage() {
     const params = new URLSearchParams();
 
     if (currentPage > 0) params.set("page", String(currentPage + 1));
-    if (aiSearchQuery) params.set("keyword", aiSearchQuery);
-    else if (debouncedSearchQuery) params.set("keyword", debouncedSearchQuery);
+    if (debouncedSearchQuery) params.set("keyword", debouncedSearchQuery);
+    if (aiSearchQuery) params.set("aiKeyword", aiSearchQuery);
     if (activeRegion !== ALL_FILTER) params.set("city", activeRegion);
     if (activeDistrict !== ALL_FILTER) params.set("district", activeDistrict);
     if (activeType !== ALL_TYPE_FILTER) params.set("tag", activeType);
@@ -358,6 +363,8 @@ export default function ShopsListPage() {
             activeCriteria={aiTasteCriteria}
             onApply={(criteria) => {
               setAiTasteCriteria(criteria);
+              setSearchQuery("");
+              setDebouncedSearchQuery("");
               setCurrentPage(0);
               window.requestAnimationFrame(() => {
                 const resultSection = document.getElementById("shops-results");
@@ -380,7 +387,10 @@ export default function ShopsListPage() {
                     type="text"
                     placeholder="가게 이름이나 키워드 검색"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setAiTasteCriteria(null);
+                    }}
                     className="w-full h-11 rounded-sm border border-stone-200 bg-white pl-9 pr-4 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000]"
                   />
                 </div>

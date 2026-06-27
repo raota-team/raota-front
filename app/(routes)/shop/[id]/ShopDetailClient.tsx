@@ -54,6 +54,25 @@ const formatBreakTime = (hours: Shop["business_hours"]) => {
 };
 
 const formatCount = (value?: number) => (value ?? 0).toLocaleString("ko-KR");
+const splitReviewSummaryParagraphs = (description?: string) => {
+  const cleanDescription = description?.replace(/\s+/g, " ").trim();
+  if (!cleanDescription) return ["아직 충분한 리뷰 요약이 준비되지 않았어요."];
+
+  const sentences = cleanDescription
+    .match(/[^.!?。！？]+[.!?。！？]?/g)
+    ?.map((sentence) => sentence.trim())
+    .filter(Boolean);
+
+  if (!sentences?.length) return [cleanDescription];
+
+  if (sentences.length <= 2) return [sentences.join(" ")];
+
+  return sentences.reduce<string[]>((paragraphs, sentence, index) => {
+    const paragraphIndex = Math.floor(index / 2);
+    paragraphs[paragraphIndex] = [paragraphs[paragraphIndex], sentence].filter(Boolean).join(" ");
+    return paragraphs;
+  }, []);
+};
 const PENDING_RAMEN_LOG_KEY = "raota_pending_ramen_log";
 const LOGIN_RETURN_TO_KEY = "raota_login_return_to";
 
@@ -276,6 +295,10 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       menus: menuNames,
     };
   }, [shop]);
+  const reviewSummaryParagraphs = useMemo(
+    () => splitReviewSummaryParagraphs(shop?.description),
+    [shop?.description],
+  );
 
   if (isLoading && !shop) return <Loading />;
   if (isError || !shop) return <div className="text-center py-20">가게 정보를 찾을 수 없습니다.</div>;
@@ -390,16 +413,33 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
             </div>
           </div>
 
-          <div className="mb-10 max-w-none rounded-md border border-stone-200 bg-white p-5 md:mb-12 md:p-6">
-            <div className="mb-4 flex items-center gap-2 text-[#e60000]">
-              <Sparkles className="h-4 w-4" />
-              <p className="text-[10px] font-black tracking-[0.18em]">AI 리뷰 요약</p>
+          <div className="mb-10 max-w-none rounded-md border border-stone-200 bg-white p-5 md:mb-12 md:p-7">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-[#e60000]">
+                <Sparkles className="h-4 w-4" />
+                <p className="text-[10px] font-black tracking-[0.18em]">AI 리뷰 요약</p>
+              </div>
+              <span className="rounded-sm bg-stone-100 px-2.5 py-1 text-[11px] font-bold text-stone-500">
+                라멘로그 기반
+              </span>
             </div>
+
             <h2 className="text-lg font-black text-[#25282b] md:text-xl">
               AI가 리뷰 흐름을 요약했어요
             </h2>
-            <p className="mt-3 text-base leading-relaxed text-stone-700 md:text-lg">{shop.description}</p>
-            <p className="mt-4 border-t border-stone-100 pt-3 text-xs font-medium leading-5 text-stone-500">
+
+            <div className="mt-4 space-y-4 border-t border-red-100 pt-4 md:mt-5 md:space-y-5">
+              {reviewSummaryParagraphs.map((paragraph, index) => (
+                <p
+                  key={`${paragraph}-${index}`}
+                  className="break-keep text-[15px] font-medium leading-8 text-stone-700 md:text-[17px] md:leading-9"
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+
+            <p className="mt-5 border-t border-stone-100 pt-3 text-xs font-medium leading-5 text-stone-500">
               라멘로그와 리뷰를 바탕으로 핵심 인상을 짧게 정리한 내용입니다.
             </p>
           </div>
