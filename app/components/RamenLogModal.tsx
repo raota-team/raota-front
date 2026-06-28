@@ -5,7 +5,6 @@ import { Camera, Check, ChevronDown, Upload, X } from 'lucide-react';
 import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
 import { getRamenShops } from '@/lib/api/ramen-shops';
 import { isRamenLogFallbackImage } from '@/lib/constants/images';
-import RamenLogImage from './RamenLogImage';
 
 export type RamenLogFormData = {
   shopName: string;
@@ -39,6 +38,7 @@ interface RamenLogModalProps {
 
 const ramenTypes = ['돈코츠', '쇼유', '시오', '미소', '츠케멘', '탄탄멘', '마제소바', '아부라소바', '기타'];
 const revisitOptions: RamenLogFormData['revisit'][] = ['자주 감', '가끔 생각남', '한번이면 충분'];
+const heicImagePattern = /\.(heic|heif)$/i;
 const tasteFields: Array<{ key: TasteNoteKey; label: string; options: string[] }> = [
   { key: 'broth', label: '국물', options: ['진해요', '깔끔해요', '감칠맛 좋아요', '기름져요', '어패류 향'] },
   { key: 'noodle', label: '면', options: ['탄력 있어요', '단단해요', '부드러워요', '국물 흡착 좋아요', '양 많아요'] },
@@ -94,6 +94,28 @@ const compressImage = (file: File): Promise<File> => {
   });
 };
 
+const isHeicImage = (file: File) =>
+  heicImagePattern.test(file.name) || ['image/heic', 'image/heif'].includes(file.type);
+
+const convertHeicToJpeg = async (file: File): Promise<File> => {
+  const { heicTo, isHeic } = await import('heic-to/csp');
+
+  if (!await isHeic(file)) {
+    throw new Error('선택한 파일이 HEIC/HEIF 이미지로 인식되지 않습니다.');
+  }
+
+  const blob = await heicTo({
+    blob: file,
+    type: 'image/jpeg',
+    quality: 0.9,
+  });
+
+  return new File([blob], file.name.replace(/\.[^/.]+$/, '') + '.jpg', {
+    type: 'image/jpeg',
+    lastModified: Date.now(),
+  });
+};
+
 export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, initialLog }: RamenLogModalProps) {
   const [shopName, setShopName] = useState('');
   const [menuName, setMenuName] = useState('');
@@ -123,6 +145,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isImageRemoved, setIsImageRemoved] = useState(false);
+  const [isConvertingImage, setIsConvertingImage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollThumb, setScrollThumb] = useState({ height: 0, top: 0, visible: false });
@@ -166,6 +189,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     setSelectedFile(null);
     setPreviewUrl(initialLog?.imageUrl || null);
     setIsImageRemoved(false);
+    setIsConvertingImage(false);
     setIsSubmitting(false);
     setIsScrolling(false);
     setScrollThumb({ height: 0, top: 0, visible: false });
@@ -217,7 +241,8 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     ramenType &&
     revisit &&
     note.trim() &&
-    hasRequiredImage,
+    hasRequiredImage &&
+    !isConvertingImage,
   );
 
   const getValidationMessage = () => {
@@ -225,20 +250,61 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     if (!menuName.trim()) return '먹은 메뉴를 입력해주세요.';
     if (!ramenType) return '라멘 종류를 선택해주세요.';
     if (!revisit) return '재방문 의사를 선택해주세요.';
+    if (isConvertingImage) return '사진 변환이 끝난 뒤 저장해주세요.';
     if (!note.trim()) return '기억해둘 점을 입력해주세요.';
     if (!hasRequiredImage) return '사진을 추가해주세요.';
     return null;
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const readPreview = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string' && reader.result.startsWith('data:image/')) {
+        setPreviewUrl(reader.result);
+        return;
+      }
+
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      alert('이미지 파일을 읽지 못했습니다. 다른 사진을 선택해주세요.');
+    };
+    reader.onerror = () => {
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      alert('이미지 파일을 읽지 못했습니다. 다른 사진을 선택해주세요.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setSelectedFile(file);
+    setPreviewUrl(null);
+    setSelectedFile(null);
     setIsImageRemoved(false);
-    const reader = new FileReader();
-    reader.onloadend = () => setPreviewUrl(reader.result as string);
-    reader.readAsDataURL(file);
+
+    try {
+      setIsConvertingImage(isHeicImage(file));
+      const previewableFile = isHeicImage(file) ? await convertHeicToJpeg(file) : file;
+      setSelectedFile(previewableFile);
+      readPreview(previewableFile);
+    } catch (error) {
+      console.error('HEIC image conversion failed:', error);
+      event.currentTarget.value = '';
+      alert('아이폰 HEIC 사진을 변환하지 못했습니다. 사진 앱에서 JPG로 공유하거나 다른 사진을 선택해주세요.');
+    } finally {
+      setIsConvertingImage(false);
+    }
+  };
+
+  const handlePreviewError = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    alert('선택한 이미지를 미리보기로 표시할 수 없습니다. JPG, PNG, WebP 이미지로 다시 선택해주세요.');
   };
 
   const handleRemoveImage = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -246,6 +312,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     event.stopPropagation();
     setSelectedFile(null);
     setPreviewUrl(null);
+    setIsConvertingImage(false);
     setIsImageRemoved(true);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -378,17 +445,17 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
-                    onChange={handleFileChange}
-                    className="sr-only"
-                  />
-                  {displayPreviewUrl ? (
+	                    onChange={handleFileChange}
+	                    disabled={isConvertingImage}
+	                    className="sr-only"
+	                  />
+	                  {displayPreviewUrl ? (
                     <div className="absolute inset-0">
-                      <RamenLogImage
+                      <img
                         src={displayPreviewUrl}
                         alt="라멘로그 미리보기"
-                        fill
-                        sizes="(min-width: 768px) 24rem, 100vw"
-                        className="object-cover"
+                        className="h-full w-full object-cover"
+                        onError={handlePreviewError}
                       />
                       <button
                         type="button"
@@ -404,7 +471,13 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                         </div>
                       </div>
                     </div>
-                  ) : (
+	                  ) : isConvertingImage ? (
+	                    <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-stone-500">
+	                      <div className="mb-3 h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-[#e60000]" />
+	                      <span className="text-xs font-bold sm:text-sm">아이폰 사진 변환 중</span>
+	                      <span className="mt-1 text-xs leading-5">잠시 후 미리보기가 표시됩니다.</span>
+	                    </div>
+	                  ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-stone-400 group-hover:text-stone-500">
                       <div className="mb-2 rounded-sm border border-stone-200 bg-stone-100 p-2.5 transition-colors group-hover:border-[#e60000] group-hover:text-[#e60000] sm:mb-3 sm:p-3">
                         <Upload className="h-5 w-5 sm:h-6 sm:w-6" />
