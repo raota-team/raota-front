@@ -69,7 +69,7 @@ export default function LandingContent({
   const quickTips = homeTipsData?.data || [];
   const recentVerifiedShops = recentShopsData?.data || [];
   const heroSearchHref = heroSearchQuery.trim()
-    ? `/shops?keyword=${encodeURIComponent(heroSearchQuery.trim())}`
+    ? `/shops?aiKeyword=${encodeURIComponent(heroSearchQuery.trim())}`
     : "/shops";
   const quickExploreItems = [
     "혼밥 좋은 곳",

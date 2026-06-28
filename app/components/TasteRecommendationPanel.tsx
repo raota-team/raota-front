@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, RotateCcw, Search, Sparkles, X } from "lucide-react";
 
 export type AiTasteCriteria = {
@@ -38,6 +38,11 @@ export default function TasteRecommendationPanel({
 }: TasteRecommendationPanelProps) {
   const [prompt, setPrompt] = useState("");
   const [selectedChips, setSelectedChips] = useState<string[]>([]);
+
+  useEffect(() => {
+    setPrompt(activeCriteria?.prompt ?? "");
+    setSelectedChips(activeCriteria?.chips ?? []);
+  }, [activeCriteria]);
 
   const isReady = prompt.trim().length > 0 || selectedChips.length > 0;
 

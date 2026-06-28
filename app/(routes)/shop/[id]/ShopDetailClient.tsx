@@ -414,14 +414,9 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
           </div>
 
           <div className="mb-10 max-w-none rounded-md border border-stone-200 bg-white p-5 md:mb-12 md:p-7">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-[#e60000]">
-                <Sparkles className="h-4 w-4" />
-                <p className="text-[10px] font-black tracking-[0.18em]">AI 리뷰 요약</p>
-              </div>
-              <span className="rounded-sm bg-stone-100 px-2.5 py-1 text-[11px] font-bold text-stone-500">
-                라멘로그 기반
-              </span>
+            <div className="mb-5 flex items-center gap-2 text-[#e60000]">
+              <Sparkles className="h-4 w-4" />
+              <p className="text-[10px] font-black tracking-[0.18em]">AI 리뷰 요약</p>
             </div>
 
             <h2 className="text-lg font-black text-[#25282b] md:text-xl">
