@@ -212,7 +212,6 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     menuName.trim() &&
     ramenType &&
     revisit &&
-    note.trim() &&
     hasRequiredImage,
   );
 
@@ -518,7 +517,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
 
               <section>
                 <label htmlFor="ramen-log-note" className="mb-2 block text-xs font-bold uppercase text-stone-500">
-                  기억해둘 점 <span className="text-[#e60000]">*</span>
+                  기억해둘 점
                 </label>
                 <textarea
                   id="ramen-log-note"
@@ -528,7 +527,6 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                   className="min-h-24 w-full resize-none border border-stone-200 bg-white px-4 py-3 text-sm font-medium leading-6 text-stone-700 outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000] md:min-h-20"
                   maxLength={200}
                   rows={3}
-                  required
                 />
                 <div className="mt-1 flex items-center justify-between gap-3">
                   <span className="text-[11px] font-medium text-stone-400">나중에 다시 떠올릴 한 줄이면 충분해요.</span>
