@@ -81,6 +81,23 @@ interface RamenShopDetailResponse {
   status: string;
 }
 
+interface ApiRamenShopMenu {
+  id?: number | string;
+  name?: string;
+}
+
+interface RamenShopMenusPayload {
+  shopId: number | string;
+  shopName: string;
+  normalMenus?: ApiRamenShopMenu[];
+  eventMenus?: ApiRamenShopMenu[];
+}
+
+interface RamenShopMenusResponse {
+  data?: RamenShopMenusPayload;
+  status?: string;
+}
+
 interface AiRamenShopSearchResponse {
   data: {
     recommendedShops: ApiRamenShop[];
@@ -116,6 +133,12 @@ export interface RamenShopsResult {
 
 export interface AiRamenShopSearchResult {
   shops: Shop[];
+}
+
+export interface RamenShopMenusResult {
+  shopId: number;
+  shopName: string;
+  menuNames: string[];
 }
 
 const FALLBACK_IMAGE_URL = "/hero-home.jpg";
@@ -295,6 +318,25 @@ export const getRamenShopDetail = async (shopId: number, memberId?: number): Pro
     { query }
   );
   return normalizeShop(payload.data, 0);
+};
+
+export const getRamenShopMenus = async (shopId: number): Promise<RamenShopMenusResult> => {
+  const response = await apiClient<RamenShopMenusPayload | RamenShopMenusResponse>(
+    `/ramen-shops/${shopId}/menus`,
+  );
+  const payload = "data" in response && response.data ? response.data : response as RamenShopMenusPayload;
+  const menuNames = [
+    ...(payload.normalMenus ?? []),
+    ...(payload.eventMenus ?? []),
+  ]
+    .map((menu) => menu.name?.trim())
+    .filter((name): name is string => Boolean(name));
+
+  return {
+    shopId: toNumber(payload.shopId, shopId),
+    shopName: payload.shopName || "",
+    menuNames: Array.from(new Set(menuNames)),
+  };
 };
 
 /** 가게 북마크 토글 (찜하기/해제) */

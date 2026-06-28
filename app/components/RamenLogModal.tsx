@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Camera, Check, ChevronDown, Upload, X } from 'lucide-react';
 import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
-import { getRamenShops } from '@/lib/api/ramen-shops';
+import { getRamenShopMenus, getRamenShops } from '@/lib/api/ramen-shops';
 import { isRamenLogFallbackImage } from '@/lib/constants/images';
 
 export type RamenLogFormData = {
@@ -141,6 +141,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
   // Menu dropdown states
   const [availableMenus, setAvailableMenus] = useState<string[]>([]);
   const [isCustomMenu, setIsCustomMenu] = useState(false);
+  const [isLoadingMenus, setIsLoadingMenus] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -185,6 +186,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
 
     setAvailableMenus(initialMenuOptions);
     setIsCustomMenu(Boolean(initialLog || (initialShop && initialMenus.length === 0)));
+    setIsLoadingMenus(false);
 
     setSelectedFile(null);
     setPreviewUrl(initialLog?.imageUrl || null);
@@ -305,6 +307,46 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
       fileInputRef.current.value = '';
     }
     alert('선택한 이미지를 미리보기로 표시할 수 없습니다. JPG, PNG, WebP 이미지로 다시 선택해주세요.');
+  };
+
+  const applyMenuOptions = (menuNames: string[]) => {
+    const uniqueMenuNames = Array.from(new Set(menuNames.map((name) => name.trim()).filter(Boolean)));
+
+    if (uniqueMenuNames.length > 0) {
+      setAvailableMenus([...uniqueMenuNames, '직접 입력']);
+      setMenuName(uniqueMenuNames[0]);
+      setIsCustomMenu(false);
+      return;
+    }
+
+    setAvailableMenus(['직접 입력']);
+    setMenuName('');
+    setIsCustomMenu(true);
+  };
+
+  const handleSelectShop = async (shop: any) => {
+    const fullName = shop.name + (shop.branch_name ? ` ${shop.branch_name}` : '');
+    setShopQuery(fullName);
+    setShopName(fullName);
+    setSelectedShopId(shop.id);
+    setShowDropdown(false);
+
+    const matchedType = ramenTypes.find((type) => shop.type?.includes(type)) || '기타';
+    setRamenType(matchedType);
+    setAvailableMenus([]);
+    setMenuName('');
+    setIsCustomMenu(false);
+    setIsLoadingMenus(true);
+
+    try {
+      const result = await getRamenShopMenus(shop.id);
+      applyMenuOptions(result.menuNames);
+    } catch (error) {
+      console.error('Failed to fetch ramen shop menus:', error);
+      applyMenuOptions([]);
+    } finally {
+      setIsLoadingMenus(false);
+    }
   };
 
   const handleRemoveImage = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -445,11 +487,11 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
-	                    onChange={handleFileChange}
-	                    disabled={isConvertingImage}
-	                    className="sr-only"
-	                  />
-	                  {displayPreviewUrl ? (
+                    onChange={handleFileChange}
+                    disabled={isConvertingImage}
+                    className="sr-only"
+                  />
+                  {displayPreviewUrl ? (
                     <div className="absolute inset-0">
                       <img
                         src={displayPreviewUrl}
@@ -471,13 +513,13 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                         </div>
                       </div>
                     </div>
-	                  ) : isConvertingImage ? (
-	                    <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-stone-500">
-	                      <div className="mb-3 h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-[#e60000]" />
-	                      <span className="text-xs font-bold sm:text-sm">아이폰 사진 변환 중</span>
-	                      <span className="mt-1 text-xs leading-5">잠시 후 미리보기가 표시됩니다.</span>
-	                    </div>
-	                  ) : (
+                  ) : isConvertingImage ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-stone-500">
+                      <div className="mb-3 h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-[#e60000]" />
+                      <span className="text-xs font-bold sm:text-sm">아이폰 사진 변환 중</span>
+                      <span className="mt-1 text-xs leading-5">잠시 후 미리보기가 표시됩니다.</span>
+                    </div>
+                  ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-stone-400 group-hover:text-stone-500">
                       <div className="mb-2 rounded-sm border border-stone-200 bg-stone-100 p-2.5 transition-colors group-hover:border-[#e60000] group-hover:text-[#e60000] sm:mb-3 sm:p-3">
                         <Upload className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -528,24 +570,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                             <button
                               key={shop.id}
                               type="button"
-                              onClick={() => {
-                                const fullName = shop.name + (shop.branch_name ? ` ${shop.branch_name}` : '');
-                                setShopQuery(fullName);
-                                setShopName(fullName);
-                                setSelectedShopId(shop.id);
-                                const matchedType = ramenTypes.find((t) => shop.type?.includes(t)) || '기타';
-                                setRamenType(matchedType);
-
-                                // Load shop menus or fallback to dummy list
-                                const names = shop.menus?.map((m: any) => m.name).filter(Boolean) || [];
-                                const fallback = ['특제 돈코츠 라멘', '소유 라멘', '시오 라멘', '카라 미소 라멘', '농후 츠케멘', '마제소바', '직접 입력'];
-                                const list = names.length > 0 ? [...names, '직접 입력'] : fallback;
-                                setAvailableMenus(list);
-                                setMenuName(list[0]);
-                                setIsCustomMenu(false);
-
-                                setShowDropdown(false);
-                              }}
+                              onClick={() => { void handleSelectShop(shop); }}
                               className="flex w-full flex-col px-4 py-2.5 text-left text-sm transition-colors hover:bg-stone-50"
                             >
                               <span className="font-bold text-stone-800">
@@ -576,7 +601,8 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                             setMenuName(val);
                           }
                         }}
-                        disabled={!shopName.trim()}
+                        disabled={!shopName.trim() || isLoadingMenus}
+                        disabledLabel={isLoadingMenus ? '메뉴 불러오는 중' : undefined}
                       />
                       {isCustomMenu && shopName.trim() && (
                         <input
@@ -739,11 +765,13 @@ function MenuSelect({
   options,
   onChange,
   disabled = false,
+  disabledLabel = "가게를 먼저 선택해주세요",
 }: {
   value: string;
   options: string[];
   onChange: (value: string) => void;
   disabled?: boolean;
+  disabledLabel?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -803,10 +831,10 @@ function MenuSelect({
             : isOpen
               ? "border-[#e60000] bg-white"
               : "border-stone-200 hover:border-[#e60000]"
-          }`}
+        }`}
       >
         <span className="block truncate whitespace-nowrap pr-2">
-          {disabled ? "가게를 먼저 선택해주세요" : value || "메뉴를 선택해주세요"}
+          {disabled ? disabledLabel : value || "메뉴를 선택해주세요"}
         </span>
       </button>
       <ChevronDown
