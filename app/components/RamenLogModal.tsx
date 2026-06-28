@@ -5,6 +5,7 @@ import { Camera, Check, ChevronDown, Upload, X } from 'lucide-react';
 import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
 import { getRamenShops } from '@/lib/api/ramen-shops';
 import { isRamenLogFallbackImage } from '@/lib/constants/images';
+import RamenLogImage from './RamenLogImage';
 
 export type RamenLogFormData = {
   shopName: string;
@@ -206,6 +207,9 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     selectedFile ||
     (initialLog?.imageUrl && !isImageRemoved && !isRamenLogFallbackImage(initialLog.imageUrl)),
   );
+  const displayPreviewUrl = previewUrl && !isImageRemoved && !isRamenLogFallbackImage(previewUrl)
+    ? previewUrl
+    : null;
 
   const canSubmit = Boolean(
     selectedShopId &&
@@ -362,9 +366,15 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                     onChange={handleFileChange}
                     className="sr-only"
                   />
-                  {previewUrl ? (
+                  {displayPreviewUrl ? (
                     <div className="absolute inset-0">
-                      <img src={previewUrl} alt="라멘로그 미리보기" className="h-full w-full object-cover" />
+                      <RamenLogImage
+                        src={displayPreviewUrl}
+                        alt="라멘로그 미리보기"
+                        fill
+                        sizes="(min-width: 768px) 24rem, 100vw"
+                        className="object-cover"
+                      />
                       <button
                         type="button"
                         onClick={handleRemoveImage}
