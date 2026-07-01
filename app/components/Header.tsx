@@ -32,6 +32,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
     };
     
     handleResize();
+    handleScroll();
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleResize);
     return () => {
@@ -123,9 +124,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
                   <Link href="/community" className={`text-sm transition-colors ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
                   <Link href={myPagePath} className={`text-sm transition-colors ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
 
-                  {isAuthChecking && !isLoggedIn ? (
-                    <div className="h-11 w-24 rounded-sm bg-stone-100" aria-hidden="true" />
-                  ) : isLoggedIn ? (
+                  {isLoggedIn ? (
                     <button
                       onClick={handleLogout}
                       className={`font-bold text-sm transition-colors uppercase ${navTextColor}`}
