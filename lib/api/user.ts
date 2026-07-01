@@ -36,6 +36,9 @@ export interface MyProfileData {
   user_id: number;
   id?: number;
   nickname: string;
+  email?: string;
+  memberEmail?: string;
+  member_email?: string;
   profile_image_url: string;
   background_image_url: string;
   userDescription: string;
@@ -277,6 +280,14 @@ export const updateUserProfile = async (params: UserProfileUpdateParams): Promis
   return await apiClient<UserProfileResponse>(`/users/me/profile`, {
     method: "PATCH",
     body: params,
+  });
+};
+
+/** 내 이메일 수정 */
+export const updateMyEmail = async (email: string): Promise<UserProfileResponse> => {
+  return await apiClient<UserProfileResponse>(`/users/me/email`, {
+    method: "PATCH",
+    body: { email },
   });
 };
 

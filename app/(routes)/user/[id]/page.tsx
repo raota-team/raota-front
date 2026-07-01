@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Shield } from 'lucide-react';
+import { BookOpen, Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Shield, Mail } from 'lucide-react';
 import PhotoModal from '../../../components/PhotoModal';
 import RamenLogModal, { type RamenLogFormData } from '../../../components/RamenLogModal';
 import RamenLogCard, {
@@ -25,6 +25,7 @@ import {
   getMyComments,
   getUserComments,
   updateMyPrivacySettings,
+  updateMyEmail,
   updateUserProfile,
   ActivityVisibility,
   MyProfileData,
@@ -66,6 +67,9 @@ const getEditableBio = (profile: MyProfileData) => {
     ? profile.userDescription
     : '';
 };
+
+const getProfileEmail = (profile: MyProfileData) =>
+  profile.email || profile.memberEmail || profile.member_email || '';
 
 const getShopId = (item: any) =>
   item.restaurant_id || item.shopId || item.shop_id || item.ramenShopId || item.ramen_shop_id || item.id;
@@ -152,6 +156,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [isPrivacySaving, setIsPrivacySaving] = useState(false);
   const [privacySettings, setPrivacySettings] = useState<ActivityVisibility>(allPublicVisibility);
   const [savedPrivacySettings, setSavedPrivacySettings] = useState<ActivityVisibility>(allPublicVisibility);
+  const [isEmailEditing, setIsEmailEditing] = useState(false);
+  const [emailForm, setEmailForm] = useState('');
+  const [isEmailSaving, setIsEmailSaving] = useState(false);
 
   const isOwnProfile = useMemo(() => {
     if (!currentUser) return false;
@@ -176,6 +183,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     try {
       const res = isOwnProfile ? await getMyProfile() : await getUserProfile(userIdFromPath);
       setProfile(res.data);
+      setEmailForm(getProfileEmail(res.data));
       const visibility = res.data.activity_visibility || allPublicVisibility;
       setPrivacySettings(visibility);
       setSavedPrivacySettings(visibility);
@@ -502,6 +510,40 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     }
   };
 
+  const handleEmailEditStart = () => {
+    setEmailForm(accountEmail);
+    setIsEmailEditing(true);
+  };
+
+  const handleEmailEditCancel = () => {
+    setEmailForm(accountEmail);
+    setIsEmailEditing(false);
+  };
+
+  const handleEmailSave = async () => {
+    const nextEmail = emailForm.trim();
+    if (!nextEmail) {
+      showToast('이메일을 입력해주세요.', 'error');
+      return;
+    }
+
+    setIsEmailSaving(true);
+    try {
+      const response = await updateMyEmail(nextEmail);
+      setProfile(response.data);
+      setEmailForm(getProfileEmail(response.data));
+      if (setCurrentUser) {
+        setCurrentUser(response.data);
+      }
+      setIsEmailEditing(false);
+      showToast('이메일이 수정되었습니다.', 'success');
+    } catch (error: any) {
+      showToast(error.message || '이메일 수정에 실패했습니다.', 'error');
+    } finally {
+      setIsEmailSaving(false);
+    }
+  };
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isInitialLoading) return <Loading />;
@@ -531,6 +573,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const visibleLogShopFilters = logShopFilters.filter((shop) =>
     shop.name.toLowerCase().includes(logShopSearchQuery.trim().toLowerCase()),
   );
+  const accountEmail = getProfileEmail(profile);
 
   const toRamenLogItem = (item: any): RamenLogItem => item.shop && item.author ? item as RamenLog : ({
     id: Number(item.photo_id || item.id),
@@ -685,6 +728,72 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
       </div>
+
+      {isOwnProfile && (
+        <section className="mb-8 rounded-sm border border-stone-200 bg-white px-4 py-3 md:px-5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-red-50 text-[#e60000]">
+                <Mail className="h-3.5 w-3.5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-black text-[#25282b]">이메일 정보</h3>
+                  <span className="rounded-sm bg-stone-100 px-2 py-0.5 text-[10px] font-bold text-stone-500">비공개</span>
+                </div>
+                <p className="mt-1 truncate text-sm font-bold text-stone-700">
+                  {accountEmail || '등록된 이메일 정보 없음'}
+                </p>
+                <p className="mt-1 text-xs font-medium text-stone-400">
+                  계정 알림과 이벤트 안내에 사용하는 이메일입니다.
+                </p>
+              </div>
+            </div>
+            {isEmailEditing ? (
+              <div className="w-full md:w-[360px]">
+                <label htmlFor="account-email" className="sr-only">이메일</label>
+                <input
+                  id="account-email"
+                  type="email"
+                  value={emailForm}
+                  onChange={(event) => setEmailForm(event.target.value)}
+                  placeholder="new@example.com"
+                  className="h-11 w-full rounded-sm border border-stone-200 bg-white px-3 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-stone-300 focus:border-[#e60000]"
+                  autoComplete="email"
+                  disabled={isEmailSaving}
+                />
+                <div className="mt-2 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={handleEmailEditCancel}
+                    disabled={isEmailSaving}
+                    className="inline-flex h-11 items-center justify-center rounded-sm border border-stone-200 bg-stone-50 px-4 text-xs font-black text-stone-500 transition-colors hover:bg-stone-100 hover:text-[#25282b] disabled:opacity-50"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleEmailSave}
+                    disabled={isEmailSaving}
+                    className="inline-flex h-11 items-center justify-center rounded-sm bg-[#e60000] px-4 text-xs font-black text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                  >
+                    {isEmailSaving ? '저장 중' : '저장'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleEmailEditStart}
+                className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+              >
+                <Edit3 className="h-3.5 w-3.5" />
+                이메일 수정
+              </button>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Tabs */}
       <div className="mb-8 flex overflow-x-auto border-b border-stone-200 scrollbar-hide">
