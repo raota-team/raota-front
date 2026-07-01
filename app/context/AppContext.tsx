@@ -46,7 +46,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const resetScroll = () => window.scrollTo(0, 0);
+
+    resetScroll();
+    const frameId = window.requestAnimationFrame(resetScroll);
+    const timeoutId = window.setTimeout(resetScroll, 100);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
+    };
   }, [pathname]);
 
   const syncAuthFromStorage = useCallback(() => {

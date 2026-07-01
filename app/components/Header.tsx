@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -23,23 +23,30 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
 
   const isHomePage = currentPath === '/';
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
+    if (isHomePage) {
+      setScrolled(false);
+    }
     handleResize();
     handleScroll();
-    window.addEventListener('scroll', handleScroll);
+    const frameId = window.requestAnimationFrame(handleScroll);
+    const timeoutId = window.setTimeout(handleScroll, 100);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize);
     return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [isHomePage]);
 
   const isActive = (path: string) => {
     if (path === '/') return currentPath === '/';

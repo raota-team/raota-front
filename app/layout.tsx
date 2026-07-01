@@ -134,6 +134,11 @@ export default function RootLayout({
       <GoogleTagManager gtmId={GTM_ID} />
       <head>
         <script
+          dangerouslySetInnerHTML={{
+            __html: "if ('scrollRestoration' in history) history.scrollRestoration = 'manual';",
+          }}
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
