@@ -66,7 +66,7 @@ export default function VoteMenuModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition-colors hover:bg-stone-200 sm:right-4 sm:top-4"
+          className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-sm border border-stone-200 bg-white text-stone-600 transition-colors hover:border-[#e60000] hover:text-[#e60000] sm:right-4 sm:top-4"
           aria-label="투표 모달 닫기"
         >
           <X className="h-4 w-4" />
@@ -97,11 +97,11 @@ export default function VoteMenuModal({
           </div>
 
           <div className="min-h-0 overflow-y-auto overscroll-contain px-4 py-2 [scrollbar-color:#a8a29e_transparent] [scrollbar-width:thin] md:px-6 md:py-6">
-            <div className="divide-y divide-stone-200 md:grid md:grid-cols-2 md:gap-4 md:divide-y-0">
+            <div className="md:grid md:grid-cols-2 md:gap-4">
               {menus.map((menu) => (
                 <div
                   key={menu.id}
-                  className="bg-white py-3 md:rounded-sm md:border md:border-stone-200 md:p-4"
+                  className="mb-3 rounded-sm border border-stone-200 bg-white p-3 md:mb-0 md:border-stone-300 md:p-4"
                 >
                   <div className="flex items-center justify-between gap-3 md:mb-3 md:items-start">
                     <div className="min-w-0">

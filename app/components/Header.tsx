@@ -19,16 +19,19 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
   const { currentUser } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   const isHomePage = currentPath === '/';
 
   useLayoutEffect(() => {
+    const shouldUseSolidHeader = () => {
+      return window.scrollY > 20;
+    };
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(shouldUseSolidHeader());
     };
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      setScrolled(shouldUseSolidHeader());
     };
 
     if (isHomePage) {
@@ -55,12 +58,14 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-  const isTransparent = isHomePage && !scrolled && !isMobile;
-  const navTextColor = isTransparent ? 'text-white/95 hover:text-white font-normal' : 'text-[#25282b] hover:text-[#e60000] font-normal';
-  const activeTextColor = isTransparent ? 'text-white font-bold' : 'text-[#e60000] font-bold';
-  const logoTextColor = isTransparent ? 'text-white' : 'text-stone-900';
-  const loginBtnClass = isTransparent 
-    ? 'bg-white text-[#25282b] hover:bg-stone-100' 
+  const isHomeHeroActive = isHomePage && !scrolled;
+  const navTextColor = isHomeHeroActive
+    ? 'text-[#25282b] hover:text-[#e60000] font-normal md:text-white/95 md:hover:text-white'
+    : 'text-[#25282b] hover:text-[#e60000] font-normal';
+  const activeTextColor = isHomeHeroActive ? 'text-[#e60000] font-bold md:text-white' : 'text-[#e60000] font-bold';
+  const logoTextColor = isHomeHeroActive ? 'text-stone-900 md:text-white' : 'text-stone-900';
+  const loginBtnClass = isHomeHeroActive
+    ? 'bg-[#e60000] text-white hover:opacity-90 md:bg-white md:text-[#25282b] md:hover:bg-stone-100'
     : 'bg-[#e60000] text-white hover:opacity-90';
   // 마이페이지 경로 결정 (로그인 시 본인 ID 주소, 미로그인 시 로그인 페이지)
   const myPagePath = isLoggedIn && currentUser ? `/user/${currentUser.user_id || currentUser.id}` : '/login';
@@ -106,7 +111,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
     <>
       <header className="fixed left-0 right-0 top-0 z-50 flex w-full justify-center pointer-events-none">
         <nav className={`pointer-events-auto w-full border-b transition-colors duration-300 ${
-          isTransparent ? 'border-transparent bg-transparent' : 'border-stone-200 bg-white'
+          isHomeHeroActive ? 'border-stone-200 bg-white md:border-transparent md:bg-transparent' : 'border-stone-200 bg-white'
         }`}>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-14 items-center justify-between md:h-16">
@@ -151,7 +156,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
 
               {/* Mobile Hamburger Button */}
               <button
-                className={`md:hidden p-1.5 transition-colors ${isTransparent ? 'text-white' : 'text-[#25282b] hover:text-[#e60000]'}`}
+                className="p-1.5 text-[#25282b] transition-colors hover:text-[#e60000] md:hidden"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label={isMobileMenuOpen ? '모바일 메뉴 닫기' : '모바일 메뉴 열기'}
                 aria-expanded={isMobileMenuOpen}
