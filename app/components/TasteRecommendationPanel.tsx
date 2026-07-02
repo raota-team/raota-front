@@ -74,25 +74,21 @@ export default function TasteRecommendationPanel({
 
   return (
     <section className="w-full overflow-hidden rounded-sm border border-stone-200 bg-white">
-      <div className="grid min-w-0 gap-0 lg:grid-cols-[23rem_minmax(0,1fr)]">
-        <div className="min-w-0 border-b border-stone-100 p-3 sm:p-5 lg:border-b-0 lg:border-r lg:p-6">
-          <div className="flex h-full min-w-0 flex-col justify-between gap-3 lg:gap-4">
-            <div>
-              <div className="flex items-center gap-2 text-[#e60000]">
-                <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <p className="text-[10px] font-black tracking-[0.16em] sm:tracking-[0.18em]">AI 취향 검색</p>
-              </div>
-              <h2 className="mt-1.5 max-w-[18rem] text-lg font-black leading-tight text-[#25282b] sm:mt-2 sm:text-xl md:text-[1.7rem]">
-                내 취향에 맞는 가게 찾기
-              </h2>
-              <p className="mt-1.5 max-w-[18.5rem] text-xs font-bold leading-5 text-stone-500 sm:mt-2 sm:text-sm sm:font-medium sm:leading-6">
-                문장이나 조건으로 취향에 가까운 가게를 찾아보세요.
-              </p>
-            </div>
+      <div className="grid min-w-0 gap-0 lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <div className="min-w-0 border-b border-stone-100 p-4 sm:p-5 lg:border-b-0 lg:border-r">
+          <div className="flex min-w-0 items-center gap-2 text-[#e60000]">
+            <Sparkles className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] sm:tracking-[0.18em]">AI taste search</p>
           </div>
+          <h2 className="mt-1.5 text-lg font-black leading-tight text-[#25282b] sm:text-xl">
+            AI 취향 검색
+          </h2>
+          <p className="mt-1.5 text-xs font-medium leading-5 text-stone-500">
+            원하는 취향을 문장으로 검색해보세요.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="min-w-0 overflow-hidden p-3 sm:p-5 lg:p-6">
+        <form onSubmit={handleSubmit} className="min-w-0 overflow-hidden p-4 sm:p-5">
           <div className="grid min-w-0 gap-2 xl:grid-cols-[minmax(18rem,1fr)_auto] xl:items-center">
             <div className="flex min-h-11 min-w-0 max-w-full items-center gap-2 rounded-sm border border-stone-200 bg-white px-3 py-2 transition-colors focus-within:border-[#e60000] sm:min-h-12 sm:py-2.5">
               <Search className="h-4 w-4 shrink-0 text-stone-400" />
@@ -145,7 +141,7 @@ export default function TasteRecommendationPanel({
             </div>
           </div>
 
-          <div className="mt-3 flex min-w-0 max-w-full gap-2 overflow-x-auto pb-1 sm:mt-4 sm:flex-wrap sm:overflow-visible sm:pb-0">
+          <div className="mt-3 flex min-w-0 max-w-full gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
             {QUICK_CHIPS.map((chip) => {
               const isSelected = selectedChips.includes(chip);
               return (

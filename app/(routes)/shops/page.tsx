@@ -359,12 +359,179 @@ export default function ShopsListPage() {
 
       <div className="max-w-7xl mx-auto px-4 pb-10 pt-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6">
+          <section className="overflow-visible rounded-sm border border-stone-200 bg-white">
+            <div className="border-b border-stone-100 px-4 py-3 sm:px-5">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#e60000]">List filters</p>
+                  <h2 className="mt-1 text-lg font-black leading-tight text-[#25282b] sm:text-xl">목록 필터</h2>
+                </div>
+                <p className="text-xs font-medium leading-5 text-stone-500 sm:text-right">
+                  이름, 지역, 메뉴 조건으로 전체 가게 목록을 좁혀보세요.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 p-4 sm:p-5">
+              <div className="grid grid-cols-2 items-end gap-3 md:flex md:flex-wrap">
+                {/* Search Box */}
+                <div className="col-span-2 block min-w-0 w-full md:w-[250px]">
+                  <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-stone-400 md:mb-2 md:tracking-[0.2em]">
+                    가게 검색
+                  </span>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                    <input
+                      type="text"
+                      placeholder="가게 이름이나 키워드 검색"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setAiTasteCriteria(null);
+                      }}
+                      className="w-full h-11 rounded-sm border border-stone-200 bg-white pl-9 pr-4 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000]"
+                    />
+                  </div>
+                </div>
+                <FilterSelect
+                  label="지역"
+                  value={activeRegion}
+                  options={regionOptions}
+                  onChange={(value) => {
+                    setActiveRegion(value);
+                    setActiveDistrict(ALL_FILTER);
+                    setAiTasteCriteria(null);
+                  }}
+                />
+                <FilterSelect
+                  label="구/시"
+                  value={activeDistrict}
+                  options={districtOptions}
+                  onChange={(value) => {
+                    setActiveDistrict(value);
+                    setAiTasteCriteria(null);
+                  }}
+                  disabled={activeRegion === ALL_FILTER}
+                />
+                <FilterSelect
+                  label="메뉴"
+                  value={activeType}
+                  options={TYPES}
+                  onChange={(value) => {
+                    setActiveType(value);
+                    clearRamenTypeFilter(false);
+                    setAiTasteCriteria(null);
+                  }}
+                />
+                <FilterSelect
+                  label="정렬"
+                  value={sortBy}
+                  options={SORT_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                  onChange={(value) => {
+                    setSortBy(value as SortOption);
+                    setAiTasteCriteria(null);
+                  }}
+                />
+              </div>
+
+              <div className="flex min-h-[2.75rem] items-center gap-2 border-t border-stone-100 pt-4">
+                <div className="flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap">
+                  {debouncedSearchQuery && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setDebouncedSearchQuery("");
+                      }}
+                      className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
+                    >
+                      검색: {debouncedSearchQuery}
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                  {activeRegion !== ALL_FILTER && (
+                    <button
+                      onClick={() => {
+                        setActiveRegion(ALL_FILTER);
+                        setActiveDistrict(ALL_FILTER);
+                      }}
+                      className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
+                    >
+                      {activeRegion}
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                  {activeDistrict !== ALL_FILTER && (
+                    <button
+                      onClick={() => setActiveDistrict(ALL_FILTER)}
+                      className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
+                    >
+                      {activeDistrict}
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                  {activeType !== ALL_TYPE_FILTER && (
+                    <button
+                      onClick={() => {
+                        setActiveType(ALL_TYPE_FILTER);
+                        clearRamenTypeFilter(false);
+                      }}
+                      className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
+                    >
+                      {activeRamenTypeName ?? activeType}
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                  {activeType === ALL_TYPE_FILTER && activeRamenTypeId && (
+                    <button
+                      onClick={() => clearRamenTypeFilter(false)}
+                      className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
+                    >
+                      {activeRamenTypeName ?? "추천 라멘"}
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                  {sortBy !== DEFAULT_SORT && (
+                    <button
+                      onClick={() => setSortBy(DEFAULT_SORT)}
+                      className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
+                    >
+                      {SORT_OPTIONS.find((option) => option.value === sortBy)?.label ?? "정렬"}
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                  {debouncedSearchQuery === "" && activeRegion === ALL_FILTER && activeDistrict === ALL_FILTER && activeType === ALL_TYPE_FILTER && !activeRamenTypeId && sortBy === DEFAULT_SORT && (
+                    <p className="shrink-0 text-sm text-stone-400">아직 선택된 필터 조건이 없습니다.</p>
+                  )}
+                </div>
+                {(debouncedSearchQuery || activeRegion !== ALL_FILTER || activeDistrict !== ALL_FILTER || activeType !== ALL_TYPE_FILTER || activeRamenTypeId || sortBy !== DEFAULT_SORT) && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setDebouncedSearchQuery("");
+                      setActiveRegion(ALL_FILTER);
+                      setActiveDistrict(ALL_FILTER);
+                      clearRamenTypeFilter(true);
+                      setSortBy(DEFAULT_SORT);
+                    }}
+                    className="shrink-0 whitespace-nowrap text-[11px] font-black uppercase tracking-[0.12em] text-stone-400 transition-colors hover:text-[#e60000]"
+                  >
+                    필터 초기화
+                  </button>
+                )}
+              </div>
+            </div>
+          </section>
+
           <TasteRecommendationPanel
             activeCriteria={aiTasteCriteria}
             onApply={(criteria) => {
               setAiTasteCriteria(criteria);
               setSearchQuery("");
               setDebouncedSearchQuery("");
+              setActiveRegion(ALL_FILTER);
+              setActiveDistrict(ALL_FILTER);
+              clearRamenTypeFilter(true);
+              setSortBy(DEFAULT_SORT);
               setCurrentPage(0);
               window.requestAnimationFrame(() => {
                 const resultSection = document.getElementById("shops-results");
@@ -373,157 +540,6 @@ export default function ShopsListPage() {
             }}
             onClear={() => setAiTasteCriteria(null)}
           />
-
-          <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 items-end gap-3 md:flex md:flex-wrap">
-              {/* Search Box */}
-              <div className="col-span-2 block min-w-0 w-full md:w-[250px]">
-                <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-stone-400 md:mb-2 md:tracking-[0.2em]">
-                  가게 검색
-                </span>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-                  <input
-                    type="text"
-                    placeholder="가게 이름이나 키워드 검색"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setAiTasteCriteria(null);
-                    }}
-                    className="w-full h-11 rounded-sm border border-stone-200 bg-white pl-9 pr-4 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000]"
-                  />
-                </div>
-              </div>
-              <FilterSelect
-                label="지역"
-                value={activeRegion}
-                options={regionOptions}
-                onChange={(value) => {
-                  setActiveRegion(value);
-                  setActiveDistrict(ALL_FILTER);
-                }}
-              />
-              <FilterSelect
-                label="구/시"
-                value={activeDistrict}
-                options={districtOptions}
-                onChange={setActiveDistrict}
-                disabled={activeRegion === ALL_FILTER}
-              />
-              <FilterSelect
-                label="메뉴"
-                value={activeType}
-                options={TYPES}
-                onChange={(value) => {
-                  setActiveType(value);
-                  clearRamenTypeFilter(false);
-                }}
-              />
-              <FilterSelect
-                label="정렬"
-                value={sortBy}
-                options={SORT_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
-                onChange={(value) => setSortBy(value as SortOption)}
-              />
-            </div>
-
-            <div className="flex min-h-[2.75rem] items-center gap-2 border-t border-stone-100 pt-4">
-              <div className="flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap">
-                {debouncedSearchQuery && (
-                  <button
-                    onClick={() => {
-                      setSearchQuery("");
-                      setDebouncedSearchQuery("");
-                    }}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
-                  >
-                    검색: {debouncedSearchQuery}
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-                {activeRegion !== ALL_FILTER && (
-                  <button
-                    onClick={() => {
-                      setActiveRegion(ALL_FILTER);
-                      setActiveDistrict(ALL_FILTER);
-                    }}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
-                  >
-                    {activeRegion}
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-                {activeDistrict !== ALL_FILTER && (
-                  <button
-                    onClick={() => setActiveDistrict(ALL_FILTER)}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
-                  >
-                    {activeDistrict}
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-                {activeType !== ALL_TYPE_FILTER && (
-                  <button
-                    onClick={() => {
-                      setActiveType(ALL_TYPE_FILTER);
-                      clearRamenTypeFilter(false);
-                    }}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
-                  >
-                    {activeRamenTypeName ?? activeType}
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-                {activeType === ALL_TYPE_FILTER && activeRamenTypeId && (
-                  <button
-                    onClick={() => clearRamenTypeFilter(false)}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
-                  >
-                    {activeRamenTypeName ?? "추천 라멘"}
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-                {sortBy !== DEFAULT_SORT && (
-                  <button
-                    onClick={() => setSortBy(DEFAULT_SORT)}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
-                  >
-                    {SORT_OPTIONS.find((option) => option.value === sortBy)?.label ?? "정렬"}
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-                {aiTasteCriteria && (
-                  <button
-                    onClick={() => setAiTasteCriteria(null)}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-[#e60000] bg-red-50 px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:text-[#e60000]"
-                  >
-                    AI 검색: {aiSearchQuery}
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-                {debouncedSearchQuery === "" && activeRegion === ALL_FILTER && activeDistrict === ALL_FILTER && activeType === ALL_TYPE_FILTER && !activeRamenTypeId && sortBy === DEFAULT_SORT && !aiTasteCriteria && (
-                  <p className="shrink-0 text-sm text-stone-400">아직 선택된 필터 조건이 없습니다.</p>
-                )}
-              </div>
-              {(debouncedSearchQuery || activeRegion !== ALL_FILTER || activeDistrict !== ALL_FILTER || activeType !== ALL_TYPE_FILTER || activeRamenTypeId || sortBy !== DEFAULT_SORT || aiTasteCriteria) && (
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setDebouncedSearchQuery("");
-                    setActiveRegion(ALL_FILTER);
-                    setActiveDistrict(ALL_FILTER);
-                    clearRamenTypeFilter(true);
-                    setSortBy(DEFAULT_SORT);
-                    setAiTasteCriteria(null);
-                  }}
-                  className="shrink-0 whitespace-nowrap text-[11px] font-black uppercase tracking-[0.12em] text-stone-400 transition-colors hover:text-[#e60000]"
-                >
-                  전체 초기화
-                </button>
-              )}
-            </div>
-          </div>
 
           {/* Results Summary */}
           <div className="flex items-center justify-between mt-2">
