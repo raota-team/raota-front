@@ -10,7 +10,7 @@ export default function ContactUsBanner() {
             RAMEN LOG EVENT
           </span>
           <h3 className="mb-1 text-base md:text-lg font-black tracking-tight leading-snug">
-            라멘로그 남기고 커피 한 잔 받아가세요.
+            라멘로그 남기고 커피 한 잔 받아가세요. (~7월 31일까지)
           </h3>
           <p className="text-xs md:text-sm text-white/70 leading-relaxed break-keep">
             라멘로그를 작성한 분들 중 추첨을 통해 메가커피 기프티콘을 드립니다.
