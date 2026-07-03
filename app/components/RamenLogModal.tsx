@@ -11,6 +11,7 @@ export type RamenLogFormData = {
   shopId?: number;
   menuName: string;
   ramenType: string;
+  visitedAt: string;
   imageUrl: string;
   imageName: string;
   note: string;
@@ -41,10 +42,21 @@ const revisitOptions: RamenLogFormData['revisit'][] = ['자주 감', '가끔 생
 const heicImagePattern = /\.(heic|heif)$/i;
 const tasteFields: Array<{ key: TasteNoteKey; label: string; options: string[] }> = [
   { key: 'broth', label: '국물', options: ['진해요', '깔끔해요', '감칠맛 좋아요', '기름져요', '어패류 향'] },
-  { key: 'noodle', label: '면', options: ['탄력 있어요', '단단해요', '부드러워요', '국물 흡착 좋아요', '양 많아요'] },
+  { key: 'noodle', label: '면', options: ['탄력 있어요', '단단해요', '부드러워요', '국물이 잘 배어요', '양 많아요'] },
   { key: 'seasoning', label: '간', options: ['딱 좋아요', '슴슴해요', '짭짤해요', '매콤해요', '밥 생각나요'] },
   { key: 'topping', label: '토핑', options: ['차슈 좋아요', '계란 좋아요', '멘마 좋아요', '파 향 좋아요', '구성 알차요'] },
 ];
+
+const getTodayDateInputValue = () => {
+  const now = new Date();
+  const offsetDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return offsetDate.toISOString().slice(0, 10);
+};
+
+const toDateInputValue = (value?: string) => {
+  if (!value) return getTodayDateInputValue();
+  return value.slice(0, 10);
+};
 
 const compressImage = (file: File): Promise<File> => {
   return new Promise((resolve, reject) => {
@@ -120,6 +132,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
   const [shopName, setShopName] = useState('');
   const [menuName, setMenuName] = useState('');
   const [ramenType, setRamenType] = useState(ramenTypes[0]);
+  const [visitedAt, setVisitedAt] = useState(getTodayDateInputValue);
   const [revisit, setRevisit] = useState<RamenLogFormData['revisit']>('자주 감');
   const [note, setNote] = useState('');
   const [tasteNotes, setTasteNotes] = useState<TasteNotes>({
@@ -169,6 +182,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     setShopName(initialShopName);
     setMenuName(initialLog?.menuName || initialMenus[0] || '');
     setRamenType(initialLog?.ramenType || ramenTypes.find((type) => initialShop?.type?.includes(type)) || (initialShop ? '기타' : ramenTypes[0]));
+    setVisitedAt(toDateInputValue(initialLog?.visitedAt));
     setRevisit(initialLog?.revisit || '자주 감');
     setNote(initialLog?.note || '');
     setTasteNotes(initialLog?.tasteNotes || { broth: [], noodle: [], seasoning: [], topping: [] });
@@ -241,6 +255,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     selectedShopId &&
     menuName.trim() &&
     ramenType &&
+    visitedAt &&
     revisit &&
     note.trim() &&
     hasRequiredImage &&
@@ -251,6 +266,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     if (!selectedShopId) return '라멘 가게를 선택해주세요.';
     if (!menuName.trim()) return '먹은 메뉴를 입력해주세요.';
     if (!ramenType) return '라멘 종류를 선택해주세요.';
+    if (!visitedAt) return '방문일을 선택해주세요.';
     if (!revisit) return '재방문 의사를 선택해주세요.';
     if (isConvertingImage) return '사진 변환이 끝난 뒤 저장해주세요.';
     if (!note.trim()) return '기억해둘 점을 입력해주세요.';
@@ -430,6 +446,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
         shopId: selectedShopId!,
         menuName: menuName.trim(),
         ramenType,
+        visitedAt,
         imageUrl,
         imageName,
         note: note.trim(),
@@ -538,8 +555,8 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                   <span className="text-[10px] font-black uppercase text-[#e60000]">필수</span>
                   <span className="text-xs font-bold uppercase text-stone-500">한 그릇 기록</span>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
-                  <div className="relative sm:col-span-2">
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10.5rem]">
+                  <div className="relative">
                     <label className="mb-2 block text-xs font-bold uppercase text-stone-500">가게 이름 <span className="text-[#e60000]">*</span></label>
                     <input
                       type="text"
@@ -584,6 +601,21 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                         )}
                       </div>
                     )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="ramen-log-visited-at" className="mb-2 block text-xs font-bold uppercase text-stone-500">
+                      방문일 <span className="text-[#e60000]">*</span>
+                    </label>
+                    <input
+                      id="ramen-log-visited-at"
+                      type="date"
+                      value={visitedAt}
+                      max={getTodayDateInputValue()}
+                      onChange={(event) => setVisitedAt(event.target.value)}
+                      className="w-full border border-stone-200 bg-white px-3 py-3 text-sm font-bold text-stone-700 outline-none transition-colors focus:border-[#e60000]"
+                      required
+                    />
                   </div>
 
                   <div>

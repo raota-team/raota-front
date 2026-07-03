@@ -188,6 +188,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       menuName: data.menuName,
       ramenType: data.ramenType,
       imageUrl: data.imageUrl,
+      visitedAt: data.visitedAt,
       note: data.note || undefined,
       tasteNotes: data.tasteNotes,
       revisit: toRevisitValue(data.revisit),

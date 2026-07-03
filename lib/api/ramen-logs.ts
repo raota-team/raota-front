@@ -23,6 +23,7 @@ export interface RamenLogDto {
   ramenType: string;
   imageUrl: string;
   createdAt: string;
+  visitedAt?: string | null;
   note?: string | null;
   tasteNotes?: Partial<TasteNotes> | null;
   revisit: RamenLogRevisit;
@@ -46,6 +47,7 @@ export interface RamenLogRequest {
   menuName: string;
   ramenType: string;
   imageUrl: string;
+  visitedAt: string;
   note?: string;
   tasteNotes?: Partial<TasteNotes>;
   revisit: RamenLogRevisit;
@@ -127,7 +129,7 @@ export const normalizeRamenLog = (log: RamenLogDto): RamenLog => {
     menuName: log.menuName || "메뉴 기록",
     ramenType: log.ramenType || "기타",
     imageUrl: log.imageUrl,
-    date: log.createdAt,
+    date: log.visitedAt || log.createdAt,
     note: log.note || "",
     tasteNotes: {
       broth: tasteNotes.broth ?? defaults.broth,
