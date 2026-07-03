@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, type FormEvent } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import UserProfileCard from './UserProfileCard';
@@ -94,15 +93,11 @@ export default function LandingContent({
       {/* 1. Portal Hero Section */}
       <section ref={heroRef} className="relative min-h-[430px] w-full overflow-hidden bg-[#25282b] md:min-h-[500px]">
         <div className="absolute inset-0">
-          <Image
-            src="/hero-home.webp"
+          <img
+            src="/hero-home.jpg"
             alt="Ramen Background"
-            fill
-            priority
-            unoptimized
             fetchPriority="high"
-            sizes="100vw"
-            className="object-cover opacity-45 saturate-[0.85]"
+            className="absolute inset-0 h-full w-full object-cover opacity-45 saturate-[0.85]"
           />
           <div className="absolute inset-0 bg-[#25282b]/55" />
         </div>
