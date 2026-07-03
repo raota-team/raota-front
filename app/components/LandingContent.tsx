@@ -99,6 +99,7 @@ export default function LandingContent({
             alt="Ramen Background"
             fill
             priority
+            unoptimized
             fetchPriority="high"
             sizes="100vw"
             className="object-cover opacity-45 saturate-[0.85]"
