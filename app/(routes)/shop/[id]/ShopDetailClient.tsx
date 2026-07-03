@@ -397,7 +397,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                     사진과 메뉴, 재방문 의사와 기억해둘 점을 남기면 돼요.
                   </p>
                 </div>
-                <div className="border-t border-stone-200 p-4 md:border-l md:border-t-0">
+                <div className="flex items-center border-t border-stone-200 p-4 md:border-l md:border-t-0 md:px-5">
                   <button
                     type="button"
                     onClick={() => setIsRamenLogModalOpen(true)}
@@ -406,9 +406,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                     먹은 라멘 기록하기
                     <NotebookPen className="h-4 w-4" />
                   </button>
-                  <p className="mt-2 text-center text-[11px] font-medium text-stone-400">
-                    약 15초 · 로그인은 저장할 때
-                  </p>
                 </div>
               </div>
             </div>

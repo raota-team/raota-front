@@ -555,7 +555,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                   <span className="text-[10px] font-black uppercase text-[#e60000]">필수</span>
                   <span className="text-xs font-bold uppercase text-stone-500">한 그릇 기록</span>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10.5rem]">
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(16rem,0.7fr)]">
                   <div className="relative">
                     <label className="mb-2 block text-xs font-bold uppercase text-stone-500">가게 이름 <span className="text-[#e60000]">*</span></label>
                     <input
@@ -658,7 +658,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
                           key={option}
                           type="button"
                           onClick={() => setRevisit(option)}
-                          className={`min-h-11 min-w-0 rounded-sm border px-1.5 text-[11px] font-black leading-tight transition-colors sm:px-2 sm:text-xs ${revisit === option
+                          className={`min-h-11 min-w-0 whitespace-nowrap rounded-sm border px-1 text-[10px] font-black leading-tight transition-colors sm:px-1.5 sm:text-[11px] md:px-2 md:text-xs ${revisit === option
                               ? 'border-[#e60000] bg-[#e60000] text-white'
                               : 'border-stone-200 bg-white text-stone-500 hover:border-stone-300'
                             }`}

@@ -2,6 +2,7 @@ import type { TasteNotes } from "@/app/components/RamenLogModal";
 import type { RamenLogItem } from "@/app/components/RamenLogCard";
 import { apiClient } from "@/lib/api/client";
 import { isRamenLogFallbackImage } from "@/lib/constants/images";
+import { normalizeTasteNoteValue } from "@/lib/utils/ramen-log-taste-notes";
 
 export type RamenLogSort = "LATEST" | "POPULAR";
 export type RamenLogRevisit = "DEFINITELY" | "SOMETIMES" | "ONCE_ENOUGH";
@@ -132,10 +133,10 @@ export const normalizeRamenLog = (log: RamenLogDto): RamenLog => {
     date: log.visitedAt || log.createdAt,
     note: log.note || "",
     tasteNotes: {
-      broth: tasteNotes.broth ?? defaults.broth,
-      noodle: tasteNotes.noodle ?? defaults.noodle,
-      seasoning: tasteNotes.seasoning ?? defaults.seasoning,
-      topping: tasteNotes.topping ?? defaults.topping,
+      broth: (tasteNotes.broth ?? defaults.broth).map(normalizeTasteNoteValue),
+      noodle: (tasteNotes.noodle ?? defaults.noodle).map(normalizeTasteNoteValue),
+      seasoning: (tasteNotes.seasoning ?? defaults.seasoning).map(normalizeTasteNoteValue),
+      topping: (tasteNotes.topping ?? defaults.topping).map(normalizeTasteNoteValue),
     },
     revisit: toRevisitLabel(log.revisit),
     likes: Number(log.likeCount) || 0,

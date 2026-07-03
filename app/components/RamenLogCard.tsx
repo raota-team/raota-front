@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Heart, Store, UserRound } from 'lucide-react';
 import type { TasteNoteKey, TasteNotes } from '@/app/components/RamenLogModal';
+import { normalizeTasteNoteValue } from '@/lib/utils/ramen-log-taste-notes';
 import ResilientImage from './ResilientImage';
 import RamenLogImage from './RamenLogImage';
 
@@ -39,7 +40,7 @@ export const emptyTasteNotes = (): TasteNotes => ({
 });
 
 export const getTasteNoteValues = (tasteNotes?: TasteNotes) =>
-  tasteNoteOrder.flatMap((key) => tasteNotes?.[key] ?? []);
+  tasteNoteOrder.flatMap((key) => tasteNotes?.[key]?.map(normalizeTasteNoteValue) ?? []);
 
 export const formatRamenLogDate = (value: string) => {
   const date = new Date(value);

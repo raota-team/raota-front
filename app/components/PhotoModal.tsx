@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { X, User, MapPin, Calendar, Trash2, Flame, ThumbsUp, CircleCheck, Heart, Pencil } from 'lucide-react';
 import { useApp } from '@/app/context/AppContext';
 import { RAMEN_LOG_FALLBACK_IMAGE, isRamenLogFallbackImage } from '@/lib/constants/images';
+import { normalizeTasteNoteValue } from '@/lib/utils/ramen-log-taste-notes';
 
 interface Photo {
   id?: number;            // 삭제를 위한 고유 ID
@@ -264,7 +265,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                     <div className="flex flex-wrap gap-2">
                       {group.values.map((value) => (
                         <span key={value} className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-bold text-stone-600">
-                          {value}
+                          {normalizeTasteNoteValue(value)}
                         </span>
                       ))}
                     </div>
