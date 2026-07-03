@@ -97,9 +97,9 @@ export default function LandingContent({
             src="/hero-home.jpg"
             alt="Ramen Background"
             fetchPriority="high"
-            className="absolute inset-0 h-full w-full object-cover opacity-45 saturate-[0.85]"
+            className="absolute inset-0 h-full w-full object-cover opacity-75 saturate-[0.9]"
           />
-          <div className="absolute inset-0 bg-[#25282b]/55" />
+          <div className="absolute inset-0 bg-[#25282b]/35" />
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-[430px] max-w-7xl flex-col justify-end px-4 pb-5 pt-16 md:min-h-[500px] md:flex-row md:items-center md:justify-between md:gap-10 md:px-12 md:pb-10 md:pt-24">
