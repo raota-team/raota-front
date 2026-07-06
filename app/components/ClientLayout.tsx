@@ -8,21 +8,30 @@ import Footer from './Footer';
 import GlobalScrollIndicator from './GlobalScrollIndicator';
 import { CheckCircle2, AlertCircle, Info, HelpCircle } from 'lucide-react';
 import { getMyProfile } from '@/lib/api/user';
+import { ApiClientError } from '@/lib/api/client';
+import { clearAccessToken } from '@/lib/auth/accessToken';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const routeSegments = useSelectedLayoutSegments();
-  const { isLoggedIn, isAuthChecking, handleLogout, toast, confirm, setConfirm, currentUser, setCurrentUser } = useApp();
+  const { isLoggedIn, setIsLoggedIn, isAuthChecking, handleLogout, toast, confirm, setConfirm, currentUser, setCurrentUser } = useApp();
   const isHomePage = routeSegments.length === 0;
 
   // 실제 프로필 정보 동기화
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await getMyProfile();
+        const res = await getMyProfile({ redirectOnUnauthorized: false });
         if (res.data) {
           setCurrentUser(res.data);
         }
       } catch (err) {
+        if (err instanceof ApiClientError && err.status === 401) {
+          clearAccessToken();
+          setIsLoggedIn(false);
+          setCurrentUser(null);
+          return;
+        }
+
         console.error('Failed to sync profile:', err);
       }
     };
@@ -30,7 +39,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     if (isLoggedIn && (!currentUser || currentUser.nickname.startsWith('회원 #'))) {
       fetchProfile();
     }
-  }, [isLoggedIn, currentUser, setCurrentUser]);
+  }, [isLoggedIn, currentUser, setCurrentUser, setIsLoggedIn]);
 
   const onLogout = useCallback(async () => {
     await handleLogout();

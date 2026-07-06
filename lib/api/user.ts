@@ -203,8 +203,10 @@ const normalizeBookmark = (bookmark: ApiBookmarkSummary): BookmarkSummary => ({
 });
 
 /** 내 프로필 조회 */
-export const getMyProfile = async (): Promise<UserProfileResponse> => {
-  return await apiClient<UserProfileResponse>(`/users/me/profile`);
+export const getMyProfile = async (options?: { redirectOnUnauthorized?: boolean }): Promise<UserProfileResponse> => {
+  return await apiClient<UserProfileResponse>(`/users/me/profile`, {
+    redirectOnUnauthorized: options?.redirectOnUnauthorized,
+  });
 };
 
 /** 내 요약 프로필 조회 (홈 화면용) */

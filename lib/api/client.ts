@@ -9,6 +9,7 @@ interface ApiClientOptions {
   body?: unknown;
   headers?: HeadersInit;
   cache?: RequestCache;
+  redirectOnUnauthorized?: boolean;
 }
 
 const getApiBaseUrl = () => {
@@ -182,7 +183,7 @@ export const apiClient = async <T>(
       });
     } catch (error) {
       clearAccessToken();
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && options.redirectOnUnauthorized !== false) {
         window.location.href = "/login";
         // 리다이렉트 중이므로 호출부에서 에러 처리를 하지 않도록 영구 대기 프로미스 반환
         return new Promise(() => {});
