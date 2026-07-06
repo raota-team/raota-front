@@ -183,6 +183,33 @@ body::-webkit-scrollbar {
   margin: 0.5em 0;
 }
 
+.ProseMirror blockquote {
+  border-left: 3px solid #e60000;
+  color: #555;
+  margin: 1em 0;
+  padding-left: 1em;
+}
+
+.ProseMirror hr {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.25em 0;
+}
+
+.ProseMirror mark {
+  background-color: #fff1a8;
+  border-radius: 2px;
+  padding: 0 0.12em;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #a8a29e;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
 .ProseMirror img {
   max-width: 100%;
   height: auto;
