@@ -11,16 +11,15 @@ interface HeaderProps {
   isLoggedIn: boolean;
   isAuthChecking: boolean;
   handleLogout: () => void | Promise<void>;
+  isHomePage: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogout }) => {
+const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogout, isHomePage }) => {
   const pathname = usePathname();
-  const currentPath = pathname;
+  const currentPath = pathname ?? (isHomePage ? '/' : '');
   const { currentUser } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-
-  const isHomePage = currentPath === '/';
 
   useLayoutEffect(() => {
     const shouldUseSolidHeader = () => {

@@ -48,7 +48,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#25282b] selection:bg-red-100 selection:text-red-900">
       <GlobalScrollIndicator />
-      <Header isLoggedIn={isLoggedIn} isAuthChecking={isAuthChecking} handleLogout={onLogout} />
+      <Header
+        isLoggedIn={isLoggedIn}
+        isAuthChecking={isAuthChecking}
+        handleLogout={onLogout}
+        isHomePage={isHomePage}
+      />
 
       <main className={`flex-1 w-full ${isHomePage ? 'pt-0' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-8'}`}>
         {children}
