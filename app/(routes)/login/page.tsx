@@ -16,15 +16,23 @@ export default function LoginPage() {
     }
   };
 
+  const getCanonicalOrigin = () => {
+    if (window.location.hostname === 'raota.net') {
+      return 'https://www.raota.net';
+    }
+
+    return window.location.origin;
+  };
+
   const onKaKaoLogin = () => {
     rememberReturnTo();
-    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
+    const redirectUri = encodeURIComponent(`${getCanonicalOrigin()}/auth/callback`);
     window.location.href = `https://api.raota.net/oauth2/authorization/kakao?redirect_uri=${redirectUri}`;
   };
 
   const onGoogleLogin = () => {
     rememberReturnTo();
-    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
+    const redirectUri = encodeURIComponent(`${getCanonicalOrigin()}/auth/callback`);
     window.location.href = `https://api.raota.net/oauth2/authorization/google?redirect_uri=${redirectUri}`;
   };
 

@@ -128,6 +128,13 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   const handleVote = async (menu: any) => {
     if (!menu?.id || !shopDetail) return;
 
+    if (!isLoggedIn) {
+      showConfirm("메뉴 투표는 로그인 후 이용할 수 있습니다.\n로그인 페이지로 이동하시겠습니까?", () => {
+        router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shopId}`)}`);
+      });
+      return;
+    }
+
     try {
       await voteMenu(shopId, menu.id);
       
@@ -141,8 +148,8 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
     } catch (error: any) {
       if (error instanceof ApiClientError && (error.status === 401 || error.status === 403)) {
-        showConfirm("현재 메뉴 투표는 로그인 후 이용할 수 있습니다.\n로그인 페이지로 이동하시겠습니까?", () => {
-          router.push("/login");
+        showConfirm("메뉴 투표는 로그인 후 이용할 수 있습니다.\n로그인 페이지로 이동하시겠습니까?", () => {
+          router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shopId}`)}`);
         });
         return;
       }
@@ -150,6 +157,17 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       console.error("Voting failed:", error);
       showToast("투표 처리 중 오류가 발생했습니다.", "error");
     }
+  };
+
+  const handleOpenVoteModal = () => {
+    if (!isLoggedIn) {
+      showConfirm("메뉴 투표는 로그인 후 이용할 수 있습니다.\n로그인 페이지로 이동하시겠습니까?", () => {
+        router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shopId}`)}`);
+      });
+      return;
+    }
+
+    setIsVoteModalOpen(true);
   };
 
   const handleBookmarkToggle = async () => {
@@ -531,7 +549,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
                 <button
                   type="button"
-                  onClick={() => setIsVoteModalOpen(true)}
+                  onClick={handleOpenVoteModal}
                   className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-sm border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-black text-[#25282b] transition-colors hover:border-[#e60000] hover:bg-white hover:text-[#e60000]"
                 >
                   <Star className="h-4 w-4" />

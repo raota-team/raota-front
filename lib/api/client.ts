@@ -11,6 +11,16 @@ interface ApiClientOptions {
   cache?: RequestCache;
 }
 
+const getApiBaseUrl = () => {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  if (!apiBaseUrl) {
+    throw new ApiClientError("NEXT_PUBLIC_API_URL is not configured.", 500, null);
+  }
+
+  return apiBaseUrl.replace(/\/+$/, "");
+};
+
 export class ApiClientError extends Error {
   status: number;
   payload: unknown;
@@ -49,7 +59,15 @@ let refreshPromise: Promise<string> | null = null;
 
 const readAccessTokenFromRefreshPayload = (payload: any): string | null => {
   if (!payload) return null;
-  return payload.data?.accessToken ?? payload.accessToken ?? null;
+  return (
+    payload.data?.accessToken ??
+    payload.data?.access_token ??
+    payload.data?.token ??
+    payload.accessToken ??
+    payload.access_token ??
+    payload.token ??
+    null
+  );
 };
 
 const refreshAccessToken = async (apiBaseUrl: string): Promise<string> => {
@@ -87,7 +105,7 @@ const refreshAccessToken = async (apiBaseUrl: string): Promise<string> => {
 };
 
 export const refreshAuthSession = async (): Promise<string> => {
-  return refreshAccessToken(process.env.NEXT_PUBLIC_API_URL || "");
+  return refreshAccessToken(getApiBaseUrl());
 };
 
 export const logoutAuthSession = async (): Promise<void> => {
@@ -105,7 +123,7 @@ export const apiClient = async <T>(
   path: string,
   options: ApiClientOptions = {},
 ): Promise<T> => {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_BASE_URL = getApiBaseUrl();
   const fullUrl = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
 
   const token = typeof window !== "undefined" ? getAccessToken() : null;
