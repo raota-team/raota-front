@@ -34,6 +34,20 @@ body {
   background-clip: padding-box;
 }
 
+.raota-activity-calendar {
+  width: max-content;
+}
+
+.raota-activity-calendar svg {
+  display: block;
+  overflow: visible;
+}
+
+.raota-activity-calendar text {
+  fill: #a8a29e;
+  font-weight: 800;
+}
+
 @media (min-width: 640px) {
   .ramen-log-masonry {
     margin-left: -1rem;
