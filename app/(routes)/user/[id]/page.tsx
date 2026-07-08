@@ -1,10 +1,9 @@
 'use client';
 
-import { cloneElement, useState, useEffect, useRef, useCallback, use, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ActivityCalendar, type Activity } from 'react-activity-calendar';
-import { BookOpen, Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Shield, Mail, CalendarDays, Clock3, Flame, Target, Trophy } from 'lucide-react';
+import { BookOpen, Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Shield, Mail } from 'lucide-react';
 import PhotoModal from '../../../components/PhotoModal';
 import RamenLogModal, { type RamenLogFormData } from '../../../components/RamenLogModal';
 import RamenLogCard, {
@@ -99,163 +98,6 @@ const allPublicVisibility: ActivityVisibility = {
   comments: true,
 };
 
-type RamenLogActivityEntry = {
-  date: string;
-  count: number;
-};
-
-type RamenGrassMode = 'rolling' | `${number}`;
-
-const DEFAULT_RAMEN_LOG_WEEKLY_TARGET = 1;
-const DEFAULT_RAMEN_LOG_MONTHLY_TARGET = 4;
-
-type RamenGoalSettings = {
-  weekly: number;
-  monthly: number;
-};
-
-type RamenGoalKey = keyof RamenGoalSettings;
-
-const getKoreanToday = () => {
-  const dateKey = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Seoul',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
-
-  return new Date(`${dateKey}T00:00:00+09:00`);
-};
-
-const mockRamenLogActivity: RamenLogActivityEntry[] = [
-  { date: '2026-06-01', count: 1 },
-  { date: '2026-06-04', count: 2 },
-  { date: '2026-06-07', count: 1 },
-  { date: '2026-06-13', count: 1 },
-  { date: '2026-06-16', count: 3 },
-  { date: '2026-06-21', count: 1 },
-  { date: '2026-06-29', count: 1 },
-  { date: '2026-07-01', count: 1 },
-  { date: '2026-07-03', count: 2 },
-  { date: '2026-07-04', count: 1 },
-];
-
-const formatShortDate = (date: string) =>
-  new Date(`${date}T00:00:00+09:00`).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
-
-const formatLongDate = (date: string) =>
-  new Date(`${date}T00:00:00+09:00`).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
-
-const formatMonthLabel = (date: string) =>
-  new Date(`${date}T00:00:00+09:00`).toLocaleDateString('ko-KR', { month: 'short' });
-
-const formatDateKey = (date: Date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-const getMonthKey = (date: Date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-
-const addDays = (date: Date, days: number) => {
-  const next = new Date(date);
-  next.setDate(date.getDate() + days);
-  return next;
-};
-
-const getContributionDateRange = (mode: RamenGrassMode, today: Date) => {
-  const start = new Date(today);
-  const end = new Date(today);
-
-  if (mode === 'rolling') {
-    start.setFullYear(today.getFullYear() - 1);
-  } else {
-    const year = Number(mode);
-    start.setFullYear(year, 0, 1);
-    end.setFullYear(year, 11, 31);
-  }
-
-  const gridStart = addDays(start, -start.getDay());
-  const gridEnd = addDays(end, 6 - end.getDay());
-  const dates: { date: string; inRange: boolean; isFuture: boolean }[] = [];
-
-  for (let current = new Date(gridStart); current <= gridEnd; current = addDays(current, 1)) {
-    dates.push({
-      date: formatDateKey(current),
-      inRange: current >= start && current <= end,
-      isFuture: current > today,
-    });
-  }
-
-  return {
-    dates,
-    start: formatDateKey(start),
-    end: formatDateKey(end),
-  };
-};
-
-const getDateKeysBetween = (start: Date, end: Date) => {
-  const dates: string[] = [];
-
-  for (let current = new Date(start); current <= end; current = addDays(current, 1)) {
-    dates.push(formatDateKey(current));
-  }
-
-  return dates;
-};
-
-const getMockActivityCount = (date: string) => {
-  const explicit = mockRamenLogActivity.find((entry) => entry.date === date);
-  if (explicit) return explicit.count;
-
-  const compactDate = Number(date.replace(/-/g, ''));
-  if (compactDate % 29 === 0) return 3;
-  if (compactDate % 13 === 0) return 2;
-  if (compactDate % 5 === 0) return 1;
-  return 0;
-};
-
-const getActivityTone = (count: number) => {
-  if (count >= 3) return 'bg-[#e60000] border-[#e60000]';
-  if (count === 2) return 'bg-[#f15a5a] border-[#f15a5a]';
-  if (count === 1) return 'bg-[#ffd6d6] border-[#ffd6d6]';
-  return 'bg-[#f2f2f2] border-stone-200';
-};
-
-const getActivityLevel = (count: number) => {
-  if (count >= 3) return 3;
-  if (count === 2) return 2;
-  if (count === 1) return 1;
-  return 0;
-};
-
-const ramenActivityLevels = [
-  { min: 0, title: '라멘 입문자', nextTarget: 1 },
-  { min: 1, title: '라멘을 즐기는 자', nextTarget: 10 },
-  { min: 10, title: '라멘집 탐험가', nextTarget: 30 },
-  { min: 30, title: '라멘집 단골', nextTarget: 50 },
-  { min: 50, title: '라멘 미식가', nextTarget: 100 },
-  { min: 100, title: '라멘 마스터', nextTarget: null },
-];
-
-const getRamenActivityLevel = (logCount: number) => {
-  const currentLevel = [...ramenActivityLevels]
-    .reverse()
-    .find((level) => logCount >= level.min) || ramenActivityLevels[0];
-  const nextTarget = currentLevel.nextTarget;
-  const nextLevel = nextTarget
-    ? ramenActivityLevels.find((level) => level.min === nextTarget)
-    : null;
-  const progress = nextTarget
-    ? Math.min(100, Math.max(0, ((logCount - currentLevel.min) / (nextTarget - currentLevel.min)) * 100))
-    : 100;
-
-  return {
-    ...currentLevel,
-    nextLevel,
-    progress,
-    remaining: nextTarget ? Math.max(0, nextTarget - logCount) : 0,
-  };
-};
-
 export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
@@ -293,7 +135,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [isLogShopDropdownOpen, setIsLogShopDropdownOpen] = useState(false);
   const [logShopSearchQuery, setLogShopSearchQuery] = useState('');
   const logShopDropdownRef = useRef<HTMLDivElement>(null);
-  const ramenCalendarDropdownRef = useRef<HTMLDivElement>(null);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastItemRef = useCallback((node: HTMLElement | null) => {
@@ -318,16 +159,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [isEmailEditing, setIsEmailEditing] = useState(false);
   const [emailForm, setEmailForm] = useState('');
   const [isEmailSaving, setIsEmailSaving] = useState(false);
-  const [ramenGrassMode, setRamenGrassMode] = useState<RamenGrassMode>('rolling');
-  const [isRamenCalendarDropdownOpen, setIsRamenCalendarDropdownOpen] = useState(false);
-  const [isGradeGuideOpen, setIsGradeGuideOpen] = useState(false);
-  const [ramenGoalSettings, setRamenGoalSettings] = useState<RamenGoalSettings>({
-    weekly: DEFAULT_RAMEN_LOG_WEEKLY_TARGET,
-    monthly: DEFAULT_RAMEN_LOG_MONTHLY_TARGET,
-  });
-  const [goalDraft, setGoalDraft] = useState<RamenGoalSettings>(ramenGoalSettings);
-  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
-  const [activeGoalKey, setActiveGoalKey] = useState<RamenGoalKey | null>(null);
 
   const isOwnProfile = useMemo(() => {
     if (!currentUser) return false;
@@ -465,9 +296,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       if (logShopDropdownRef.current && !logShopDropdownRef.current.contains(event.target as Node)) {
         setIsLogShopDropdownOpen(false);
       }
-      if (ramenCalendarDropdownRef.current && !ramenCalendarDropdownRef.current.contains(event.target as Node)) {
-        setIsRamenCalendarDropdownOpen(false);
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -491,50 +319,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       return;
     }
     setActiveTab(tab);
-  };
-
-  const normalizeGoalCount = (value: number, min: number, max: number) =>
-    Math.min(max, Math.max(min, Math.round(value || min)));
-
-  const openGoalModalFor = (key: RamenGoalKey) => {
-    setGoalDraft(ramenGoalSettings);
-    setActiveGoalKey(key);
-    setIsGoalModalOpen(true);
-
-    window.requestAnimationFrame(() => {
-      const input = document.querySelector<HTMLInputElement>(`input[data-goal-input="${key}"]`);
-      input?.focus();
-      input?.select();
-    });
-  };
-
-  const closeGoalModal = () => {
-    setIsGoalModalOpen(false);
-    setActiveGoalKey(null);
-    setGoalDraft(ramenGoalSettings);
-  };
-
-  const updateGoalDraft = (key: RamenGoalKey, value: number) => {
-    setGoalDraft((current) => ({
-      ...current,
-      [key]: normalizeGoalCount(value, 1, key === 'weekly' ? 14 : 60),
-    }));
-  };
-
-  const handleGoalSave = () => {
-    if (!activeGoalKey) return;
-
-    setRamenGoalSettings((current) => {
-      const max = activeGoalKey === 'weekly' ? 14 : 60;
-
-      return {
-        ...current,
-        [activeGoalKey]: normalizeGoalCount(goalDraft[activeGoalKey], 1, max),
-      };
-    });
-    setIsGoalModalOpen(false);
-    setActiveGoalKey(null);
-    showToast('라멘로그 목표를 저장했습니다.', 'success');
   };
 
   const handleLogLikeChange = async (logId: number) => {
@@ -774,8 +558,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
   const displayBio = (profile.userDescription && profile.userDescription !== profile.nickname) ? profile.userDescription : '자기소개가 아직 없습니다.';
   const activityVisibility = profile.activity_visibility || allPublicVisibility;
-  const profileLogCount = profile.stats.total_log_count ?? profile.stats.total_photo_count ?? 0;
-  const ramenActivityLevel = getRamenActivityLevel(profileLogCount);
   const profileTabs = [
     { id: 'logs', label: '내 로그', icon: BookOpen, count: profile.stats.total_log_count ?? profile.stats.total_photo_count ?? 0 },
     { id: 'visits', label: '방문기록', icon: MapPin, count: profile.stats.visited_restaurant_count ?? 0 },
@@ -793,75 +575,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     shop.name.toLowerCase().includes(logShopSearchQuery.trim().toLowerCase()),
   );
   const accountEmail = getProfileEmail(profile);
-  const ramenLogToday = getKoreanToday();
-  const currentMonthKey = getMonthKey(ramenLogToday);
-  const currentYear = ramenLogToday.getFullYear();
-  const availableGrassYears = [currentYear, currentYear - 1, currentYear - 2];
-  const ramenCalendarOptions = [
-    { label: '최근 1년', value: 'rolling' as const },
-    ...availableGrassYears.map((year) => ({ label: `${year}`, value: String(year) as RamenGrassMode })),
-  ];
-  const selectedRamenCalendarOption = ramenCalendarOptions.find((option) => option.value === ramenGrassMode) || ramenCalendarOptions[0];
-  const contributionRange = getContributionDateRange(ramenGrassMode, ramenLogToday);
-  const activityDates = contributionRange.dates;
-  const activityByDate = activityDates.reduce<Record<string, number>>((acc, entry) => {
-    acc[entry.date] = entry.inRange && !entry.isFuture ? getMockActivityCount(entry.date) : 0;
-    return acc;
-  }, {});
-  const activityHeatmapValues: Activity[] = activityDates
-    .filter((entry) => entry.inRange)
-    .map((entry) => {
-      const count = entry.isFuture ? 0 : getMockActivityCount(entry.date);
-
-      return {
-        date: entry.date,
-        count,
-        level: getActivityLevel(count),
-      };
-    });
-  const thisMonthDates = getDateKeysBetween(
-    new Date(`${currentMonthKey}-01T00:00:00+09:00`),
-    ramenLogToday,
-  );
-  const thisYearDates = getDateKeysBetween(
-    new Date(`${currentYear}-01-01T00:00:00+09:00`),
-    ramenLogToday,
-  );
-  const selectedGrassCount = activityDates.reduce((sum, entry) => sum + (activityByDate[entry.date] || 0), 0);
-  const thisMonthCount = thisMonthDates.reduce((sum, date) => sum + getMockActivityCount(date), 0);
-  const thisYearCount = thisYearDates.reduce((sum, date) => sum + getMockActivityCount(date), 0);
-  const totalLogCount = Math.max(profile.stats.total_log_count ?? 0, thisYearCount + 23);
-  const thisMonthActiveDays = thisMonthDates.filter((date) => getMockActivityCount(date) > 0).length;
-  const latestVisitedAt = [...thisYearDates].reverse().find((date) => getMockActivityCount(date) > 0);
-  const currentWeekStart = new Date(ramenLogToday);
-  currentWeekStart.setDate(ramenLogToday.getDate() - ramenLogToday.getDay());
-  const thisWeekCount = getDateKeysBetween(currentWeekStart, ramenLogToday)
-    .reduce((sum, date) => sum + getMockActivityCount(date), 0);
-  const weeklyGoalTarget = ramenGoalSettings.weekly;
-  const monthlyGoalTarget = ramenGoalSettings.monthly;
-  const weeklyGoalProgress = Math.min(100, (thisWeekCount / weeklyGoalTarget) * 100);
-  const monthlyGoalProgress = Math.min(100, (thisMonthCount / monthlyGoalTarget) * 100);
-  const goalModalOptions = [
-    {
-      key: 'weekly' as const,
-      label: '주간 목표',
-      caption: '이번 주',
-      current: thisWeekCount,
-      max: 14,
-      suffix: '개',
-    },
-    {
-      key: 'monthly' as const,
-      label: '월간 목표',
-      caption: '이번 달',
-      current: thisMonthCount,
-      max: 60,
-      suffix: '개',
-    },
-  ];
-  const activeGoalOption = goalModalOptions.find((goal) => goal.key === activeGoalKey) || null;
-  const activeGoalValue = activeGoalOption ? goalDraft[activeGoalOption.key] : 0;
-  const activeGoalProgress = activeGoalOption ? Math.min(100, (activeGoalOption.current / activeGoalValue) * 100) : 0;
 
   const toRamenLogItem = (item: any): RamenLogItem => item.shop && item.author ? item as RamenLog : ({
     id: Number(item.photo_id || item.id),
@@ -901,7 +614,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     <div className="mx-auto max-w-5xl px-4 py-8 pb-32">
       {/* Profile Header */}
       <div className="group relative mb-8 overflow-hidden rounded-sm border border-stone-200 bg-white">
-        <div className="relative h-36 overflow-hidden bg-[#25282b] sm:h-44 md:h-56">
+        <div className="relative h-48 overflow-hidden bg-[#25282b] md:h-64">
           {(editForm.backgroundImage || (profile.background_image_url && !markedForDelete.background)) ? (
             <img src={editForm.backgroundImage || profile.background_image_url} alt="Cover" className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity" onClick={() => handleZoomImage(editForm.backgroundImage || profile.background_image_url, '배경 이미지')} />
           ) : (
@@ -923,14 +636,13 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           )}
         </div>
 
-        <div className="relative z-30 px-4 pb-5 sm:px-6 md:px-8 md:pb-7">
-          <div className="-mt-12 flex flex-col items-center gap-4 text-center md:-mt-16 md:flex-row md:items-start md:gap-6 md:text-left">
-            <div className="relative shrink-0">
-            <div className="relative h-24 w-24 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-white ring-1 ring-stone-200 md:h-36 md:w-36" onClick={() => handleZoomImage(editForm.profileImage || profile.profile_image_url, '프로필 이미지')}>
+        <div className="px-6 pb-6 md:px-10 md:pb-10 flex flex-col md:flex-row items-center md:items-start gap-6 -mt-16 md:-mt-20 relative z-30">
+          <div className="relative">
+            <div className="relative h-32 w-32 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-white md:h-40 md:w-40" onClick={() => handleZoomImage(editForm.profileImage || profile.profile_image_url, '프로필 이미지')}>
               {(editForm.profileImage || (profile.profile_image_url && !markedForDelete.profile)) ? (
                 <img src={editForm.profileImage || profile.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-3xl bg-stone-100 text-stone-300 md:text-4xl">🍜</div>
+                <div className="w-full h-full flex items-center justify-center text-4xl bg-stone-100 text-stone-300">🍜</div>
               )}
               {isEditing && isOwnProfile && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
@@ -949,9 +661,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 <X className="w-4 h-4" />
               </button>
             )}
-            </div>
+          </div>
 
-          <div className="w-full min-w-0 flex-1 md:pt-20">
+          <div className="flex-1 w-full md:w-auto text-center md:text-left md:pt-[104px] pt-2">
             {isEditing ? (
               <div className="relative z-40 rounded-sm border border-stone-200 bg-white p-4">
                 <div className="space-y-4">
@@ -977,9 +689,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
               </div>
             ) : (
               <div className="relative z-10">
-                <h2 className="text-2xl font-black tracking-tight text-[#25282b] md:text-4xl">{profile.nickname}</h2>
-                <p className="mt-1 flex flex-wrap items-center justify-center gap-x-2 text-sm font-medium leading-6 text-[#7e7e7e] md:justify-start md:text-base">
-                  <span className={isBioExpanded ? "break-all" : "truncate max-w-[260px] sm:max-w-[420px] md:max-w-[520px]"}>
+                <h2 className="mb-1 text-3xl font-black tracking-tight text-[#25282b]">{profile.nickname}</h2>
+                <p className="text-sm font-medium text-[#7e7e7e] flex flex-wrap items-center justify-center md:justify-start gap-x-2">
+                  <span className={isBioExpanded ? "break-all" : "truncate max-w-[280px] sm:max-w-[400px] md:max-w-[500px]"}>
                     {displayBio}
                   </span>
                   {displayBio && displayBio !== '자기소개가 아직 없습니다.' && displayBio.length > 45 && (
@@ -997,41 +709,23 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                     </button>
                   )}
                 </p>
-                <div className="mt-4 flex items-center justify-between gap-3 rounded-sm border border-stone-200 bg-white p-3 md:max-w-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-black text-[#e60000]">라멘 활동 등급</p>
-                      <p className="mt-1 truncate text-sm font-black text-[#25282b]">{ramenActivityLevel.title}</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsGradeGuideOpen(true)}
-                    className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-sm border border-stone-200 bg-white px-2.5 text-[11px] font-black text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]"
-                    aria-label="라멘 활동 등급 안내 열기"
-                  >
-                    <Award className="h-3.5 w-3.5" />
-                    등급 안내
-                  </button>
-                </div>
               </div>
             )}
           </div>
 
-          <div className="relative z-10 w-full md:w-auto md:pt-20">
+          <div className="mt-4 md:mt-0 md:pt-[104px] relative z-10">
             {isOwnProfile && !isEditing && (
-              <div className="grid w-full grid-cols-2 gap-2 md:w-40 md:grid-cols-1">
-                <button onClick={handleEditStart} className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-[#e60000] bg-white px-3 text-xs font-black text-[#25282b] transition-colors hover:bg-[#e60000] hover:text-white">
+              <div className="flex flex-col gap-2">
+                <button onClick={handleEditStart} className="inline-flex items-center justify-center gap-2 rounded-sm border border-[#e60000] bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:bg-[#e60000] hover:text-white">
                   <Edit3 className="h-3.5 w-3.5" />
                   프로필 수정
                 </button>
-                <button onClick={openPrivacyModal} className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-3 text-xs font-black text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]">
+                <button onClick={openPrivacyModal} className="inline-flex items-center justify-center gap-2 rounded-sm border border-stone-200 bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]">
                   <Shield className="h-3.5 w-3.5" />
                   공개 설정
                 </button>
               </div>
             )}
-          </div>
           </div>
         </div>
       </div>
@@ -1101,213 +795,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           </div>
         </section>
       )}
-
-      <section className="mb-8 grid min-w-0 items-stretch gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <div className="min-w-0 rounded-sm border border-stone-200 bg-white p-3 sm:p-5 md:p-6">
-            <div className="flex flex-col gap-3 sm:gap-4">
-              <div>
-                <p className="text-[11px] font-black uppercase text-[#e60000] sm:text-xs">Ramen Log Calendar</p>
-                <h3 className="mt-1 text-lg font-black text-[#25282b] sm:text-xl">라멘로그 캘린더</h3>
-                <p className="mt-1 text-[12px] font-medium leading-5 text-[#7e7e7e] sm:text-xs sm:leading-normal">
-                  라멘로그를 남긴 날과 기록 흐름을 한눈에 확인해요.
-                </p>
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div ref={ramenCalendarDropdownRef} className="relative block w-full sm:hidden">
-                  <button
-                    type="button"
-                    onClick={() => setIsRamenCalendarDropdownOpen((current) => !current)}
-                    className="flex h-9 w-full items-center justify-between rounded-sm border border-stone-200 bg-white px-3 text-sm font-black text-[#25282b] transition-colors hover:border-[#e60000]"
-                    aria-expanded={isRamenCalendarDropdownOpen}
-                    aria-label="라멘로그 캘린더 기간 선택"
-                  >
-                    <span>{selectedRamenCalendarOption.label}</span>
-                    <ChevronDown className={`h-4 w-4 text-stone-400 transition-transform ${isRamenCalendarDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {isRamenCalendarDropdownOpen && (
-                    <div className="absolute left-0 right-0 z-30 mt-2 overflow-hidden rounded-sm border border-stone-200 bg-white shadow-lg">
-                      {ramenCalendarOptions.map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => {
-                            setRamenGrassMode(option.value);
-                            setIsRamenCalendarDropdownOpen(false);
-                          }}
-                          className={`flex h-11 w-full items-center justify-between px-3 text-left text-sm transition-colors hover:bg-stone-50 ${
-                            ramenGrassMode === option.value ? 'font-black text-[#e60000]' : 'font-bold text-[#25282b]'
-                          }`}
-                        >
-                          <span>{option.label}</span>
-                          {ramenGrassMode === option.value && <span className="h-2 w-2 rounded-full bg-[#e60000]" />}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="hidden rounded-sm border border-stone-200 bg-white p-1 sm:flex sm:w-auto">
-                  {ramenCalendarOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setRamenGrassMode(option.value)}
-                      className={`h-8 flex-1 rounded-sm px-2 text-[11px] font-black transition-colors sm:flex-none sm:px-3 sm:text-xs ${
-                        ramenGrassMode === option.value
-                          ? 'bg-[#e60000] text-white'
-                          : 'bg-white text-[#7e7e7e] hover:text-[#25282b]'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex shrink-0 items-center gap-1.5 text-[10px] font-bold text-[#7e7e7e] sm:gap-2 sm:text-[11px]">
-                  <span>적음</span>
-                  {[0, 1, 2, 3].map((count) => (
-                    <span
-                      key={`legend-${count}`}
-                      className={`h-2.5 w-2.5 rounded-[1px] border sm:h-3.5 sm:w-3.5 sm:rounded-[2px] ${getActivityTone(count)}`}
-                      aria-hidden="true"
-                    />
-                  ))}
-                  <span>많음</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 w-full overflow-x-auto overflow-y-hidden pb-1 sm:mt-5">
-              <div className="raota-activity-calendar min-w-[860px] pr-6 sm:min-w-[920px]">
-                <ActivityCalendar
-                  data={activityHeatmapValues}
-                  blockMargin={3}
-                  blockRadius={2}
-                  blockSize={12}
-                  colorScheme="light"
-                  fontSize={11}
-                  maxLevel={3}
-                  showColorLegend={false}
-                  showTotalCount={false}
-                  showWeekdayLabels={['sun', 'tue', 'thu', 'sat']}
-                  theme={{
-                    light: ['#f2f2f2', '#ffd6d6', '#f15a5a', '#e60000'],
-                  }}
-                  labels={{
-                    months: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
-                    weekdays: ['일', '월', '화', '수', '목', '금', '토'],
-                    legend: {
-                      less: '적음',
-                      more: '많음',
-                    },
-                  }}
-                  renderBlock={(block, activity) => {
-                    const isFuture = activity.date > formatDateKey(ramenLogToday);
-
-                    return cloneElement(block, {
-                      title: `${formatShortDate(activity.date)} 라멘로그 ${activity.count}개`,
-                      'aria-label': `${formatShortDate(activity.date)} 라멘로그 ${activity.count}개`,
-                      style: {
-                        ...block.props.style,
-                        opacity: isFuture ? 0.3 : 1,
-                        stroke: activity.level === 0 ? '#e7e5e4' : 'transparent',
-                        strokeWidth: 1,
-                      },
-                    });
-                  }}
-                  tooltips={{
-                    activity: {
-                      text: (activity) => `${formatShortDate(activity.date)} 라멘로그 ${activity.count}개`,
-                    },
-                  }}
-                  weekStart={0}
-                />
-              </div>
-            </div>
-
-            <div className="mt-3 border-t border-stone-100 pt-3 sm:mt-4">
-              <p className="hidden text-sm font-black text-[#25282b] sm:block">
-                {formatLongDate(contributionRange.start)}부터 {formatLongDate(contributionRange.end)}까지 라멘로그 {selectedGrassCount.toLocaleString('ko-KR')}개
-              </p>
-              <p className="text-[15px] font-black leading-6 text-[#25282b] sm:hidden">
-                <span className="block">{formatLongDate(contributionRange.start)} - {formatLongDate(contributionRange.end)}</span>
-                <span className="block">라멘로그 {selectedGrassCount.toLocaleString('ko-KR')}개</span>
-              </p>
-              <p className="mt-1 text-xs font-medium text-[#7e7e7e]">
-                최근 기록일 {latestVisitedAt ? formatShortDate(latestVisitedAt) : '-'} · 이번 달 {thisMonthActiveDays}일 동안 기록
-              </p>
-            </div>
-          </div>
-
-          <aside className="min-w-0 rounded-sm border border-stone-200 bg-white p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase text-[#e60000]">Summary</p>
-                <h4 className="mt-1 text-base font-black text-[#25282b]">기록 요약</h4>
-              </div>
-              <Target className="h-4 w-4 text-[#e60000]" />
-            </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-stone-200 bg-stone-200">
-              {[
-                { label: '이번 달', value: `${thisMonthCount.toLocaleString('ko-KR')}개`, icon: CalendarDays },
-                { label: '올해', value: `${thisYearCount.toLocaleString('ko-KR')}개`, icon: Flame },
-                { label: '전체', value: `${totalLogCount.toLocaleString('ko-KR')}개`, icon: BookOpen },
-                { label: '기록한 날', value: `${thisMonthActiveDays}일`, icon: Trophy },
-              ].map((item) => (
-                <div key={item.label} className="bg-white p-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-[10px] font-bold text-[#7e7e7e]">{item.label}</p>
-                    <item.icon className="h-3 w-3 text-stone-400" />
-                  </div>
-                  <p className="mt-1.5 text-lg font-black text-[#25282b]">{item.value}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-3 rounded-sm bg-[#f2f2f2] p-2.5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold text-[#7e7e7e]">최근 기록일</p>
-                  <p className="mt-1 truncate text-sm font-black text-[#25282b]">
-                    {latestVisitedAt ? formatShortDate(latestVisitedAt) : '-'}
-                  </p>
-                </div>
-                <Clock3 className="h-4 w-4 shrink-0 text-[#e60000]" />
-              </div>
-            </div>
-
-            <div className="mt-3 space-y-2.5">
-              {[
-                { key: 'weekly' as const, label: '주간 목표', value: `${Math.min(thisWeekCount, weeklyGoalTarget)}/${weeklyGoalTarget}`, progress: weeklyGoalProgress },
-                { key: 'monthly' as const, label: '월간 목표', value: `${Math.min(thisMonthCount, monthlyGoalTarget)}/${monthlyGoalTarget}`, progress: monthlyGoalProgress },
-              ].map((goal) => (
-                <div key={goal.key}>
-                  <div className="flex items-center justify-between gap-2 text-xs font-black">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="text-[#25282b]">{goal.label}</span>
-                      {isOwnProfile && (
-                        <button
-                          type="button"
-                          onClick={() => openGoalModalFor(goal.key)}
-                          className="inline-flex h-6 shrink-0 items-center gap-1 rounded-sm border border-stone-200 bg-white px-2 text-[10px] font-black text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
-                          aria-label={`${goal.label} 설정`}
-                        >
-                          <Edit3 className="h-3 w-3" />
-                          설정
-                        </button>
-                      )}
-                    </div>
-                    <span className="text-[#e60000]">{goal.value}</span>
-                  </div>
-                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-sm bg-stone-100">
-                    <div className="h-full rounded-sm bg-[#e60000]" style={{ width: `${goal.progress}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </aside>
-      </section>
 
       {/* Tabs */}
       <div className="mb-8 flex overflow-x-auto border-b border-stone-200 scrollbar-hide">
@@ -1517,149 +1004,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           isPublic: editingLog.isPublic ?? true,
         } : undefined}
       />
-
-      {isGoalModalOpen && activeGoalOption && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60" onClick={closeGoalModal} />
-          <form
-            className="relative w-full max-w-sm overflow-hidden rounded-sm border border-stone-200 bg-white animate-scale-in"
-            onSubmit={(event) => {
-              event.preventDefault();
-              handleGoalSave();
-            }}
-          >
-            <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
-              <div>
-                <p className="text-xs font-black text-[#e60000]">목표 설정</p>
-                <h3 className="mt-1 text-base font-black text-[#25282b]">{activeGoalOption.label}</h3>
-              </div>
-              <button
-                type="button"
-                onClick={closeGoalModal}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-400 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
-                aria-label="목표 설정 모달 닫기"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="p-5">
-              <section className="rounded-sm border border-stone-200 bg-white p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h4 className="text-sm font-black text-[#25282b]">{activeGoalOption.label}</h4>
-                    <p className="mt-1 text-[11px] font-bold text-stone-400">
-                      {activeGoalOption.caption} {Math.min(activeGoalOption.current, activeGoalValue)}/{activeGoalValue}{activeGoalOption.suffix}
-                    </p>
-                  </div>
-                  <div className="flex h-10 overflow-hidden rounded-sm border border-stone-200 bg-white">
-                    <button
-                      type="button"
-                      onClick={() => updateGoalDraft(activeGoalOption.key, activeGoalValue - 1)}
-                      className="flex w-10 items-center justify-center text-lg font-black text-stone-500 transition-colors hover:bg-stone-50 hover:text-[#e60000]"
-                      aria-label={`${activeGoalOption.label} 줄이기`}
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      min={1}
-                      max={activeGoalOption.max}
-                      value={activeGoalValue}
-                      data-goal-input={activeGoalOption.key}
-                      onChange={(event) => updateGoalDraft(activeGoalOption.key, Number(event.target.value))}
-                      className="h-10 w-14 border-x border-stone-200 text-center text-sm font-black text-[#25282b] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                      aria-label={activeGoalOption.label}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => updateGoalDraft(activeGoalOption.key, activeGoalValue + 1)}
-                      className="flex w-10 items-center justify-center text-lg font-black text-stone-500 transition-colors hover:bg-stone-50 hover:text-[#e60000]"
-                      aria-label={`${activeGoalOption.label} 늘리기`}
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-3 h-1.5 overflow-hidden rounded-sm bg-stone-100">
-                  <div className="h-full rounded-sm bg-[#e60000]" style={{ width: `${activeGoalProgress}%` }} />
-                </div>
-              </section>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 border-t border-stone-100 px-5 py-4">
-              <button
-                type="button"
-                onClick={closeGoalModal}
-                className="inline-flex h-11 items-center justify-center rounded-sm border border-stone-200 bg-stone-50 px-5 text-xs font-black text-stone-500 transition-colors hover:bg-stone-100 hover:text-[#25282b]"
-              >
-                취소
-              </button>
-              <button
-                type="submit"
-                className="inline-flex h-11 items-center justify-center rounded-sm bg-[#e60000] px-6 text-xs font-black text-white transition-opacity hover:opacity-90"
-              >
-                저장
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {isGradeGuideOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setIsGradeGuideOpen(false)} />
-          <div className="relative w-full max-w-sm overflow-hidden rounded-sm border border-stone-200 bg-white animate-scale-in">
-            <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
-              <div>
-                <p className="text-xs font-black text-[#e60000]">등급 안내</p>
-                <h3 className="mt-1 text-base font-black text-[#25282b]">라멘 활동 등급</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsGradeGuideOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-400 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
-                aria-label="등급 안내 모달 닫기"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="p-5">
-              <p className="text-xs font-medium leading-5 text-[#7e7e7e]">
-                공개 라멘로그 개수를 기준으로 활동 등급이 올라갑니다.
-              </p>
-
-              <div className="mt-4 overflow-hidden rounded-sm border border-stone-200">
-                {ramenActivityLevels.map((level, index) => {
-                  const isCurrent = level.title === ramenActivityLevel.title;
-                  return (
-                    <div
-                      key={level.title}
-                      className={`flex items-center justify-between gap-3 border-t border-stone-100 px-3 py-2.5 first:border-t-0 ${
-                        isCurrent ? 'bg-red-50' : 'bg-white'
-                      }`}
-                    >
-                      <div className="min-w-0">
-                        <p className={`text-sm font-black ${isCurrent ? 'text-[#e60000]' : 'text-[#25282b]'}`}>
-                          {level.title}
-                        </p>
-                        <p className="mt-0.5 text-[11px] font-medium text-stone-400">
-                          {level.min === 0 ? '첫 기록 전' : `라멘로그 ${level.min}개 이상`}
-                        </p>
-                      </div>
-                      <span className={`shrink-0 text-[10px] font-black ${isCurrent ? 'text-[#e60000]' : 'text-stone-300'}`}>
-                        {isCurrent ? '현재' : `Lv.${index + 1}`}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Privacy Settings Modal */}
       {isPrivacyModalOpen && (
