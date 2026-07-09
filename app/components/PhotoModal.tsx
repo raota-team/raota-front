@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, User, MapPin, Calendar, Trash2, Flame, ThumbsUp, CircleCheck, Heart, Pencil } from 'lucide-react';
+import { X, User, MapPin, Calendar, Trash2, Flame, ThumbsUp, CircleCheck, Heart, Pencil, MoreHorizontal } from 'lucide-react';
 import { useApp } from '@/app/context/AppContext';
 import { RAMEN_LOG_FALLBACK_IMAGE, isRamenLogFallbackImage } from '@/lib/constants/images';
 import { normalizeTasteNoteValue } from '@/lib/utils/ramen-log-taste-notes';
@@ -42,6 +42,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
   const [imgError, setImgError] = useState(false);
   const [isLiked, setIsLiked] = useState(Boolean(photo?.isLiked));
   const [likeCount, setLikeCount] = useState(photo?.likes ?? 0);
+  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -65,6 +66,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
   useEffect(() => {
     setIsLiked(Boolean(photo?.isLiked));
     setLikeCount(photo?.likes ?? 0);
+    setIsActionMenuOpen(false);
   }, [photo?.id, photo?.isLiked, photo?.likes]);
 
   if (!photo) return null;
@@ -100,6 +102,14 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
   const hasDetails = !photo.isUserPhoto && Boolean(
     photo.restaurantName || photo.user || hasComment || photo.tasteNotes?.length,
   );
+  const canManageLog = isMine && !photo.isUserPhoto && (onEdit || onDelete);
+
+  const tasteGroupMeta: Record<string, { icon: string; tone: string }> = {
+    국물: { icon: '🍜', tone: 'bg-red-50/70 text-[#e60000] ring-red-100' },
+    면: { icon: '🥢', tone: 'bg-amber-50/80 text-amber-700 ring-amber-100' },
+    간: { icon: '🧂', tone: 'bg-stone-100 text-stone-700 ring-stone-200' },
+    토핑: { icon: '🥚', tone: 'bg-orange-50/80 text-orange-700 ring-orange-100' },
+  };
 
   const handleLikeClick = async () => {
     const nextIsLiked = !isLiked;
@@ -129,45 +139,71 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
         aria-label={`${photo.menuName} 사진 상세`}
         className={`relative w-full animate-scale-in ${
           hasDetails
-            ? 'max-h-[92dvh] max-w-5xl touch-pan-y overflow-y-auto overscroll-contain rounded-md bg-white md:grid md:max-h-[92vh] md:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.75fr)] md:overflow-hidden md:rounded-sm'
+            ? 'max-h-[96dvh] max-w-5xl touch-pan-y overflow-y-auto overscroll-contain rounded-md bg-white ring-1 ring-white/10 md:grid md:max-h-[96vh] md:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.75fr)] md:overflow-hidden md:rounded-sm'
             : 'flex max-w-2xl aspect-[5/4] items-center justify-center overflow-hidden rounded-sm bg-[#25282b]'
         }`}
         style={hasDetails ? { WebkitOverflowScrolling: 'touch' } : undefined}
       >
-        <div className="sticky top-3 z-20 ml-auto flex h-0 w-fit gap-2 pr-3 md:absolute md:right-4 md:top-4 md:h-auto md:pr-0">
-          {isMine && onEdit && !photo.isUserPhoto && (
-            <button
-              onClick={(event) => {
-                event.stopPropagation();
-                if (!photo.id) return;
-                onEdit(photo.id);
-              }}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25282b]/65 text-white transition-colors hover:bg-[#e60000] sm:h-10 sm:w-10"
-              title="라멘로그 수정"
-            >
-              <Pencil className="h-4 w-4 sm:h-5 sm:w-5" />
-            </button>
-          )}
-          {isMine && onDelete && !photo.isUserPhoto && (
-            <button
-              onClick={handleDeleteClick}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25282b]/65 text-white transition-colors hover:bg-[#e60000] sm:h-10 sm:w-10"
-              title="사진 삭제"
-            >
-              <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
-            </button>
+        <div className="sticky top-3 z-20 ml-auto flex h-0 w-fit gap-1.5 pr-3 md:absolute md:right-4 md:top-4 md:h-auto md:pr-0">
+          {canManageLog && (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setIsActionMenuOpen((current) => !current);
+                }}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-stone-600 shadow-sm ring-1 ring-stone-200/70 backdrop-blur transition-colors hover:bg-white hover:text-[#25282b] sm:h-9 sm:w-9"
+                aria-label="라멘로그 관리 메뉴"
+                aria-expanded={isActionMenuOpen}
+              >
+                <MoreHorizontal className="h-4 w-4 sm:h-5 sm:w-5" />
+              </button>
+              {isActionMenuOpen && (
+                <div className="absolute right-0 top-10 w-32 overflow-hidden rounded-sm border border-stone-200 bg-white py-1 text-sm font-bold text-stone-600 shadow-lg">
+                  {onEdit && (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setIsActionMenuOpen(false);
+                        if (!photo.id) return;
+                        onEdit(photo.id);
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-stone-50 hover:text-[#25282b]"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      수정하기
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        setIsActionMenuOpen(false);
+                        handleDeleteClick(event);
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-stone-500 transition-colors hover:bg-red-50 hover:text-[#e60000]"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      삭제하기
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
           <button
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25282b]/65 text-white transition-colors hover:bg-[#e60000] sm:h-10 sm:w-10"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-stone-600 shadow-sm ring-1 ring-stone-200/70 backdrop-blur transition-colors hover:bg-white hover:text-[#e60000] sm:h-9 sm:w-9"
             aria-label="사진 상세 닫기"
           >
-            <X className="h-5 w-5 sm:h-6 sm:w-6" />
+            <X className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
 
         <div className={`relative flex w-full items-center justify-center overflow-hidden bg-[#25282b] ${
-          hasDetails ? 'aspect-[4/3] min-h-0 shrink-0 md:aspect-auto md:h-[min(92vh,48rem)]' : 'h-full'
+          hasDetails ? 'aspect-[4/3] min-h-0 shrink-0 md:aspect-auto md:h-[min(96vh,44rem)]' : 'h-full'
         }`}>
           <img
             src={showFallbackImage ? RAMEN_LOG_FALLBACK_IMAGE : photo.imageUrl}
@@ -178,8 +214,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
         </div>
 
         {hasDetails && (
-          <aside className="min-h-0 bg-white px-4 py-5 text-[#25282b] md:h-[min(92vh,48rem)] md:overflow-y-auto md:px-6 md:py-7">
-            <div className="border-b border-stone-200 pb-4 sm:pb-5 md:pr-12">
+          <aside className="min-h-0 bg-white px-4 py-4 text-[#25282b] md:h-[min(96vh,44rem)] md:overflow-y-auto md:px-4 md:py-4">
+            <div className="border-b border-stone-200 pb-3 md:pr-12">
               {photo.revisit && (
                 <span className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-black text-white ${
                   photo.revisit === '자주 감' ? 'bg-[#e60000]' : photo.revisit === '가끔 생각남' ? 'bg-stone-500' : 'bg-[#25282b]'
@@ -190,11 +226,11 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                   {photo.revisit}
                 </span>
               )}
-              <h2 className="mt-3 text-xl font-black leading-tight text-[#25282b] sm:text-2xl">
+              <h2 className="mt-2 text-lg font-black leading-tight text-[#25282b] sm:text-xl">
                 {photo.menuName}
               </h2>
 
-              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-bold text-stone-500">
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-bold text-stone-500">
                 {photo.restaurantName && (
                   <button
                     onClick={handleInfoClick}
@@ -212,7 +248,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
               </div>
 
               {(photo.user || onLikeChange) && (
-                <div className="mt-3 flex min-w-0 items-center justify-between gap-3 sm:mt-4 md:-mr-10">
+                <div className="mt-2.5 flex min-w-0 items-center justify-between gap-3 md:-mr-10">
                   {photo.user ? (
                     <button
                       onClick={handleInfoClick}
@@ -235,14 +271,14 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                       type="button"
                       onClick={handleLikeClick}
                       aria-pressed={isLiked}
-                      className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-black transition-colors ${
+                      className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-bold transition-colors ${
                         isLiked
-                          ? 'border-[#e60000] bg-[#e60000] text-white'
-                          : 'border-stone-200 bg-white text-stone-600 hover:border-[#e60000] hover:text-[#e60000]'
+                          ? 'border-red-100 bg-red-50 text-[#e60000]'
+                          : 'border-stone-200 bg-stone-50 text-stone-400 hover:border-red-100 hover:bg-red-50 hover:text-[#e60000]'
                       }`}
                     >
                       <Heart className={`h-3.5 w-3.5 ${isLiked ? 'fill-current' : ''}`} />
-                      <span className={isLiked ? 'text-white/80' : 'text-stone-400'}>{likeCount}</span>
+                      <span>{likeCount}</span>
                     </button>
                   )}
                 </div>
@@ -250,21 +286,29 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
             </div>
 
             {hasComment && (
-              <div className="border-b border-stone-200 py-4 sm:py-5">
-                <p className="text-xs font-black uppercase text-stone-400">기억해둘 점</p>
-                <p className="mt-2 text-sm font-medium leading-6 text-stone-700 sm:text-base sm:leading-7">{photo.comment}</p>
+              <div className="border-b border-stone-200 py-3">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#e60000]">이 한 그릇의 기억</p>
+                <p className="mt-1.5 text-sm font-medium leading-6 text-stone-700">{photo.comment}</p>
               </div>
             )}
 
             {photo.tasteNotes && photo.tasteNotes.length > 0 && (
-              <div className="space-y-4 py-4 sm:py-5">
-                <p className="text-xs font-black uppercase text-stone-400">취향 기록</p>
+              <div className="space-y-2 py-3">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-stone-400">취향 기록</p>
                 {photo.tasteNotes.map((group) => (
-                  <div key={group.label}>
-                    <p className="mb-2 text-sm font-black text-[#25282b]">{group.label}</p>
-                    <div className="flex flex-wrap gap-2">
+                  <div key={group.label} className="flex gap-2 rounded-sm border border-stone-100 bg-stone-50/60 px-3 py-2">
+                    <p className="flex w-12 shrink-0 items-center gap-1.5 text-[11px] font-black text-[#25282b]">
+                      <span aria-hidden="true">{tasteGroupMeta[group.label]?.icon}</span>
+                      {group.label}
+                    </p>
+                    <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
                       {group.values.map((value) => (
-                        <span key={value} className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-bold text-stone-600">
+                        <span
+                          key={value}
+                          className={`rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ${
+                            tasteGroupMeta[group.label]?.tone || 'bg-white text-stone-600 ring-stone-200'
+                          }`}
+                        >
                           {normalizeTasteNoteValue(value)}
                         </span>
                       ))}
