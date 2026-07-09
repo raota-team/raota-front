@@ -59,7 +59,6 @@ const getShopSitemapEntries = async (): Promise<MetadataRoute.Sitemap> => {
 
     return uniqueShopIds.map((shopId) => ({
       url: `${baseUrl}/shop/${shopId}`,
-      lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,
     }));
