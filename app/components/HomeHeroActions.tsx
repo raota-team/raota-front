@@ -49,7 +49,7 @@ function useCountUp(target: number, duration = 1200, delay = 350) {
 
 export default function HomeHeroActions() {
   const { isLoggedIn, isAuthChecking } = useApp();
-  const startHref = isLoggedIn ? '/shops' : '/login';
+  const startHref = isLoggedIn ? '/ramen-log' : '/login?returnTo=%2Framen-log';
   const stats = [
     { value: useCountUp(150), label: '등록된 라멘집' },
     { value: useCountUp(4213, 1400, 450), label: '오늘의 한 그릇 추천' },
@@ -60,7 +60,7 @@ export default function HomeHeroActions() {
       <div className="grid w-full max-w-xl grid-cols-2 overflow-hidden rounded-[6px] border border-white/25 bg-[#25282b]/72 text-white backdrop-blur-sm">
         {stats.map((stat) => (
           <div key={stat.label} className="px-4 py-4 text-center first:border-r first:border-white/20 sm:px-8 sm:py-5">
-            <p className="text-[clamp(1.8rem,7vw,3.25rem)] font-extrabold leading-none tracking-normal tabular-nums">
+            <p className="text-3xl font-extrabold leading-none tracking-normal tabular-nums sm:text-4xl md:text-5xl">
               {stat.value}
             </p>
             <p className="mt-2 break-keep text-xs font-bold text-white/78 sm:text-sm">
@@ -79,7 +79,7 @@ export default function HomeHeroActions() {
         className="vodafone-button-pill w-56 px-6 py-4 transition-transform hover:-translate-y-0.5 active:translate-y-0"
       >
         <span className="inline-flex items-center gap-2">
-          시작하기
+          내 라멘 취향 기록하기
         </span>
         <LogIn className="h-5 w-5 text-white" />
       </Link>

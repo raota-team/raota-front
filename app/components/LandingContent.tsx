@@ -2,18 +2,18 @@
 
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { useApp } from '@/app/context/AppContext';
 import UserProfileCard from './UserProfileCard';
 import AnimatedCounter from './AnimatedCounter';
 import ContactUsBanner from './ContactUsBanner';
 import TrendingTagsRanking from './TrendingTagsRanking';
-import WeekendRecommendation from './WeekendRecommendation';
 import { Do_Hyeon } from 'next/font/google';
-import { useDiscoveryStats, useRecentVerifiedShops, useHomeTips } from '@/hooks/queries/useDiscovery';
+import { useDiscoveryStats, useRecentVerifiedShops } from '@/hooks/queries/useDiscovery';
 import type {
   DiscoveryStatsResponse,
   RecentVerifiedShopResponse,
-  WeekendRecommendationResponse,
 } from '@/lib/api/discovery';
 import ResilientImage from './ResilientImage';
 import {
@@ -37,7 +37,6 @@ const doHyeon = Do_Hyeon({
 export type HomeInitialData = {
   stats?: { success: boolean; data: DiscoveryStatsResponse };
   recentShops?: { success: boolean; data: RecentVerifiedShopResponse[] };
-  weekendRecommendations?: { success: boolean; data: WeekendRecommendationResponse[] };
 };
 
 export default function LandingContent({
@@ -50,6 +49,8 @@ export default function LandingContent({
   const [startPCAnim, setStartPCAnim] = useState(false);
   const [heroSearchQuery, setHeroSearchQuery] = useState("");
   const heroSearchInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+  const { isLoggedIn, isAuthChecking } = useApp();
   
   useEffect(() => {
     const timer = setTimeout(() => setStartPCAnim(true), 300);
@@ -62,10 +63,9 @@ export default function LandingContent({
     4,
     initialData?.recentShops,
   );
-  const { data: homeTipsData } = useHomeTips('tip', 3);
 
   const stats = statsData?.data || { totalShops: 0, totalReviews: 0, totalUsers: 0 };
-  const quickTips = homeTipsData?.data || [];
+  const homeNotices: Array<{ id: string | number; title: string; createdAt?: string }> = [];
   const recentVerifiedShops = recentShopsData?.data || [];
   const heroSearchHref = heroSearchQuery.trim()
     ? `/shops?aiKeyword=${encodeURIComponent(heroSearchQuery.trim())}`
@@ -84,11 +84,15 @@ export default function LandingContent({
     event.preventDefault();
     window.location.href = heroSearchHref;
   };
+  const startTasteRecord = () => {
+    if (isAuthChecking) return;
+    router.push(isLoggedIn ? "/ramen-log" : "/login?returnTo=%2Framen-log");
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 pb-6 md:pb-10">
       {/* SEO용 숨겨진 제목 */}
-      <h1 className="sr-only">라오타 - 라멘의 모든 것을 기록하고 나누는 커뮤니티</h1>
+      <h1 className="sr-only">라오타 - 내 라멘 취향을 기록하고 다음 라멘집을 고르는 서비스</h1>
       
       {/* 1. Portal Hero Section */}
       <section ref={heroRef} className="relative min-h-[430px] w-full overflow-hidden bg-[#25282b] md:min-h-[500px]">
@@ -104,13 +108,13 @@ export default function LandingContent({
 
         <div className="relative z-10 mx-auto flex min-h-[430px] max-w-7xl flex-col justify-end px-4 pb-5 pt-16 md:min-h-[500px] md:flex-row md:items-center md:justify-between md:gap-10 md:px-12 md:pb-10 md:pt-24">
           <div className="w-full max-w-2xl">
-            <h1 className={`mb-3 text-[clamp(2rem,8vw,4.5rem)] font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-white md:mb-6 ${doHyeon.className}`}>
-              라멘을 사랑하는 <br />
-              <span>사람들, 라오타.</span>
+            <h1 className={`mb-3 text-5xl font-extrabold uppercase leading-none tracking-normal text-white sm:text-6xl md:mb-6 md:text-7xl ${doHyeon.className}`}>
+              내 라멘 취향을 <br />
+              <span>기록하는 라오타.</span>
             </h1>
             <p className="mb-5 max-w-lg break-keep text-sm font-medium leading-relaxed text-white/80 md:mb-12 md:text-lg">
-              가게를 찾고, 한 그릇을 기록하고, <br className="hidden md:block" />
-              라멘을 좋아하는 사람들과 이야기를 나눠보세요
+              가고 싶은 라멘집과 다녀온 한 그릇을 모아두고, <br className="hidden md:block" />
+              국물, 면, 토핑, 재방문 의사까지 나만의 취향으로 쌓아가요.
             </p>
 
             <div className="mb-4 max-w-2xl rounded-sm border border-stone-200 bg-white p-1.5 md:mb-6 md:p-2">
@@ -125,7 +129,7 @@ export default function LandingContent({
                     ref={heroSearchInputRef}
                     value={heroSearchQuery}
                     onChange={(event) => setHeroSearchQuery(event.target.value)}
-                    placeholder="동네, 메뉴, 취향 검색"
+                    placeholder="동네, 메뉴, 취향으로 라멘집 찾기"
                     className="min-w-0 flex-1 bg-transparent text-xs font-bold text-[#25282b] outline-none placeholder:text-stone-400 md:text-sm"
                   />
                 </div>
@@ -134,13 +138,13 @@ export default function LandingContent({
                   className="inline-flex h-11 items-center justify-center gap-1.5 rounded-sm bg-[#e60000] px-3 text-xs font-black text-white transition-opacity hover:opacity-90 md:h-12 md:gap-2 md:px-5 md:text-sm"
                 >
                   <span className="md:hidden">찾기</span>
-                  <span className="hidden md:inline">찾아보기</span>
+                  <span className="hidden md:inline">취향으로 찾기</span>
                   <ArrowRight className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 </button>
               </form>
             </div>
 
-            <div className="mb-5 flex max-w-2xl gap-2 overflow-x-auto pb-1 md:mb-0 md:flex-wrap md:overflow-visible md:pb-0">
+            <div className="mb-4 flex max-w-2xl gap-2 overflow-x-auto pb-1 md:mb-5 md:flex-wrap md:overflow-visible md:pb-0">
               {quickExploreItems.map((item) => {
                 const isSelected = heroSearchQuery.trim() === item;
 
@@ -159,6 +163,24 @@ export default function LandingContent({
                   </button>
                 );
               })}
+            </div>
+
+            <div className="mb-5 flex max-w-2xl flex-col gap-2 sm:flex-row md:mb-0">
+              <button
+                type="button"
+                onClick={startTasteRecord}
+                disabled={isAuthChecking}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-sm bg-[#e60000] px-5 text-sm font-black text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                내 라멘 취향 기록하기
+                <ArrowRight className="h-4 w-4" />
+              </button>
+              <Link
+                href="/shops"
+                className="inline-flex h-12 items-center justify-center rounded-sm border border-white/25 bg-white/10 px-5 text-sm font-black text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-[#25282b]"
+              >
+                라멘집 둘러보기
+              </Link>
             </div>
 
           </div>
@@ -182,7 +204,7 @@ export default function LandingContent({
                 className="text-[#e60000] text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
                 shouldStart={startPCAnim && stats.totalReviews > 0} 
               />
-              참고한 리뷰
+              쌓인 라멘 기록
             </div>
           </div>
         </div>
@@ -196,9 +218,6 @@ export default function LandingContent({
         {/* Left Column: Community & Feeds */}
         <main className="flex flex-col gap-4 md:gap-8 lg:h-full">
           
-          {/* Weekend Recommendation */}
-          <WeekendRecommendation initialData={initialData?.weekendRecommendations} />
-
           {/* Mobile: Move Profile Card under recommendation for dashboard feel */}
           <div className="lg:hidden">
             <UserProfileCard />
@@ -210,9 +229,9 @@ export default function LandingContent({
             <div className="mb-4 md:mb-8 flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="h-6 md:h-8 w-1 md:w-1.5 rounded-full bg-[#e60000]"></div>
-                <h2 className="text-xl md:text-2xl font-black text-[#25282b]">최근 방문 인증된 라멘집</h2>
+                <h2 className="text-xl md:text-2xl font-black text-[#25282b]">최근 기록된 라멘집</h2>
               </div>
-              <Link href="/shops" className="text-xs md:text-sm font-bold text-[#666666] hover:text-[#e60000]">
+              <Link href="/ramen-log" className="text-xs md:text-sm font-bold text-[#666666] hover:text-[#e60000]">
                 더보기 +
               </Link>
             </div>
@@ -300,35 +319,35 @@ export default function LandingContent({
           {/* Trending Tags Ranking */}
           <TrendingTagsRanking />
 
-          {/* Quick Tips Portal */}
+          {/* Notice Portal */}
           <div className="rounded-md bg-white p-4 ring-1 ring-stone-200 md:p-6">
             <div className="mb-3 flex items-center justify-between gap-3 border-b border-[#f2f2f2]/60 pb-3 md:mb-4 md:pb-4">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[#e60000]" />
-                <h2 className="font-black text-base md:text-lg text-[#25282b]">라멘 꿀팁</h2>
+                <h2 className="font-black text-base md:text-lg text-[#25282b]">공지사항</h2>
               </div>
-              <Link href="/community?category=TIP" className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500 transition-colors hover:text-[#e60000]">
+              <Link href="/community?category=NOTICE" className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500 transition-colors hover:text-[#e60000]">
                 더보기 +
               </Link>
             </div>
             <div className="space-y-0 min-h-[180px]">
-              {quickTips.length > 0 ? (
-                quickTips.map((tip, i) => (
+              {homeNotices.length > 0 ? (
+                homeNotices.map((notice, i) => (
                   <Link 
-                    key={tip.id} 
-                    href={`/community/${tip.id}`}
-                    className={`group block py-2 md:py-3 ${i !== quickTips.length - 1 ? 'border-b border-[#f2f2f2]/50' : ''}`}
+                    key={notice.id} 
+                    href={`/community/${notice.id}`}
+                    className={`group block py-2 md:py-3 ${i !== homeNotices.length - 1 ? 'border-b border-[#f2f2f2]/50' : ''}`}
                   >
                     <p className="line-clamp-2 text-xs leading-relaxed text-[#666666] group-hover:text-[#e60000]">
-                      {tip.title}
+                      {notice.title}
                     </p>
-                    <span className="mt-1 block text-[10px] text-[#737373]">{tip.createdAt ? new Date(tip.createdAt).toLocaleDateString() : ''}</span>
+                    <span className="mt-1 block text-[10px] text-[#737373]">{notice.createdAt ? new Date(notice.createdAt).toLocaleDateString() : ''}</span>
                   </Link>
                 ))
               ) : (
                 <div className="flex h-full min-h-[100px] flex-col items-center justify-center text-center">
-                  <p className="text-xs text-[#737373]">아직 등록된 꿀팁이 없어요.</p>
-                  <p className="text-[10px] text-[#737373] mt-1">첫 번째 꿀팁을 남겨보세요!</p>
+                  <p className="text-xs text-[#737373]">아직 등록된 공지사항이 없어요.</p>
+                  <p className="text-[10px] text-[#737373] mt-1">새 소식이 생기면 이곳에 안내할게요.</p>
                 </div>
               )}
             </div>

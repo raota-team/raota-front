@@ -53,8 +53,14 @@ export default function LoginPage() {
               className="h-14 w-14 object-contain"
             />
           </div>
-          <h2 className="mb-2 text-3xl font-black text-[#25282b]">라오타에 오신것을<br />환영합니다!</h2>
-          <p className="text-sm text-[#7e7e7e]">라멘을 사랑하는 미식가들의 공간</p>
+          <p className="mb-3 text-[11px] font-black uppercase tracking-[0.18em] text-[#e60000]">RAOTA LOGIN</p>
+          <h2 className="mx-auto mb-3 max-w-[18rem] break-keep text-2xl font-black leading-tight text-[#25282b] sm:text-3xl">
+            <span className="block">좋았던 한 그릇을</span>
+            <span className="block text-[#e60000]">잊지 않도록</span>
+          </h2>
+          <p className="mx-auto max-w-xs break-keep text-sm leading-6 text-[#7e7e7e]">
+            가고 싶은 곳, 다녀온 곳, 다시 먹고 싶은 한 그릇을 라오타에 모아두세요.
+          </p>
         </div>
 
         <div className="space-y-3">
