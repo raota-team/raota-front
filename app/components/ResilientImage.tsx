@@ -13,7 +13,6 @@ const OPTIMIZABLE_HOSTS = new Set([
   'objectstorage.ap-chuncheon-1.oraclecloud.com',
   'k.kakaocdn.net',
   'lh3.googleusercontent.com',
-  'res.cloudinary.com',
 ]);
 
 const canUseNextImage = (src: string) => {
