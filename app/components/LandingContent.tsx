@@ -106,13 +106,13 @@ export default function LandingContent({
           <div className="absolute inset-0 bg-[#25282b]/35" />
         </div>
 
-        <div className="relative z-10 mx-auto flex min-h-[430px] max-w-7xl flex-col justify-end px-4 pb-5 pt-16 md:min-h-[500px] md:flex-row md:items-center md:justify-between md:gap-10 md:px-12 md:pb-10 md:pt-24">
+        <div className="relative z-10 mx-auto flex min-h-[430px] max-w-7xl flex-col justify-start px-4 pb-6 pt-28 md:min-h-[500px] md:flex-row md:items-center md:justify-between md:gap-10 md:px-12 md:pb-10 md:pt-24">
           <div className="w-full max-w-2xl">
             <h1 className={`mb-3 text-5xl font-extrabold uppercase leading-none tracking-normal text-white sm:text-6xl md:mb-6 md:text-7xl ${doHyeon.className}`}>
               내 라멘 취향을 <br />
               <span>기록하는 라오타.</span>
             </h1>
-            <p className="mb-5 max-w-lg break-keep text-sm font-medium leading-relaxed text-white/80 md:mb-12 md:text-lg">
+            <p className="mb-4 max-w-lg break-keep text-sm font-medium leading-relaxed text-white/80 md:mb-12 md:text-lg">
               가고 싶은 라멘집과 다녀온 한 그릇을 모아두고, <br className="hidden md:block" />
               국물, 면, 토핑, 재방문 의사까지 나만의 취향으로 쌓아가요.
             </p>

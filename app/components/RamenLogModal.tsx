@@ -169,6 +169,40 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
   useEffect(() => {
     if (!isOpen) return;
 
+    const scrollY = window.scrollY;
+    const previousBodyStyle = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      left: document.body.style.left,
+      right: document.body.style.right,
+      width: document.body.style.width,
+    };
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyStyle.overflow;
+      document.body.style.position = previousBodyStyle.position;
+      document.body.style.top = previousBodyStyle.top;
+      document.body.style.left = previousBodyStyle.left;
+      document.body.style.right = previousBodyStyle.right;
+      document.body.style.width = previousBodyStyle.width;
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
     const initialShopName = initialLog?.shopName || (initialShop
       ? `${initialShop.name}${initialShop.branchName ? ` ${initialShop.branchName}` : ''}`
       : '');
@@ -464,11 +498,11 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-50 flex h-[100svh] items-end justify-center overflow-hidden overscroll-none sm:h-auto sm:items-center sm:p-4">
       <div className="absolute inset-0 bg-[#25282b]/60" onClick={onClose} />
 
-      <div className="relative max-h-[90dvh] w-full max-w-5xl overflow-hidden rounded-t-md border border-stone-200 bg-white animate-scale-in sm:max-h-[92vh] sm:rounded-sm">
-        <div className="flex items-center justify-between border-b border-stone-100 bg-white px-4 py-3 sm:px-5 sm:py-4 md:px-6">
+      <div className="relative flex h-[calc(100svh_-_env(safe-area-inset-bottom)_-_2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-t-md border border-stone-200 bg-white sm:h-auto sm:max-h-[92vh] sm:rounded-sm sm:animate-scale-in">
+        <div className="shrink-0 flex items-center justify-between border-b border-stone-100 bg-white px-4 py-3 sm:px-5 sm:py-4 md:px-6">
           <div>
             <h2 className="text-base font-black text-stone-900 sm:text-lg">{initialLog ? '라멘로그 수정' : '라멘로그 쓰기'}</h2>
             <p className="mt-0.5 text-[11px] font-medium text-stone-500 sm:text-xs">
@@ -485,11 +519,11 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
           </button>
         </div>
 
-        <div className="relative">
+        <div className="relative min-h-0 flex-1">
           <form
             onSubmit={handleSubmit}
             onScroll={handleScroll}
-            className="grid max-h-[calc(90dvh-3.75rem)] overflow-y-auto [scrollbar-color:transparent_transparent] [scrollbar-width:none] sm:max-h-[calc(92vh-4.5rem)] md:grid-cols-[minmax(18rem,0.85fr)_minmax(0,1.15fr)] [&::-webkit-scrollbar]:hidden [&::-webkit-scrollbar]:h-0 [&::-webkit-scrollbar]:w-0"
+            className="grid h-full min-h-0 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] [scrollbar-color:transparent_transparent] [scrollbar-width:none] md:grid-cols-[minmax(18rem,0.85fr)_minmax(0,1.15fr)] [&::-webkit-scrollbar]:hidden [&::-webkit-scrollbar]:h-0 [&::-webkit-scrollbar]:w-0"
           >
             <section className="border-b border-stone-200 bg-stone-50 p-4 sm:p-5 md:border-b-0 md:border-r md:p-6">
               <div>
