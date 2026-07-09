@@ -70,6 +70,13 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
   const myPagePath = isLoggedIn && currentUser ? `/user/${currentUser.user_id || currentUser.id}` : '/login';
   const mobileNavItems = [
     {
+      href: '/ramen-log',
+      label: '라멘로그',
+      description: '유저들의 한 그릇 기록 둘러보기',
+      icon: NotebookPen,
+      active: isActive('/ramen-log'),
+    },
+    {
       href: '/',
       label: '홈',
       description: '라오타 최신 소식과 인기 라멘',
@@ -82,13 +89,6 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
       description: '라멘 맛집과 메뉴 정보 둘러보기',
       icon: UtensilsCrossed,
       active: isActive('/shops') || currentPath.startsWith('/shop/'),
-    },
-    {
-      href: '/ramen-log',
-      label: '라멘로그',
-      description: '유저들의 한 그릇 기록 둘러보기',
-      icon: NotebookPen,
-      active: isActive('/ramen-log'),
     },
     {
       href: '/community',
@@ -129,9 +129,9 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
               {/* Desktop Navigation */}
               <div className="hidden md:block flex-1">
                 <div className="ml-10 flex items-center justify-end gap-6">
+                  <Link href="/ramen-log" className={`text-sm transition-colors ${currentPath === '/ramen-log' ? activeTextColor : navTextColor}`}>라멘로그</Link>
                   <Link href="/" className={`text-sm transition-colors ${currentPath === '/' ? activeTextColor : navTextColor}`}>홈</Link>
                   <Link href="/shops" className={`text-sm transition-colors ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
-                  <Link href="/ramen-log" className={`text-sm transition-colors ${currentPath === '/ramen-log' ? activeTextColor : navTextColor}`}>라멘로그</Link>
                   <Link href="/community" className={`text-sm transition-colors ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
                   <Link href={myPagePath} className={`text-sm transition-colors ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
 
