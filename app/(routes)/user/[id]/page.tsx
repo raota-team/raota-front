@@ -563,7 +563,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     { id: 'visits', label: '방문기록', icon: MapPin, count: profile.stats.visited_restaurant_count ?? 0 },
     { id: 'posts', label: '게시글', icon: FileText, count: profile.stats.post_count ?? 0 },
     { id: 'comments', label: '댓글', icon: MessageSquare, count: profile.stats.comment_count ?? 0 },
-    { id: 'bookmarks', label: '북마크', icon: Heart, count: profile.stats.total_bookmark_count, private: true },
+    { id: 'bookmarks', label: '가고 싶은 가게', icon: Heart, count: profile.stats.total_bookmark_count, private: true },
   ].filter((tab) =>
     isOwnProfile || (!tab.private && activityVisibility[tab.id as keyof ActivityVisibility]),
   );
