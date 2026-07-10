@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -15,9 +15,6 @@ import {
   Heart,
   Users,
   NotebookPen,
-  Clock3,
-  ChevronDown,
-  X,
 } from "lucide-react";
 import { Shop } from "../../../types";
 import Loading from "@/app/loading";
@@ -78,90 +75,6 @@ const splitReviewSummaryParagraphs = (description?: string) => {
 };
 const PENDING_RAMEN_LOG_KEY = "raota_pending_ramen_log";
 const LOGIN_RETURN_TO_KEY = "raota_login_return_to";
-const WAITING_REVIEWS_PAGE_SIZE = 4;
-
-type WaitingReview = {
-  id: number;
-  user: string;
-  dayOfWeek: WaitingDayKey;
-  arrivalTime: string;
-  waitMinutes: number;
-  createdAt: string;
-};
-
-type WaitingDayKey = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
-
-const waitingWeekdays: Array<{ key: WaitingDayKey; label: string; shortLabel: string }> = [
-  { key: "sun", label: "일요일", shortLabel: "일" },
-  { key: "mon", label: "월요일", shortLabel: "월" },
-  { key: "tue", label: "화요일", shortLabel: "화" },
-  { key: "wed", label: "수요일", shortLabel: "수" },
-  { key: "thu", label: "목요일", shortLabel: "목" },
-  { key: "fri", label: "금요일", shortLabel: "금" },
-  { key: "sat", label: "토요일", shortLabel: "토" },
-];
-
-const getKoreanWeekdayKey = (): WaitingDayKey => {
-  const dayName = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Seoul",
-    weekday: "short",
-  }).format(new Date()).toLowerCase();
-
-  if (dayName.startsWith("sun")) return "sun";
-  if (dayName.startsWith("mon")) return "mon";
-  if (dayName.startsWith("tue")) return "tue";
-  if (dayName.startsWith("wed")) return "wed";
-  if (dayName.startsWith("thu")) return "thu";
-  if (dayName.startsWith("fri")) return "fri";
-  return "sat";
-};
-
-const getWaitingWeekdayLabel = (dayOfWeek: WaitingDayKey) =>
-  waitingWeekdays.find((weekday) => weekday.key === dayOfWeek)?.label || "요일";
-
-const mockWaitingReviews: WaitingReview[] = [
-  {
-    id: 1,
-    user: "멘마수집가",
-    dayOfWeek: "thu",
-    arrivalTime: "11:35",
-    waitMinutes: 18,
-    createdAt: "2026-07-05",
-  },
-  {
-    id: 2,
-    user: "쇼유러버",
-    dayOfWeek: "thu",
-    arrivalTime: "12:20",
-    waitMinutes: 42,
-    createdAt: "2026-07-03",
-  },
-  {
-    id: 3,
-    user: "시오탐험가",
-    dayOfWeek: "sat",
-    arrivalTime: "11:10",
-    waitMinutes: 55,
-    createdAt: "2026-07-04",
-  },
-  {
-    id: 4,
-    user: "카라멘",
-    dayOfWeek: "fri",
-    arrivalTime: "18:40",
-    waitMinutes: 25,
-    createdAt: "2026-07-02",
-  },
-];
-
-const formatWaitMinutes = (minutes: number) => {
-  if (minutes <= 0) return "바로 입장";
-  if (minutes < 60) return `${minutes}분`;
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  return remainingMinutes > 0 ? `${hours}시간 ${remainingMinutes}분` : `${hours}시간`;
-};
 
 export default function ShopDetailClient({ initialShop }: ShopDetailClientProps) {
   const router = useRouter();
@@ -183,20 +96,8 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [isRamenLogModalOpen, setIsRamenLogModalOpen] = useState(false);
   const [ramenLogRefreshKey, setRamenLogRefreshKey] = useState(0);
-  const [waitingReviews, setWaitingReviews] = useState<WaitingReview[]>(mockWaitingReviews);
-  const [isWaitingReviewModalOpen, setIsWaitingReviewModalOpen] = useState(false);
-  const [selectedWaitingDay, setSelectedWaitingDay] = useState<WaitingDayKey>(() => getKoreanWeekdayKey());
-  const [selectedWaitingTime, setSelectedWaitingTime] = useState<string>("all");
-  const [isWaitingTimeDropdownOpen, setIsWaitingTimeDropdownOpen] = useState(false);
-  const [waitingReviewPage, setWaitingReviewPage] = useState(0);
-  const [waitingForm, setWaitingForm] = useState({
-    dayOfWeek: getKoreanWeekdayKey(),
-    arrivalTime: "12:00",
-    waitMinutes: "20",
-  });
   const lastIncrementedId = useRef<number | null>(null);
   const resumedRamenLogRef = useRef(false);
-  const waitingTimeDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const refreshShopData = async () => {
     try {
@@ -224,17 +125,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       });
     }
   }, [shopId]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (waitingTimeDropdownRef.current && !waitingTimeDropdownRef.current.contains(event.target as Node)) {
-        setIsWaitingTimeDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleVote = async (menu: any) => {
     if (!menu?.id || !shopDetail) return;
@@ -374,41 +264,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     await completeRamenLogCreate(data);
   };
 
-  const handleWaitingReviewSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!isLoggedIn) {
-      showConfirm("웨이팅 기록은 로그인 후 남길 수 있습니다.\n로그인 페이지로 이동하시겠습니까?", () => {
-        router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shopId}`)}`);
-      });
-      return;
-    }
-
-    const waitMinutes = Math.max(0, Math.min(300, Number(waitingForm.waitMinutes) || 0));
-
-    if (!waitingForm.arrivalTime) {
-      showToast("도착 시간을 입력해주세요.", "error");
-      return;
-    }
-
-    setWaitingReviews((current) => [
-      {
-        id: Date.now(),
-        user: "나",
-        dayOfWeek: waitingForm.dayOfWeek,
-        arrivalTime: waitingForm.arrivalTime,
-        waitMinutes,
-        createdAt: new Date().toISOString().slice(0, 10),
-      },
-      ...current,
-    ]);
-    setSelectedWaitingDay(waitingForm.dayOfWeek);
-    setSelectedWaitingTime(waitingForm.arrivalTime);
-    setWaitingReviewPage(0);
-    setIsWaitingReviewModalOpen(false);
-    showToast("웨이팅 후기를 저장했습니다.", "success");
-  };
-
   useEffect(() => {
     if (!isLoggedIn || resumedRamenLogRef.current || !shopId) return;
 
@@ -493,55 +348,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     () => splitReviewSummaryParagraphs(shop?.description),
     [shop?.description],
   );
-  const selectedWaitingDayReviews = useMemo(
-    () => waitingReviews.filter((review) => review.dayOfWeek === selectedWaitingDay),
-    [selectedWaitingDay, waitingReviews],
-  );
-  const averageWaitMinutes = useMemo(() => {
-    if (!selectedWaitingDayReviews.length) return 0;
-    return Math.round(selectedWaitingDayReviews.reduce((sum, review) => sum + review.waitMinutes, 0) / selectedWaitingDayReviews.length);
-  }, [selectedWaitingDayReviews]);
-  const waitingTimeOptions = useMemo(() => {
-    const grouped = selectedWaitingDayReviews.reduce<Record<string, { time: string; total: number; count: number }>>((acc, review) => {
-      acc[review.arrivalTime] = acc[review.arrivalTime] || { time: review.arrivalTime, total: 0, count: 0 };
-      acc[review.arrivalTime].total += review.waitMinutes;
-      acc[review.arrivalTime].count += 1;
-      return acc;
-    }, {});
-
-    return Object.values(grouped)
-      .map((item) => ({
-        time: item.time,
-        count: item.count,
-        averageWaitMinutes: Math.round(item.total / item.count),
-      }))
-      .sort((a, b) => a.time.localeCompare(b.time));
-  }, [selectedWaitingDayReviews]);
-  const filteredWaitingReviews = useMemo(
-    () => selectedWaitingTime === "all"
-      ? selectedWaitingDayReviews
-      : selectedWaitingDayReviews.filter((review) => review.arrivalTime === selectedWaitingTime),
-    [selectedWaitingDayReviews, selectedWaitingTime],
-  );
-  const waitingReviewPageCount = Math.max(1, Math.ceil(filteredWaitingReviews.length / WAITING_REVIEWS_PAGE_SIZE));
-  const pagedWaitingReviews = filteredWaitingReviews.slice(
-    waitingReviewPage * WAITING_REVIEWS_PAGE_SIZE,
-    waitingReviewPage * WAITING_REVIEWS_PAGE_SIZE + WAITING_REVIEWS_PAGE_SIZE,
-  );
-  const selectedWaitingTimeLabel = selectedWaitingTime === "all"
-    ? `전체 시간대 · ${selectedWaitingDayReviews.length}개`
-    : waitingTimeOptions.find((option) => option.time === selectedWaitingTime)
-      ? `${selectedWaitingTime} · ${formatWaitMinutes(waitingTimeOptions.find((option) => option.time === selectedWaitingTime)!.averageWaitMinutes)}`
-      : "시간대 선택";
-
-  useEffect(() => {
-    setWaitingReviewPage(0);
-  }, [selectedWaitingDay, selectedWaitingTime, waitingReviews.length]);
-
-  useEffect(() => {
-    setSelectedWaitingTime("all");
-    setIsWaitingTimeDropdownOpen(false);
-  }, [selectedWaitingDay]);
 
   if (isLoading && !shop) return <Loading />;
   if (isError || !shop) return <div className="text-center py-20">가게 정보를 찾을 수 없습니다.</div>;
@@ -563,168 +369,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
         </div>
       </div>
     </div>
-  );
-
-  const renderWaitingReviewSection = (className = "") => (
-    <section className={`overflow-hidden rounded-sm border border-stone-200 bg-white ${className}`}>
-      <div className="p-4 md:p-5">
-        <div className="flex items-center gap-2 text-[#e60000]">
-          <Clock3 className="h-4 w-4" />
-          <p className="text-[10px] font-black uppercase tracking-[0.18em]">Waiting</p>
-        </div>
-        <h2 className="mt-2 text-lg font-black text-[#25282b] md:text-xl">
-          웨이팅 기록
-        </h2>
-        <p className="mt-1 break-keep text-sm leading-6 text-stone-500">
-          요일과 도착 시간별 실제 대기 시간을 확인해요.
-        </p>
-
-        <div className="mt-4 grid grid-cols-7 gap-1">
-          {waitingWeekdays.map((weekday) => {
-            const isSelected = selectedWaitingDay === weekday.key;
-            const isToday = getKoreanWeekdayKey() === weekday.key;
-
-            return (
-              <button
-                key={weekday.key}
-                type="button"
-                onClick={() => setSelectedWaitingDay(weekday.key)}
-                className={`relative flex h-10 items-center justify-center rounded-sm border text-xs font-black transition-colors ${
-                  isSelected
-                    ? "border-[#e60000] bg-[#e60000] text-white"
-                    : "border-stone-200 bg-white text-stone-500 hover:border-[#e60000] hover:text-[#e60000]"
-                }`}
-                aria-label={`${weekday.label} 웨이팅 기록 보기`}
-              >
-                {weekday.shortLabel}
-                {isToday && (
-                  <span className={`absolute -right-1 -top-1 h-2 w-2 rounded-full ${isSelected ? "bg-white" : "bg-[#e60000]"}`} />
-                )}
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-stone-200 bg-stone-200">
-          <div className="bg-white p-3">
-            <p className="text-[10px] font-bold text-stone-500">{getWaitingWeekdayLabel(selectedWaitingDay)} 평균</p>
-            <p className="mt-1 text-xl font-black text-[#25282b]">{formatWaitMinutes(averageWaitMinutes)}</p>
-          </div>
-          <div className="bg-white p-3">
-            <p className="text-[10px] font-bold text-stone-500">{getWaitingWeekdayLabel(selectedWaitingDay)} 기록</p>
-            <p className="mt-1 text-xl font-black text-[#25282b]">{selectedWaitingDayReviews.length}개</p>
-          </div>
-        </div>
-
-        <div ref={waitingTimeDropdownRef} className="relative mt-4">
-          <button
-            type="button"
-            onClick={() => setIsWaitingTimeDropdownOpen((current) => !current)}
-            className="flex h-11 w-full items-center justify-between gap-3 rounded-sm border border-stone-200 bg-white px-3 text-left text-sm font-black text-[#25282b] transition-colors hover:border-[#e60000]"
-            aria-expanded={isWaitingTimeDropdownOpen}
-            aria-label="웨이팅 도착 시간 필터 선택"
-          >
-            <span className="min-w-0 truncate">{selectedWaitingTimeLabel}</span>
-            <ChevronDown className={`h-4 w-4 shrink-0 text-stone-400 transition-transform ${isWaitingTimeDropdownOpen ? "rotate-180" : ""}`} />
-          </button>
-
-          {isWaitingTimeDropdownOpen && (
-            <div className="absolute left-0 right-0 z-20 mt-2 max-h-64 overflow-y-auto rounded-sm border border-stone-200 bg-white shadow-lg">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedWaitingTime("all");
-                  setIsWaitingTimeDropdownOpen(false);
-                }}
-                className={`flex h-11 w-full items-center justify-between px-3 text-left text-sm transition-colors hover:bg-stone-50 ${
-                  selectedWaitingTime === "all" ? "font-black text-[#e60000]" : "font-bold text-[#25282b]"
-                }`}
-              >
-                <span>전체 시간대</span>
-                <span className="text-[11px] font-black text-stone-400">{selectedWaitingDayReviews.length}개</span>
-              </button>
-              {waitingTimeOptions.map((option) => (
-                <button
-                  key={option.time}
-                  type="button"
-                  onClick={() => {
-                    setSelectedWaitingTime(option.time);
-                    setIsWaitingTimeDropdownOpen(false);
-                  }}
-                  className={`flex h-11 w-full items-center justify-between gap-3 border-t border-stone-100 px-3 text-left text-sm transition-colors hover:bg-stone-50 ${
-                    selectedWaitingTime === option.time ? "font-black text-[#e60000]" : "font-bold text-[#25282b]"
-                  }`}
-                >
-                  <span>{option.time}</span>
-                  <span className="shrink-0 text-[11px] font-black text-stone-400">
-                    평균 {formatWaitMinutes(option.averageWaitMinutes)} · {option.count}개
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="mt-4 overflow-hidden rounded-sm border border-stone-200">
-          {filteredWaitingReviews.length > 0 ? (
-            <div className="divide-y divide-stone-100">
-              {pagedWaitingReviews.map((review) => (
-                <article key={review.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 bg-white px-3 py-3">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-stone-400">
-                      {getWaitingWeekdayLabel(review.dayOfWeek)} · 도착 {review.arrivalTime}
-                    </p>
-                    <p className="mt-1 truncate text-xs font-bold text-stone-500">
-                      {review.user} · {review.createdAt}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-stone-400">대기</p>
-                    <p className="mt-1 text-base font-black text-[#e60000]">{formatWaitMinutes(review.waitMinutes)}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <p className="break-keep bg-stone-50 p-4 text-sm font-medium leading-6 text-stone-500">
-              선택한 요일과 시간대의 웨이팅 기록이 아직 없습니다.
-            </p>
-          )}
-        </div>
-
-        {filteredWaitingReviews.length > WAITING_REVIEWS_PAGE_SIZE && (
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => setWaitingReviewPage((current) => Math.max(0, current - 1))}
-              disabled={waitingReviewPage === 0}
-              className="inline-flex h-9 items-center justify-center rounded-sm border border-stone-200 bg-white px-3 text-xs font-black text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              이전
-            </button>
-            <span className="text-[11px] font-black text-stone-400">
-              {waitingReviewPage + 1}/{waitingReviewPageCount}
-            </span>
-            <button
-              type="button"
-              onClick={() => setWaitingReviewPage((current) => Math.min(waitingReviewPageCount - 1, current + 1))}
-              disabled={waitingReviewPage >= waitingReviewPageCount - 1}
-              className="inline-flex h-9 items-center justify-center rounded-sm border border-stone-200 bg-white px-3 text-xs font-black text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              다음
-            </button>
-          </div>
-        )}
-
-        <button
-          type="button"
-          onClick={() => setIsWaitingReviewModalOpen(true)}
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#25282b] px-4 py-3 text-sm font-black text-white transition-colors hover:bg-[#e60000]"
-        >
-          웨이팅 기록 남기기
-          <Clock3 className="h-4 w-4" />
-        </button>
-      </div>
-    </section>
   );
 
   return (
@@ -828,7 +472,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               {shopInfoCard}
             </div>
 
-            {renderWaitingReviewSection("mt-4 lg:hidden")}
           </div>
 
           <div className="mb-10 max-w-none rounded-md border border-stone-200 bg-white p-5 md:mb-12 md:p-7">
@@ -904,13 +547,11 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
         <div className="lg:col-span-4">
           <div className="flex flex-col gap-6 md:gap-8">
-            <div className="order-1 hidden lg:block">
+            <div className="hidden lg:block">
               {shopInfoCard}
             </div>
 
-            {renderWaitingReviewSection("order-2 hidden lg:block")}
-
-            <section className="order-3 overflow-hidden rounded-md border border-stone-200 bg-white">
+            <section className="overflow-hidden rounded-md border border-stone-200 bg-white">
               <div className="p-4 md:p-6">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-[10px] font-black tracking-[0.14em] text-[#e60000]">메뉴 투표</p>
@@ -958,7 +599,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               </div>
             </section>
 
-            <div className="order-2 lg:order-4">
+            <div className="order-2 lg:order-3">
               <ShopRamenLogPreview
                 key={`${shop.id}-${ramenLogRefreshKey}`}
                 shopId={shop.id}
@@ -967,7 +608,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
               />
             </div>
 
-            <div className="order-5 hidden text-center lg:block">
+            <div className="order-4 hidden text-center lg:block">
               <button 
                 onClick={() => setIsReportModalOpen(true)}
                 className="text-xs text-stone-600 hover:text-stone-800 underline transition-colors underline-offset-4"
@@ -1012,100 +653,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
         bestMenuId={bestMenuId}
         shopName={shop.name}
       />
-
-      {isWaitingReviewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setIsWaitingReviewModalOpen(false)} />
-          <form
-            onSubmit={handleWaitingReviewSubmit}
-            className="relative w-full max-w-sm overflow-hidden rounded-sm border border-stone-200 bg-white animate-scale-in"
-          >
-            <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
-              <div>
-                <p className="text-xs font-black text-[#e60000]">웨이팅 기록</p>
-                <h3 className="mt-1 text-base font-black text-[#25282b]">요일, 도착 시간과 대기 시간</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsWaitingReviewModalOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-400 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
-                aria-label="웨이팅 기록 모달 닫기"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="space-y-4 p-5">
-              <div>
-                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-stone-500">요일</p>
-                <div className="grid grid-cols-7 gap-1">
-                  {waitingWeekdays.map((weekday) => {
-                    const isSelected = waitingForm.dayOfWeek === weekday.key;
-
-                    return (
-                      <button
-                        key={weekday.key}
-                        type="button"
-                        onClick={() => setWaitingForm((current) => ({ ...current, dayOfWeek: weekday.key }))}
-                        className={`h-10 rounded-sm border text-xs font-black transition-colors ${
-                          isSelected
-                            ? "border-[#e60000] bg-[#e60000] text-white"
-                            : "border-stone-200 bg-white text-stone-500 hover:border-[#e60000] hover:text-[#e60000]"
-                        }`}
-                        aria-label={`${weekday.label} 선택`}
-                      >
-                        {weekday.shortLabel}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <label className="block">
-                <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-stone-500">도착 시간</span>
-                <input
-                  type="time"
-                  value={waitingForm.arrivalTime}
-                  onChange={(event) => setWaitingForm((current) => ({ ...current, arrivalTime: event.target.value }))}
-                  className="h-11 w-full rounded-sm border border-stone-200 bg-white px-3 text-sm font-black text-[#25282b] outline-none transition-colors focus:border-[#e60000]"
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-stone-500">기다린 시간</span>
-                <div className="flex h-11 overflow-hidden rounded-sm border border-stone-200 bg-white focus-within:border-[#e60000]">
-                  <input
-                    type="number"
-                    min={0}
-                    max={300}
-                    value={waitingForm.waitMinutes}
-                    onChange={(event) => setWaitingForm((current) => ({ ...current, waitMinutes: event.target.value }))}
-                    className="min-w-0 flex-1 px-3 text-sm font-black text-[#25282b] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                    aria-label="기다린 시간"
-                  />
-                  <span className="flex items-center border-l border-stone-200 px-3 text-xs font-black text-stone-400">분</span>
-                </div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 border-t border-stone-100 px-5 py-4">
-              <button
-                type="button"
-                onClick={() => setIsWaitingReviewModalOpen(false)}
-                className="inline-flex h-11 items-center justify-center rounded-sm border border-stone-200 bg-stone-50 px-5 text-xs font-black text-stone-500 transition-colors hover:bg-stone-100 hover:text-[#25282b]"
-              >
-                취소
-              </button>
-              <button
-                type="submit"
-                className="inline-flex h-11 items-center justify-center rounded-sm bg-[#e60000] px-6 text-xs font-black text-white transition-opacity hover:opacity-90"
-              >
-                저장
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       <RamenLogModal
         isOpen={isRamenLogModalOpen}
