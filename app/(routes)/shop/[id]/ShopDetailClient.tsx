@@ -89,7 +89,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   
   const [shopDetail, setShopDetail] = useState<Shop | null>(initialShop ?? null);
   const [isBookmarked, setIsBookmarked] = useState(Boolean(initialShop?.isBookmarked));
-  const [hasVisited, setHasVisited] = useState(false);
   const [voteData, setVoteStatus] = useState<any>(null);
 
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -195,24 +194,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     } catch (error) {
       showToast("가고 싶은 가게 처리 중 오류가 발생했습니다.", "error");
     }
-  };
-
-  const handleVisitedClick = () => {
-    if (!isLoggedIn) {
-      showConfirm("방문한 가게로 기록하려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?", () => {
-        router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shopId}`)}`);
-      });
-      return;
-    }
-
-    if (hasVisited) return;
-
-    setHasVisited(true);
-    setShopDetail((current) => current ? {
-      ...current,
-      stats: { ...current.stats, visit_count: current.stats.visit_count + 1 },
-    } : current);
-    showToast("방문 기록에 추가했어요. 아래에서 한 그릇 기록도 남겨보세요.", "success");
   };
 
   const openRamenLogModal = () => {
@@ -404,14 +385,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                 <button onClick={handleBookmarkToggle} className={`flex w-fit items-center gap-2 rounded-sm border px-4 py-2 text-sm font-bold transition-colors ${isBookmarked ? "border-[#e60000] bg-[#e60000] text-white" : "border-stone-200 bg-white text-stone-700 hover:border-[#e60000]"}`}>
                   <Heart className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
                   <span>{isBookmarked ? "가보고 싶어요 취소" : "가보고 싶어요"}</span>
-                </button>
-                <button onClick={handleVisitedClick} className={`flex w-fit items-center gap-2 rounded-sm border px-4 py-2 text-sm font-bold transition-colors ${
-                  hasVisited
-                    ? "border-stone-900 bg-stone-900 text-white"
-                    : "border-stone-200 bg-white text-stone-700 hover:border-[#e60000] hover:text-[#e60000]"
-                }`}>
-                  <NotebookPen className="h-4 w-4" />
-                  <span>{hasVisited ? "방문 완료" : "방문했어요"}</span>
                 </button>
               </div>
             </div>
