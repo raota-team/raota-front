@@ -31,9 +31,15 @@ interface AppContextType {
   toast: { message: string, type: 'success' | 'error' | 'info' } | null;
   /** 확인 모달 표시 */
   showConfirm: (message: string, onConfirm: () => void) => void;
-  confirm: { message: string, onConfirm: () => void } | null;
-  setConfirm: React.Dispatch<React.SetStateAction<{ message: string, onConfirm: () => void } | null>>;
+  confirm: ConfirmState | null;
+  setConfirm: React.Dispatch<React.SetStateAction<ConfirmState | null>>;
 }
+
+type ConfirmState = {
+  message: string;
+  onConfirm: () => void;
+  sourcePath: string;
+};
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -42,7 +48,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
-  const [confirm, setConfirm] = useState<{ message: string, onConfirm: () => void } | null>(null);
+  const [confirm, setConfirm] = useState<ConfirmState | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -56,6 +62,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       window.cancelAnimationFrame(frameId);
       window.clearTimeout(timeoutId);
     };
+  }, [pathname]);
+
+  useEffect(() => {
+    setConfirm((current) => current && current.sourcePath !== pathname ? null : current);
   }, [pathname]);
 
   const syncAuthFromStorage = useCallback(() => {
@@ -167,8 +177,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const showConfirm = useCallback((message: string, onConfirm: () => void) => {
-    setConfirm({ message, onConfirm });
-  }, []);
+    setConfirm({ message, onConfirm, sourcePath: pathname });
+  }, [pathname]);
 
   return (
     <AppContext.Provider
