@@ -178,7 +178,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
               {/* Mobile Hamburger Button */}
               <button
                 ref={mobileMenuTriggerRef}
-                className="p-1.5 text-[#25282b] transition-colors hover:text-[#e60000] md:hidden"
+                className="flex h-11 w-11 items-center justify-center text-[#25282b] transition-colors hover:text-[#e60000] md:hidden"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label={isMobileMenuOpen ? '모바일 메뉴 닫기' : '모바일 메뉴 열기'}
                 aria-expanded={isMobileMenuOpen}
@@ -220,7 +220,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
             <button
               type="button"
               onClick={closeMobileMenu}
-              className="flex h-10 w-10 items-center justify-center rounded-sm border border-stone-200 text-stone-700 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+              className="flex h-11 w-11 items-center justify-center rounded-sm border border-stone-200 text-stone-700 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
               aria-label="모바일 메뉴 닫기"
             >
               <X className="h-5 w-5" />

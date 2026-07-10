@@ -2,12 +2,13 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowUp, ChevronDown, ChevronLeft, ChevronRight, X, Search } from "lucide-react";
+import { ArrowUp, ChevronDown, ChevronLeft, ChevronRight, Sparkles, X, Search } from "lucide-react";
 import ShopCard from "../../components/ShopCard";
 import { useRamenShops } from "@/hooks/queries/useRamenShops";
 import { searchAiRamenShops } from "@/lib/api/ramen-shops";
 import TasteRecommendationPanel, { type AiTasteCriteria } from "@/app/components/TasteRecommendationPanel";
 import type { Shop } from "@/app/types";
+import { trackEvent } from "@/lib/utils/analytics";
 
 const PAGE_SIZE = 12;
 const MAX_VISIBLE_PAGES = 5;
@@ -130,8 +131,23 @@ export default function ShopsListPage() {
   const [aiSearchShops, setAiSearchShops] = useState<Shop[]>([]);
   const [isAiSearching, setIsAiSearching] = useState(false);
   const [aiSearchError, setAiSearchError] = useState<string | null>(null);
+  const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
   const previousFilterStateKeyRef = useRef<string | null>(null);
+  const aiPanelTriggerRef = useRef<HTMLButtonElement | null>(null);
   const aiSearchQuery = useMemo(() => getAiCriteriaQuery(aiTasteCriteria), [aiTasteCriteria]);
+
+  useEffect(() => {
+    if (!isAiPanelOpen) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setIsAiPanelOpen(false);
+      window.requestAnimationFrame(() => aiPanelTriggerRef.current?.focus({ preventScroll: true }));
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isAiPanelOpen]);
 
   // URL 파라미터에서 초기 상태 설정 (Hydration Mismatch 방지)
   useEffect(() => {
@@ -376,12 +392,13 @@ export default function ShopsListPage() {
               <div className="grid grid-cols-2 items-end gap-3 md:flex md:flex-wrap">
                 {/* Search Box */}
                 <div className="col-span-2 block min-w-0 w-full md:w-[250px]">
-                  <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-stone-400 md:mb-2 md:tracking-[0.2em]">
+                  <label htmlFor="shop-list-search" className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-stone-400 md:mb-2 md:tracking-[0.2em]">
                     가게 검색
-                  </span>
+                  </label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
                     <input
+                      id="shop-list-search"
                       type="text"
                       placeholder="가게 이름이나 키워드 검색"
                       value={searchQuery}
@@ -522,24 +539,59 @@ export default function ShopsListPage() {
             </div>
           </section>
 
-          <TasteRecommendationPanel
-            activeCriteria={aiTasteCriteria}
-            onApply={(criteria) => {
-              setAiTasteCriteria(criteria);
-              setSearchQuery("");
-              setDebouncedSearchQuery("");
-              setActiveRegion(ALL_FILTER);
-              setActiveDistrict(ALL_FILTER);
-              clearRamenTypeFilter(true);
-              setSortBy(DEFAULT_SORT);
-              setCurrentPage(0);
-              window.requestAnimationFrame(() => {
-                const resultSection = document.getElementById("shops-results");
-                resultSection?.scrollIntoView({ behavior: "smooth", block: "start" });
-              });
-            }}
-            onClear={() => setAiTasteCriteria(null)}
-          />
+          <button
+            ref={aiPanelTriggerRef}
+            type="button"
+            onClick={() => setIsAiPanelOpen((current) => !current)}
+            className="flex min-h-16 w-full items-center justify-between gap-3 rounded-sm border border-stone-200 bg-white px-4 py-3 text-left transition-colors hover:border-[#e60000] md:hidden"
+            aria-expanded={isAiPanelOpen}
+            aria-controls="mobile-ai-taste-panel"
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-red-50 text-[#e60000]">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-black text-[#25282b]">
+                  {aiTasteCriteria ? "AI 조건 적용 중" : "AI 취향 검색"}
+                </span>
+                <span className="mt-0.5 block truncate text-xs font-medium text-stone-500">
+                  {aiTasteCriteria ? getAiCriteriaQuery(aiTasteCriteria) : "문장으로 취향 찾기"}
+                </span>
+              </span>
+            </span>
+            <ChevronDown className={`h-4 w-4 shrink-0 text-stone-400 transition-transform ${isAiPanelOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          <div id="mobile-ai-taste-panel" className={`${isAiPanelOpen ? "block" : "hidden"} md:block`}>
+            <TasteRecommendationPanel
+              activeCriteria={aiTasteCriteria}
+              onApply={(criteria) => {
+                trackEvent("ai_taste_search_submitted", {
+                  source: "shops_ai_panel",
+                  query: criteria.prompt || undefined,
+                  chips: criteria.chips,
+                });
+                setAiTasteCriteria(criteria);
+                setIsAiPanelOpen(false);
+                setSearchQuery("");
+                setDebouncedSearchQuery("");
+                setActiveRegion(ALL_FILTER);
+                setActiveDistrict(ALL_FILTER);
+                clearRamenTypeFilter(true);
+                setSortBy(DEFAULT_SORT);
+                setCurrentPage(0);
+                window.requestAnimationFrame(() => {
+                  const resultSection = document.getElementById("shops-results");
+                  resultSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+                });
+              }}
+              onClear={() => {
+                setAiTasteCriteria(null);
+                setIsAiPanelOpen(false);
+              }}
+            />
+          </div>
 
           {/* Results Summary */}
           <div className="flex items-center justify-between mt-2">
@@ -585,7 +637,7 @@ export default function ShopsListPage() {
                     aria-label="이전 페이지 묶음 보기"
                     disabled={pageWindowStart === 0}
                     onClick={showPreviousPageGroup}
-                    className="rounded-sm border border-stone-200 p-3 text-stone-400 transition-colors hover:border-[#25282b] hover:text-[#25282b] disabled:cursor-not-allowed disabled:opacity-20"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-stone-200 text-stone-400 transition-colors hover:border-[#25282b] hover:text-[#25282b] disabled:cursor-not-allowed disabled:opacity-20"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -598,7 +650,7 @@ export default function ShopsListPage() {
                         aria-label={`${pageNumber + 1} 페이지로 이동`}
                         aria-current={pageNumber === currentPage ? "page" : undefined}
                         onClick={() => goToShopsPage(pageNumber)}
-                        className={`h-10 w-10 rounded-sm text-xs font-black transition-colors ${
+                        className={`h-11 w-11 rounded-sm text-xs font-black transition-colors ${
                           pageNumber === currentPage 
                             ? "bg-[#e60000] text-white" 
                             : "border border-stone-200 bg-white text-stone-400 hover:border-[#25282b] hover:text-[#25282b]"
@@ -614,7 +666,7 @@ export default function ShopsListPage() {
                     aria-label="다음 페이지 묶음 보기"
                     disabled={pageWindowStart + MAX_VISIBLE_PAGES >= totalPages}
                     onClick={showNextPageGroup}
-                    className="rounded-sm border border-stone-200 p-3 text-stone-400 transition-colors hover:border-[#25282b] hover:text-[#25282b] disabled:cursor-not-allowed disabled:opacity-20"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-stone-200 text-stone-400 transition-colors hover:border-[#25282b] hover:text-[#25282b] disabled:cursor-not-allowed disabled:opacity-20"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -627,7 +679,7 @@ export default function ShopsListPage() {
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="inline-flex items-center gap-2 rounded-sm border border-stone-200 bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+              className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-stone-200 bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
             >
               <ArrowUp className="h-4 w-4" />
               맨 위로
@@ -699,6 +751,7 @@ function FilterSelect({
       >
         <button
           type="button"
+          aria-label={`${label}: ${selectedOption?.label}`}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           aria-controls={listboxId}
@@ -711,7 +764,7 @@ function FilterSelect({
               setIsOpen(true);
             }
           }}
-          className={`w-full rounded-sm border bg-white px-3 py-2.5 pr-10 text-left text-sm font-bold text-[#25282b] outline-none transition-colors md:px-4 md:py-3 md:pr-11 ${
+          className={`min-h-11 w-full rounded-sm border bg-white px-3 py-2.5 pr-10 text-left text-sm font-bold text-[#25282b] outline-none transition-colors md:px-4 md:py-3 md:pr-11 ${
             disabled
               ? "cursor-not-allowed border-stone-200 bg-stone-50 text-stone-400"
               : isOpen

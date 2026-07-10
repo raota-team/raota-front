@@ -236,7 +236,9 @@ export default function ShopComparePanel({ shop }: ShopComparePanelProps) {
           />
 
           <div className="space-y-2">
+            <label htmlFor={`shop-compare-focus-${shop.id}`} className="sr-only">가게 비교 관점</label>
             <input
+              id={`shop-compare-focus-${shop.id}`}
               value={compareFocus}
               onChange={(event) => setCompareFocus(event.target.value)}
               placeholder="비교 관점: 웨이팅, 혼밥, 국물 진함"
@@ -248,7 +250,7 @@ export default function ShopComparePanel({ shop }: ShopComparePanelProps) {
                   key={example}
                   type="button"
                   onClick={() => setCompareFocus(example)}
-                  className="shrink-0 rounded-sm border border-stone-200 bg-[#f7f7f7] px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+                  className="min-h-11 shrink-0 rounded-sm border border-stone-200 bg-[#f7f7f7] px-3 py-1.5 text-xs font-bold text-[#25282b] transition-colors hover:border-[#e60000] hover:text-[#e60000] md:min-h-0"
                 >
                   {example}
                 </button>

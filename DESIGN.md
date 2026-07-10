@@ -196,8 +196,9 @@ RAOTA's home page should feel like a ramen discovery dashboard, not a marketing-
 - Hero: use a real ramen/shop image background with a dark overlay and concise brand copy. Avoid extra eyebrow badges when the brand and search intent are already clear
 - Hero spacing: desktop hero copy must sit clearly below the global header; use a top safe area around `96px` when the header overlays the hero image
 - Primary action: place a large search field in the hero so users can start by neighborhood, menu, or taste. Keep quick discovery chips directly under the search field
+- CTA hierarchy: the hero search submit is the only red primary action in the hero. Logged-in users may receive one quiet text link to their own ramen logs; do not stack a second large discovery or recording CTA beneath the search
 - Mobile hero search: keep the search control compact and one-line, around `44px` tall with a short label such as "찾기". Avoid stacked input/button cards that make the hero feel too long
-- Hero quick chips: treat chips as search suggestions, not direct navigation. Tapping a chip writes that phrase into the hero search input; submitting the form sends the exact phrase to the shop list via `keyword`
+- Hero quick chips: treat chips as search suggestions, not direct navigation. Tapping a chip writes that phrase into the hero search input; submitting the form sends the exact phrase to the shop list via `aiKeyword`
 - Content order: show the daily AI recommendation and recently verified shops before generic navigation shortcuts or explanatory feature banners
 - AI messaging: avoid standalone red promotional banners that only explain AI features. If AI is mentioned, tie it to an actual recommendation, summary, or search result the user can act on
 - Section surfaces: daily recommendations, recent activity, quick shortcuts, and sidebar modules should share the same white surface with a thin neutral outline (`ring-stone-200` or equivalent) so one section does not appear unfinished
@@ -218,6 +219,8 @@ RAOTA's shop-list AI taste search is a compact utility panel, not a hero. It sho
 - Container: full-width within the shop-list content column, Pure White (`#ffffff`) background, 1px `stone-200` outline, `2px` radius, no shadow and no gradient
 - Desktop layout: two-column grid with a fixed left intro rail around `23rem` and a flexible right control area. The left rail uses a right hairline divider; the right side contains the input, CTA, chips, and examples
 - Mobile layout: stack the intro rail above controls with a bottom hairline divider, but compress the rail to a compact label/header area. Use `12px` padding, keep one short supporting sentence such as "문장이나 조건으로 취향에 가까운 가게를 찾아보세요.", and keep the search controls visible without requiring a long scroll
+- Mobile entry state: show AI taste search as a single 56-64px disclosure row by default. Expanding reveals the existing input, chips, examples, and submit action; applying a condition collapses it again and moves the viewport to the results
+- Applied state: the collapsed disclosure row summarizes the active AI condition in one truncated line. Desktop and tablet keep the complete panel visible
 - Tablet layout: stack the intro rail above controls with a bottom hairline divider; preserve `16px-20px` internal padding and 44px minimum touch targets
 - Intro copy: keep the eyebrow red and compact, then use a short 18-27px bold Charcoal headline with one concise support sentence. Avoid hero-scale display type and avoid long Korean phrases that break after one or two syllables inside this panel
 - Search input: 44px high on mobile and 48px high from tablet up, `2px` radius, white fill, 1px neutral border, search icon at the left, red border on focus, bold 14px input text
@@ -239,6 +242,12 @@ The shop-detail 1:1 compare panel is a secondary action at the bottom of a detai
 - Prompt examples: horizontal scroll on mobile; wrapping is acceptable on wider screens
 - CTA: single full-width red rectangle labeled "비교하기"; avoid oversized explanatory copy in this context
 - Results: when shown, replace the setup controls with the compact result state rather than stacking the full form above the result. Do not reuse the full recommendation-page visual comparison cards. Use the A/B names, all returned narrative rows, and a small "다시 비교하기" action; omit score cards, score-like text inside narratives, large shop images, and secondary action icons. Do not line-clamp or truncate mobile comparison result text
+
+### Ramen Log Feed Actions
+
+- Keep one red recording CTA per feed fold. The sticky filter header owns the `기록하기` action
+- Event banners explain the benefit and period but do not duplicate the recording CTA
+- Record `ramen_log_started` only when the create modal actually opens, and `ramen_log_completed` only after a successful new record; editing does not emit create events
 
 ### Navigation
 

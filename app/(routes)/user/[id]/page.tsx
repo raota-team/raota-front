@@ -636,7 +636,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           )}
         </div>
 
-        <div className="px-6 pb-6 md:px-10 md:pb-10 flex flex-col md:flex-row items-center md:items-start gap-6 -mt-16 md:-mt-20 relative z-30">
+        <div className="px-6 pb-4 md:px-10 md:pb-5 flex flex-col md:flex-row items-center md:items-start gap-6 -mt-16 md:-mt-20 relative z-30">
           <div className="relative">
             <div className="relative h-32 w-32 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-white md:h-40 md:w-40" onClick={() => handleZoomImage(editForm.profileImage || profile.profile_image_url, '프로필 이미지')}>
               {(editForm.profileImage || (profile.profile_image_url && !markedForDelete.profile)) ? (
@@ -689,7 +689,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
               </div>
             ) : (
               <div className="relative z-10">
-                <h2 className="mb-1 text-3xl font-black tracking-tight text-[#25282b]">{profile.nickname}</h2>
+                <h1 className="mb-1 text-3xl font-black tracking-tight text-[#25282b]">{profile.nickname}</h1>
                 <p className="text-sm font-medium text-[#7e7e7e] flex flex-wrap items-center justify-center md:justify-start gap-x-2">
                   <span className={isBioExpanded ? "break-all" : "truncate max-w-[280px] sm:max-w-[400px] md:max-w-[500px]"}>
                     {displayBio}
@@ -745,7 +745,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 <p className="mt-1 truncate text-sm font-bold text-stone-700">
                   {accountEmail || '등록된 이메일 정보 없음'}
                 </p>
-                <p className="mt-1 text-xs font-medium text-stone-400">
+                <p className="mt-1 truncate text-xs font-medium text-stone-400">
                   계정 알림과 이벤트 안내에 사용하는 이메일입니다.
                 </p>
               </div>
@@ -965,6 +965,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         menuName: selectedPhoto.menuName,
         user: selectedPhoto.author.name,
         userId: selectedPhoto.author.id,
+        userImageUrl: selectedPhoto.author.imageUrl,
         restaurantName: selectedPhoto.shop.name,
         restaurantId: selectedPhoto.shop.id,
         date: formatRamenLogDate(selectedPhoto.date),

@@ -88,7 +88,7 @@ function AuthorChip({ post }: { post: CommunityPostCard }) {
         event.stopPropagation();
         router.push(`/user/${post.authorId}`);
       }}
-      className="flex min-w-0 items-center gap-2 text-left"
+      className="flex min-h-11 min-w-0 items-center gap-2 text-left"
     >
       <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200 bg-stone-100">
         {post.authorImageUrl ? (
@@ -327,7 +327,7 @@ export default function CommunityPage() {
                   key={cat.id}
                   type="button"
                   onClick={() => handleCategoryChange(cat.id)}
-                  className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-black transition-colors ${
+                  className={`min-h-11 flex-shrink-0 rounded-full px-4 py-2 text-sm font-black transition-colors ${
                     selectedCategory === cat.id
                       ? 'bg-[#e60000] text-white'
                       : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
@@ -340,7 +340,7 @@ export default function CommunityPage() {
             <button
               type="button"
               onClick={() => goToWrite('/community/write')}
-              className="inline-flex flex-shrink-0 items-center justify-center gap-1.5 rounded-sm bg-[#e60000] px-3.5 py-2.5 text-sm font-black text-white transition-opacity hover:opacity-90 md:px-4 md:py-2"
+              className="inline-flex min-h-11 flex-shrink-0 items-center justify-center gap-1.5 rounded-sm bg-[#e60000] px-3.5 py-2.5 text-sm font-black text-white transition-opacity hover:opacity-90 md:px-4"
             >
               <PenSquare className="h-4 w-4" />
               글쓰기
@@ -444,7 +444,7 @@ export default function CommunityPage() {
               <button
                 type="button"
                 onClick={() => goToWrite(`/community/write?category=FREE&title=${encodeURIComponent('오늘의 질문: 요즘 가장 자주 생각나는 라멘집은 어디인가요?')}&content=${encodeURIComponent('<p>저는 요즘 이 라멘집이 자꾸 생각나요.</p><p>이유는...</p>')}`)}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 py-2.5 text-sm font-black text-white transition-opacity hover:opacity-90 sm:w-auto sm:shrink-0"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 py-2.5 text-sm font-black text-white transition-opacity hover:opacity-90 sm:w-auto sm:shrink-0"
               >
                 답변 쓰기
                 <ArrowRight className="h-4 w-4" />
@@ -496,7 +496,7 @@ export default function CommunityPage() {
                   setCurrentPage((page) => page - 1);
                   window.scrollTo(0, 0);
                 }}
-                className="flex items-center gap-2 rounded-full border border-stone-200 px-4 py-2 text-xs font-black uppercase tracking-widest text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000] disabled:cursor-not-allowed disabled:opacity-20"
+                className="flex min-h-11 items-center gap-2 rounded-full border border-stone-200 px-4 py-2 text-xs font-black uppercase tracking-widest text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000] disabled:cursor-not-allowed disabled:opacity-20"
               >
                 <ChevronLeft className="h-4 w-4" />
                 이전
@@ -510,7 +510,7 @@ export default function CommunityPage() {
                       setCurrentPage(page);
                       window.scrollTo(0, 0);
                     }}
-                    className={`h-9 w-9 rounded-full text-xs font-black transition-colors ${
+                    className={`h-11 w-11 rounded-full text-xs font-black transition-colors ${
                       currentPage === page
                         ? 'bg-[#e60000] text-white'
                         : 'border border-stone-200 bg-white text-stone-400 hover:bg-stone-50'
@@ -526,7 +526,7 @@ export default function CommunityPage() {
                   setCurrentPage((page) => page + 1);
                   window.scrollTo(0, 0);
                 }}
-                className="flex items-center gap-2 rounded-full border border-stone-200 px-4 py-2 text-xs font-black uppercase tracking-widest text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000] disabled:cursor-not-allowed disabled:opacity-20"
+                className="flex min-h-11 items-center gap-2 rounded-full border border-stone-200 px-4 py-2 text-xs font-black uppercase tracking-widest text-stone-500 transition-colors hover:border-[#e60000] hover:text-[#e60000] disabled:cursor-not-allowed disabled:opacity-20"
               >
                 다음
                 <ChevronRight className="h-4 w-4" />

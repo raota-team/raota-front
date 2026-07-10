@@ -199,7 +199,7 @@ export default function CommunityWritePage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-12 sm:px-0">
+    <div className="mx-auto max-w-3xl px-4 pb-12 sm:px-0 md:pt-16">
       <div className="mb-6 flex items-center justify-between">
         <button onClick={() => router.back()} className="flex items-center text-sm font-bold uppercase tracking-wider text-[#7e7e7e] transition-colors hover:text-[#e60000]">
           <ArrowLeft className="w-4 h-4 mr-2" /> 취소
@@ -237,7 +237,7 @@ export default function CommunityWritePage() {
                   <div className="p-2 border-b border-stone-100 bg-stone-50">
                     <div className="relative">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
-                      <input type="text" placeholder="라멘집 검색..." value={shopSearchQuery} onChange={(e) => setShopSearchQuery(e.target.value)} className="w-full rounded-sm border border-stone-200 bg-white py-2 pl-8 pr-3 text-xs focus:border-[#e60000] focus:outline-none" autoFocus />
+                      <input type="text" aria-label="라멘집 검색" placeholder="라멘집 검색..." value={shopSearchQuery} onChange={(e) => setShopSearchQuery(e.target.value)} className="w-full rounded-sm border border-stone-200 bg-white py-2 pl-8 pr-3 text-xs focus:border-[#e60000] focus:outline-none" autoFocus />
                     </div>
                   </div>
                   <div className="overflow-y-auto">
@@ -256,8 +256,8 @@ export default function CommunityWritePage() {
         )}
 
         <div className="p-6 border-b border-stone-100">
-          <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">제목</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full rounded-sm border border-stone-200 px-4 py-3 text-lg font-bold text-[#25282b] focus:border-[#e60000] focus:outline-none" maxLength={100} />
+          <label htmlFor="community-post-title" className="block text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">제목</label>
+          <input id="community-post-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="w-full rounded-sm border border-stone-200 px-4 py-3 text-lg font-bold text-[#25282b] focus:border-[#e60000] focus:outline-none" maxLength={100} />
         </div>
 
         <div className="p-6 border-b border-stone-100">

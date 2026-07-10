@@ -92,7 +92,9 @@ export default function TasteRecommendationPanel({
           <div className="grid min-w-0 gap-2 xl:grid-cols-[minmax(18rem,1fr)_auto] xl:items-center">
             <div className="flex min-h-11 min-w-0 max-w-full items-center gap-2 rounded-sm border border-stone-200 bg-white px-3 py-2 transition-colors focus-within:border-[#e60000] sm:min-h-12 sm:py-2.5">
               <Search className="h-4 w-4 shrink-0 text-stone-400" />
+              <label htmlFor="ai-taste-search" className="sr-only">AI 취향 검색어</label>
               <input
+                id="ai-taste-search"
                 value={prompt}
                 onChange={(event) => {
                   const nextPrompt = event.target.value;
@@ -149,7 +151,7 @@ export default function TasteRecommendationPanel({
                   key={chip}
                   type="button"
                   onClick={() => selectChip(chip)}
-                  className={`shrink-0 rounded-sm border px-3 py-1.5 text-xs font-black transition-colors ${
+                  className={`min-h-11 shrink-0 rounded-sm border px-3 py-1.5 text-xs font-black transition-colors sm:min-h-0 ${
                     isSelected
                       ? "border-[#e60000] bg-[#e60000] text-white"
                       : "border-stone-200 bg-white text-[#25282b] hover:border-[#e60000] hover:text-[#e60000]"
@@ -170,7 +172,7 @@ export default function TasteRecommendationPanel({
                   setPrompt(example);
                   setSelectedChips([]);
                 }}
-                className="shrink-0 rounded-sm bg-stone-100 px-3 py-1.5 text-xs font-bold text-stone-500 transition-colors hover:bg-red-50 hover:text-[#e60000]"
+                className="min-h-11 shrink-0 rounded-sm bg-stone-100 px-3 py-1.5 text-xs font-bold text-stone-500 transition-colors hover:bg-red-50 hover:text-[#e60000] sm:min-h-0"
               >
                 {example}
               </button>

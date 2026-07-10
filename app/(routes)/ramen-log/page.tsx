@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import {
-  ArrowRight,
   Camera,
   ChevronDown,
   Gift,
@@ -35,6 +34,7 @@ import {
   type RamenLogRequest,
   type RamenLogSort,
 } from '@/lib/api/ramen-logs';
+import { trackEvent } from '@/lib/utils/analytics';
 
 const PhotoModal = dynamic(() => import('@/app/components/PhotoModal'), { ssr: false });
 
@@ -212,6 +212,7 @@ export default function RamenLogPage() {
       return;
     }
 
+    trackEvent('ramen_log_started', { source: 'ramen_log_feed' });
     setIsLogModalOpen(true);
   };
 
@@ -241,6 +242,7 @@ export default function RamenLogPage() {
     } else {
       await loadLogs(0, true);
     }
+    trackEvent('ramen_log_completed', { source: 'ramen_log_feed' });
     showToast('라멘로그를 저장했습니다.', 'success');
   };
 
@@ -314,7 +316,7 @@ export default function RamenLogPage() {
 
       <section className="bg-white px-4 py-4 sm:px-6 md:py-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col gap-4 rounded-md bg-[#25282b] px-4 py-4 text-white shadow-sm md:flex-row md:items-center md:justify-between md:px-5">
+          <div className="rounded-md bg-[#25282b] px-4 py-3 text-white shadow-sm md:px-5 md:py-4">
             <div className="flex min-w-0 items-start gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-[#e60000] text-white">
                 <Gift className="h-5 w-5" />
@@ -331,14 +333,6 @@ export default function RamenLogPage() {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={openCreateModal}
-              className="vodafone-button-pill inline-flex h-11 shrink-0 items-center justify-center gap-1.5 border border-white/20 bg-white px-5 text-sm font-black text-[#25282b] transition-opacity hover:opacity-90 active:opacity-80 md:self-center"
-            >
-              라멘로그 작성하기
-              <ArrowRight className="h-4 w-4" />
-            </button>
           </div>
         </div>
       </section>
@@ -349,7 +343,9 @@ export default function RamenLogPage() {
             <div className="flex flex-col gap-3 min-w-0 flex-1 sm:flex-row sm:items-center">
               <div className="relative min-w-0 w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                <label htmlFor="ramen-log-search" className="sr-only">가게, 메뉴 또는 맛 기록 검색</label>
                 <input
+                  id="ramen-log-search"
                   type="search"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
@@ -466,7 +462,7 @@ export default function RamenLogPage() {
         </div>
       </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+      <main className="mx-auto max-w-7xl px-4 pt-6 pb-10 sm:px-6 sm:pt-8 sm:pb-12 lg:px-8 lg:pt-10 lg:pb-16">
         <section className="min-w-0">
           <div className="mb-7 flex flex-col gap-2 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">

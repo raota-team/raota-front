@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { useApp } from '@/app/context/AppContext';
 import UserProfileCard from './UserProfileCard';
@@ -26,6 +25,7 @@ import {
   Store,
   BadgeCheck
 } from 'lucide-react';
+import { trackEvent } from '@/lib/utils/analytics';
 
 const doHyeon = Do_Hyeon({
   weight: '400',
@@ -49,8 +49,7 @@ export default function LandingContent({
   const [startPCAnim, setStartPCAnim] = useState(false);
   const [heroSearchQuery, setHeroSearchQuery] = useState("");
   const heroSearchInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
-  const { isLoggedIn, isAuthChecking } = useApp();
+  const { isLoggedIn } = useApp();
   
   useEffect(() => {
     const timer = setTimeout(() => setStartPCAnim(true), 300);
@@ -82,18 +81,11 @@ export default function LandingContent({
   };
   const submitHeroSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    trackEvent('shop_search_submitted', { source: 'home_hero', query: heroSearchQuery.trim() || undefined });
     window.location.href = heroSearchHref;
   };
-  const startTasteRecord = () => {
-    if (isAuthChecking) return;
-    router.push(isLoggedIn ? "/ramen-log" : "/login?returnTo=%2Framen-log");
-  };
-
   return (
     <div className="min-h-screen bg-stone-50 pb-6 md:pb-10">
-      {/* SEO용 숨겨진 제목 */}
-      <h1 className="sr-only">라오타 - 내 라멘 취향을 기록하고 다음 라멘집을 고르는 서비스</h1>
-      
       {/* 1. Portal Hero Section */}
       <section ref={heroRef} className="relative min-h-[430px] w-full overflow-hidden bg-[#25282b] md:min-h-[500px]">
         <div className="absolute inset-0">
@@ -125,7 +117,9 @@ export default function LandingContent({
               >
                 <div className="flex min-h-11 flex-1 items-center gap-2 px-2 md:min-h-12">
                   <Search className="h-3.5 w-3.5 shrink-0 text-stone-400 md:h-4 md:w-4" />
+                  <label htmlFor="home-shop-search" className="sr-only">동네, 메뉴 또는 취향으로 라멘집 검색</label>
                   <input
+                    id="home-shop-search"
                     ref={heroSearchInputRef}
                     value={heroSearchQuery}
                     onChange={(event) => setHeroSearchQuery(event.target.value)}
@@ -153,7 +147,7 @@ export default function LandingContent({
                     key={item}
                     type="button"
                     onClick={() => selectHeroSearchSuggestion(item)}
-                    className={`shrink-0 rounded-sm border px-3 py-1.5 text-xs font-bold backdrop-blur-sm transition-colors ${
+                    className={`min-h-11 shrink-0 rounded-sm border px-3 py-1.5 text-xs font-bold backdrop-blur-sm transition-colors md:min-h-0 ${
                       isSelected
                         ? "border-white bg-white text-[#25282b]"
                         : "border-white/20 bg-white/10 text-white/85 hover:bg-white hover:text-[#25282b]"
@@ -165,23 +159,15 @@ export default function LandingContent({
               })}
             </div>
 
-            <div className="mb-5 flex max-w-2xl flex-col gap-2 sm:flex-row md:mb-0">
-              <button
-                type="button"
-                onClick={startTasteRecord}
-                disabled={isAuthChecking}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-sm bg-[#e60000] px-5 text-sm font-black text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                내 라멘 취향 기록하기
-                <ArrowRight className="h-4 w-4" />
-              </button>
+            {isLoggedIn && (
               <Link
-                href="/shops"
-                className="inline-flex h-12 items-center justify-center rounded-sm border border-white/25 bg-white/10 px-5 text-sm font-black text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-[#25282b]"
+                href="/mypage"
+                className="mb-5 inline-flex min-h-11 w-fit items-center gap-1.5 text-xs font-black text-white/80 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white md:mb-0 md:text-sm"
               >
-                라멘집 둘러보기
+                내 라멘로그 보기
+                <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-            </div>
+            )}
 
           </div>
 
