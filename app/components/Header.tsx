@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -20,6 +20,8 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
   const { currentUser } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const mobileMenuTriggerRef = useRef<HTMLButtonElement>(null);
+  const wasMobileMenuOpenRef = useRef(false);
 
   useLayoutEffect(() => {
     const shouldUseSolidHeader = () => {
@@ -57,6 +59,26 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeMobileMenu();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      wasMobileMenuOpenRef.current = true;
+      return;
+    }
+    if (!wasMobileMenuOpenRef.current) return;
+    wasMobileMenuOpenRef.current = false;
+    mobileMenuTriggerRef.current?.focus({ preventScroll: true });
+  }, [isMobileMenuOpen]);
+
   const isHomeHeroActive = isHomePage && !scrolled;
   const navTextColor = isHomeHeroActive
     ? 'text-[#25282b] hover:text-[#e60000] font-normal md:text-white/95 md:hover:text-white'
@@ -70,18 +92,18 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
   const myPagePath = isLoggedIn && currentUser ? `/user/${currentUser.user_id || currentUser.id}` : '/login';
   const mobileNavItems = [
     {
-      href: '/ramen-log',
-      label: '라멘로그',
-      description: '유저들의 한 그릇 기록 둘러보기',
-      icon: NotebookPen,
-      active: isActive('/ramen-log'),
-    },
-    {
       href: '/',
       label: '홈',
       description: '라오타 최신 소식과 인기 라멘',
       icon: Home,
       active: currentPath === '/',
+    },
+    {
+      href: '/ramen-log',
+      label: '라멘로그',
+      description: '유저들의 한 그릇 기록 둘러보기',
+      icon: NotebookPen,
+      active: isActive('/ramen-log'),
     },
     {
       href: '/shops',
@@ -129,8 +151,8 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
               {/* Desktop Navigation */}
               <div className="hidden md:block flex-1">
                 <div className="ml-10 flex items-center justify-end gap-6">
-                  <Link href="/ramen-log" className={`text-sm transition-colors ${currentPath === '/ramen-log' ? activeTextColor : navTextColor}`}>라멘로그</Link>
                   <Link href="/" className={`text-sm transition-colors ${currentPath === '/' ? activeTextColor : navTextColor}`}>홈</Link>
+                  <Link href="/ramen-log" className={`text-sm transition-colors ${currentPath === '/ramen-log' ? activeTextColor : navTextColor}`}>라멘로그</Link>
                   <Link href="/shops" className={`text-sm transition-colors ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
                   <Link href="/community" className={`text-sm transition-colors ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
                   <Link href={myPagePath} className={`text-sm transition-colors ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
@@ -155,6 +177,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
 
               {/* Mobile Hamburger Button */}
               <button
+                ref={mobileMenuTriggerRef}
                 className="p-1.5 text-[#25282b] transition-colors hover:text-[#e60000] md:hidden"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label={isMobileMenuOpen ? '모바일 메뉴 닫기' : '모바일 메뉴 열기'}
@@ -177,6 +200,8 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
       {/* Mobile Slide-out Menu */}
       <div 
         id="mobile-navigation" 
+        aria-hidden={!isMobileMenuOpen}
+        inert={!isMobileMenuOpen ? true : undefined}
         className={`fixed inset-y-0 right-0 z-[70] w-full max-w-[22rem] bg-[#fbfaf8] pb-safe md:hidden transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex h-full flex-col overflow-y-auto">

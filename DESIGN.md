@@ -1,4 +1,6 @@
-# Design System Inspired by Vodafone
+# RAOTA Design System
+
+> 이 문서에서 Vodafone은 편집형 레이아웃과 강한 단일 브랜드 컬러를 설명하기 위한 참고점이다. 실제 제품에서는 RAOTA의 라멘 그릇 로고, 음식 사진, Pretendard/Do Hyeon 타이포그래피와 `#e60000` 레드를 우선한다. 아래 규칙이 레퍼런스 설명과 충돌하면 RAOTA 제품 규칙을 따른다.
 
 ## 1. Visual Theme & Atmosphere
 

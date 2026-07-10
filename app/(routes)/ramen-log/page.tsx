@@ -578,6 +578,7 @@ export default function RamenLogPage() {
             menuName: selectedLog.menuName,
             user: selectedLog.author.name,
             userId: selectedLog.author.id,
+            userImageUrl: selectedLog.author.imageUrl,
             restaurantName: selectedLog.shop.name,
             restaurantId: selectedLog.shop.id,
             date: formatRamenLogDate(selectedLog.date),

@@ -798,7 +798,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
             </div>
 
             <div className="mt-6 overflow-hidden rounded-sm border border-stone-200 bg-white">
-              <div className="grid md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+              <div className="grid md:grid-cols-[minmax(0,1fr)_13rem] md:items-center">
                 <div className="p-4 md:p-5">
                   <div className="flex items-center gap-2 text-[#e60000]">
                     <NotebookPen className="h-4 w-4" />
@@ -811,11 +811,11 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                     사진과 메뉴, 재방문 의사와 기억해둘 점을 남기면 돼요.
                   </p>
                 </div>
-                <div className="flex items-center border-t border-stone-200 p-4 md:border-l md:border-t-0 md:px-5">
+                <div className="flex items-center border-t border-stone-200 p-4 md:border-l md:border-t-0 md:p-5">
                   <button
                     type="button"
                     onClick={openRamenLogModal}
-                    className="inline-flex w-full min-w-52 items-center justify-center gap-2 rounded-sm bg-[#e60000] px-5 py-3.5 text-sm font-black text-white transition-opacity hover:opacity-90"
+                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 py-3.5 text-sm font-black text-white transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e60000]"
                   >
                     먹은 라멘 기록하기
                     <NotebookPen className="h-4 w-4" />

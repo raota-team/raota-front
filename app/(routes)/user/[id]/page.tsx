@@ -713,9 +713,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             )}
           </div>
 
-          <div className="mt-4 md:mt-0 md:pt-[104px] relative z-10">
+          <div className="relative z-10 mt-4 w-full md:mt-0 md:w-auto md:pt-[104px]">
             {isOwnProfile && !isEditing && (
-              <div className="flex flex-col gap-2">
+              <div className="grid w-full grid-cols-2 gap-2 md:w-40 md:grid-cols-1">
                 <button onClick={handleEditStart} className="inline-flex items-center justify-center gap-2 rounded-sm border border-[#e60000] bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#25282b] transition-colors hover:bg-[#e60000] hover:text-white">
                   <Edit3 className="h-3.5 w-3.5" />
                   프로필 수정

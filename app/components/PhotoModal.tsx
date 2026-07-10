@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, User, MapPin, Calendar, Trash2, Flame, ThumbsUp, CircleCheck, Heart, Pencil, MoreHorizontal } from 'lucide-react';
 import { useApp } from '@/app/context/AppContext';
@@ -13,6 +13,7 @@ interface Photo {
   menuName: string;
   user?: string;           // 업로더 닉네임
   userId?: number;         // 업로더 ID
+  userImageUrl?: string;   // 업로더 프로필 이미지
   restaurantName?: string; // 식당 이름
   restaurantId?: number;   // 식당 이동 ID
   date: string;
@@ -43,6 +44,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
   const [isLiked, setIsLiked] = useState(Boolean(photo?.isLiked));
   const [likeCount, setLikeCount] = useState(photo?.likes ?? 0);
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -55,11 +57,15 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
   useEffect(() => {
     if (!photo) return;
 
+    const previousActiveElement = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    const frame = window.requestAnimationFrame(() => dialogRef.current?.focus());
 
     return () => {
+      window.cancelAnimationFrame(frame);
       document.body.style.overflow = previousOverflow;
+      previousActiveElement?.focus();
     };
   }, [photo]);
 
@@ -104,11 +110,11 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
   );
   const canManageLog = isMine && !photo.isUserPhoto && (onEdit || onDelete);
 
-  const tasteGroupMeta: Record<string, { icon: string; tone: string }> = {
-    국물: { icon: '🍜', tone: 'bg-red-50/70 text-[#e60000] ring-red-100' },
-    면: { icon: '🥢', tone: 'bg-amber-50/80 text-amber-700 ring-amber-100' },
-    간: { icon: '🧂', tone: 'bg-stone-100 text-stone-700 ring-stone-200' },
-    토핑: { icon: '🥚', tone: 'bg-orange-50/80 text-orange-700 ring-orange-100' },
+  const tasteGroupMeta: Record<string, { icon: string }> = {
+    국물: { icon: '🍜' },
+    면: { icon: '🥢' },
+    간: { icon: '🧂' },
+    토핑: { icon: '🥚' },
   };
 
   const handleLikeClick = async () => {
@@ -134,12 +140,14 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
       ></div>
 
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label={`${photo.menuName} 사진 상세`}
+        tabIndex={-1}
         className={`relative w-full animate-scale-in ${
           hasDetails
-            ? 'max-h-[96dvh] max-w-5xl touch-pan-y overflow-y-auto overscroll-contain rounded-md bg-white ring-1 ring-white/10 md:grid md:max-h-[96vh] md:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.75fr)] md:overflow-hidden md:rounded-sm'
+            ? 'max-h-[96dvh] max-w-6xl touch-pan-y overflow-y-auto overscroll-contain rounded-md bg-white ring-1 ring-white/10 outline-none focus-visible:outline-none md:grid md:max-h-[94vh] md:grid-cols-[minmax(0,1.5fr)_minmax(21rem,0.68fr)] md:overflow-hidden md:rounded-sm'
             : 'flex max-w-2xl aspect-[5/4] items-center justify-center overflow-hidden rounded-sm bg-[#25282b]'
         }`}
         style={hasDetails ? { WebkitOverflowScrolling: 'touch' } : undefined}
@@ -153,14 +161,14 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                   event.stopPropagation();
                   setIsActionMenuOpen((current) => !current);
                 }}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-stone-600 shadow-sm ring-1 ring-stone-200/70 backdrop-blur transition-colors hover:bg-white hover:text-[#25282b] sm:h-9 sm:w-9"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-stone-600 ring-1 ring-stone-200/70 backdrop-blur transition-colors hover:bg-white hover:text-[#25282b] sm:h-9 sm:w-9"
                 aria-label="라멘로그 관리 메뉴"
                 aria-expanded={isActionMenuOpen}
               >
                 <MoreHorizontal className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               {isActionMenuOpen && (
-                <div className="absolute right-0 top-10 w-32 overflow-hidden rounded-sm border border-stone-200 bg-white py-1 text-sm font-bold text-stone-600 shadow-lg">
+                <div className="absolute right-0 top-10 w-32 overflow-hidden rounded-sm border border-stone-200 bg-white py-1 text-sm font-bold text-stone-600">
                   {onEdit && (
                     <button
                       type="button"
@@ -195,7 +203,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
           )}
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-stone-600 shadow-sm ring-1 ring-stone-200/70 backdrop-blur transition-colors hover:bg-white hover:text-[#e60000] sm:h-9 sm:w-9"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-stone-600 ring-1 ring-stone-200/70 backdrop-blur transition-colors hover:bg-white hover:text-[#e60000] sm:h-9 sm:w-9"
             aria-label="사진 상세 닫기"
           >
             <X className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -214,10 +222,11 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
         </div>
 
         {hasDetails && (
-          <aside className="min-h-0 bg-white px-4 py-4 text-[#25282b] md:h-[min(96vh,44rem)] md:overflow-y-auto md:px-4 md:py-4">
-            <div className="border-b border-stone-200 pb-3 md:pr-12">
+          <aside className="min-h-0 bg-stone-50 px-4 py-4 text-[#25282b] md:h-[min(94vh,44rem)] md:overflow-y-auto md:px-5 md:py-5">
+            <div className="rounded-sm border border-stone-200 bg-white p-4 md:pr-12">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#e60000]">Ramen log</p>
               {photo.revisit && (
-                <span className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-black text-white ${
+                <span className={`mt-2 inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-black text-white ${
                   photo.revisit === '자주 감' ? 'bg-[#e60000]' : photo.revisit === '가끔 생각남' ? 'bg-stone-500' : 'bg-[#25282b]'
                 }`}>
                   {photo.revisit === '자주 감' && <Flame className="h-3 w-3" />}
@@ -226,7 +235,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                   {photo.revisit}
                 </span>
               )}
-              <h2 className="mt-2 text-lg font-black leading-tight text-[#25282b] sm:text-xl">
+              <h2 className="mt-2 text-2xl font-black leading-tight tracking-[-0.02em] text-[#25282b]">
                 {photo.menuName}
               </h2>
 
@@ -248,7 +257,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
               </div>
 
               {(photo.user || onLikeChange) && (
-                <div className="mt-2.5 flex min-w-0 items-center justify-between gap-3 md:-mr-10">
+                <div className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-stone-100 pt-3 md:-mr-10">
                   {photo.user ? (
                     <button
                       onClick={handleInfoClick}
@@ -257,8 +266,12 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                         !disableNavigation ? 'hover:text-[#e60000]' : ''
                       }`}
                     >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100">
-                        <User className="h-4 w-4 text-stone-500" />
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200 bg-stone-100">
+                        {photo.userImageUrl ? (
+                          <img src={photo.userImageUrl} alt={photo.user} className="h-full w-full object-cover" />
+                        ) : (
+                          <User className="h-4 w-4 text-stone-500" />
+                        )}
                       </span>
                       <span className="truncate">{photo.user}</span>
                     </button>
@@ -286,17 +299,17 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
             </div>
 
             {hasComment && (
-              <div className="border-b border-stone-200 py-3">
+              <div className="mt-3 rounded-sm border border-stone-200 bg-white p-4">
                 <p className="text-xs font-black uppercase tracking-[0.12em] text-[#e60000]">이 한 그릇의 기억</p>
-                <p className="mt-1.5 text-sm font-medium leading-6 text-stone-700">{photo.comment}</p>
+                <p className="mt-2 text-sm font-medium leading-6 text-stone-700">“{photo.comment}”</p>
               </div>
             )}
 
             {photo.tasteNotes && photo.tasteNotes.length > 0 && (
-              <div className="space-y-2 py-3">
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-stone-400">취향 기록</p>
+              <div className="mt-3 space-y-2 rounded-sm border border-stone-200 bg-white p-4">
+                <p className="mb-3 text-xs font-black uppercase tracking-[0.12em] text-[#e60000]">취향 기록</p>
                 {photo.tasteNotes.map((group) => (
-                  <div key={group.label} className="flex gap-2 rounded-sm border border-stone-100 bg-stone-50/60 px-3 py-2">
+                  <div key={group.label} className="flex gap-2 border-t border-stone-100 py-2.5 first:border-t-0 first:pt-0 last:pb-0">
                     <p className="flex w-12 shrink-0 items-center gap-1.5 text-[11px] font-black text-[#25282b]">
                       <span aria-hidden="true">{tasteGroupMeta[group.label]?.icon}</span>
                       {group.label}
@@ -305,9 +318,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                       {group.values.map((value) => (
                         <span
                           key={value}
-                          className={`rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ${
-                            tasteGroupMeta[group.label]?.tone || 'bg-white text-stone-600 ring-stone-200'
-                          }`}
+                          className="rounded-full bg-stone-50 px-2.5 py-1 text-[11px] font-bold text-stone-600 ring-1 ring-stone-200"
                         >
                           {normalizeTasteNoteValue(value)}
                         </span>
