@@ -356,7 +356,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     <div className="mx-auto max-w-7xl px-4 pb-8 pt-0 sm:px-6 md:py-12 lg:px-8">
       <button 
         onClick={() => router.push("/shops")} 
-        className="group mb-5 flex items-center text-stone-600 transition-colors hover:text-[#e60000] md:mb-8"
+        className="group mb-5 flex min-h-11 items-center text-stone-600 transition-colors hover:text-[#e60000] md:mb-8"
         aria-label="라멘 가게 목록으로 돌아가기"
       >
         <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
@@ -382,7 +382,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
             <div className="mb-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
               <h1 className="vodafone-display min-w-0 max-w-full break-words text-4xl leading-none text-[#25282b] [overflow-wrap:anywhere] sm:text-5xl md:text-6xl">{shop.name}</h1>
               <div className="flex flex-wrap gap-2">
-                <button onClick={handleBookmarkToggle} className={`flex w-fit items-center gap-2 rounded-sm border px-4 py-2 text-sm font-bold transition-colors ${isBookmarked ? "border-[#e60000] bg-[#e60000] text-white" : "border-stone-200 bg-white text-stone-700 hover:border-[#e60000]"}`}>
+                <button onClick={handleBookmarkToggle} className={`flex min-h-11 w-fit items-center gap-2 rounded-sm border px-4 py-2 text-sm font-bold transition-colors ${isBookmarked ? "border-[#e60000] bg-[#e60000] text-white" : "border-stone-200 bg-white text-stone-700 hover:border-[#e60000]"}`}>
                   <Heart className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
                   <span>{isBookmarked ? "가보고 싶어요 취소" : "가보고 싶어요"}</span>
                 </button>
@@ -447,7 +447,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
           </div>
 
-          <div className="mb-10 max-w-none rounded-md border border-stone-200 bg-white p-5 md:mb-12 md:p-7">
+          <div className="mb-10 max-w-none rounded-md border border-stone-200 bg-stone-50 p-5 md:mb-12 md:p-7">
             <div className="mb-5 flex items-center gap-2 text-[#e60000]">
               <Sparkles className="h-4 w-4" />
               <p className="text-[10px] font-black tracking-[0.18em]">AI 리뷰 요약</p>
@@ -584,7 +584,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
             <div className="order-4 hidden text-center lg:block">
               <button 
                 onClick={() => setIsReportModalOpen(true)}
-                className="text-xs text-stone-600 hover:text-stone-800 underline transition-colors underline-offset-4"
+                className="inline-flex min-h-11 items-center text-xs text-stone-600 underline underline-offset-4 transition-colors hover:text-stone-800"
                 aria-label="가게 정보 수정 및 이벤트 제보하기"
               >
                 정보 수정 및 새로운 이벤트 제보하기
@@ -601,7 +601,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
       <div className="mb-10 text-center lg:hidden">
         <button
           onClick={() => setIsReportModalOpen(true)}
-          className="text-xs text-stone-600 hover:text-stone-800 underline transition-colors underline-offset-4"
+          className="inline-flex min-h-11 items-center text-xs text-stone-600 underline underline-offset-4 transition-colors hover:text-stone-800"
           aria-label="가게 정보 수정 및 이벤트 제보하기"
         >
           정보 수정 및 새로운 이벤트 제보하기
