@@ -26,6 +26,7 @@ import {
   BadgeCheck
 } from 'lucide-react';
 import { trackEvent } from '@/lib/utils/analytics';
+import { notices } from '@/app/lib/notices';
 
 const doHyeon = Do_Hyeon({
   weight: '400',
@@ -64,7 +65,7 @@ export default function LandingContent({
   );
 
   const stats = statsData?.data || { totalShops: 0, totalReviews: 0, totalUsers: 0 };
-  const homeNotices: Array<{ id: string | number; title: string; createdAt?: string }> = [];
+  const homeNotices = notices.slice(0, 3);
   const recentVerifiedShops = recentShopsData?.data || [];
   const heroSearchHref = heroSearchQuery.trim()
     ? `/shops?aiKeyword=${encodeURIComponent(heroSearchQuery.trim())}`
@@ -312,7 +313,7 @@ export default function LandingContent({
                 <Sparkles className="h-4 w-4 text-[#e60000]" />
                 <h2 className="font-black text-base md:text-lg text-[#25282b]">공지사항</h2>
               </div>
-              <Link href="/community?category=NOTICE" className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500 transition-colors hover:text-[#e60000]">
+              <Link href="/notices" className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500 transition-colors hover:text-[#e60000]">
                 더보기 +
               </Link>
             </div>
@@ -320,14 +321,14 @@ export default function LandingContent({
               {homeNotices.length > 0 ? (
                 homeNotices.map((notice, i) => (
                   <Link 
-                    key={notice.id} 
-                    href={`/community/${notice.id}`}
+                    key={notice.slug}
+                    href={`/notices/${notice.slug}`}
                     className={`group block py-2 md:py-3 ${i !== homeNotices.length - 1 ? 'border-b border-[#f2f2f2]/50' : ''}`}
                   >
                     <p className="line-clamp-2 text-xs leading-relaxed text-[#666666] group-hover:text-[#e60000]">
                       {notice.title}
                     </p>
-                    <span className="mt-1 block text-[10px] text-[#737373]">{notice.createdAt ? new Date(notice.createdAt).toLocaleDateString() : ''}</span>
+                    <span className="mt-1 block text-[10px] text-[#737373]">{notice.publishedAt.replaceAll('-', '.')}</span>
                   </Link>
                 ))
               ) : (

@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { notices } from './lib/notices';
 
 const baseUrl = 'https://www.raota.net';
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -119,6 +120,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'always',
       priority: 0.9,
     },
+    {
+      url: `${baseUrl}/notices`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    },
+    ...notices.map((notice) => ({
+      url: `${baseUrl}/notices/${notice.slug}`,
+      lastModified: new Date(`${notice.publishedAt}T00:00:00+09:00`),
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    })),
     ...shopUrls,
     ...communityUrls,
   ];
