@@ -590,7 +590,6 @@ export default function RamenLogPage() {
           onLikeChange={handleLikeChange}
           onEdit={handleEditLog}
           onDelete={handleDeleteLog}
-          disableNavigation
         />
       )}
     </div>

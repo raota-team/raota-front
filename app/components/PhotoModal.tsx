@@ -81,16 +81,20 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
   const currentUserId = currentUser?.user_id ?? currentUser?.id;
   const isMine = Boolean(currentUserId && photo.userId && Number(currentUserId) === Number(photo.userId));
 
-  const handleInfoClick = (e: React.MouseEvent) => {
+  const handleRestaurantClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (disableNavigation || photo.isUserPhoto) return;
+    if (disableNavigation || photo.isUserPhoto || !photo.restaurantId) return;
 
     onClose();
-    if (photo.restaurantId) {
-      router.push(`/shop/${photo.restaurantId}`);
-    } else if (photo.userId) {
-      router.push(`/user/${photo.userId}`);
-    }
+    router.push(`/shop/${photo.restaurantId}`);
+  };
+
+  const handleUserClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (disableNavigation || photo.isUserPhoto || !photo.userId) return;
+
+    onClose();
+    router.push(`/user/${photo.userId}`);
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -242,7 +246,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-bold text-stone-500">
                 {photo.restaurantName && (
                   <button
-                    onClick={handleInfoClick}
+                    onClick={handleRestaurantClick}
                     disabled={disableNavigation}
                     className={`flex items-center gap-1.5 ${!disableNavigation ? 'hover:text-[#e60000]' : ''}`}
                   >
@@ -260,7 +264,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                 <div className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-stone-100 pt-3 md:-mr-10">
                   {photo.user ? (
                     <button
-                      onClick={handleInfoClick}
+                      onClick={handleUserClick}
                       disabled={disableNavigation}
                       className={`flex min-w-0 items-center gap-2 text-sm font-black text-stone-600 ${
                         !disableNavigation ? 'hover:text-[#e60000]' : ''
