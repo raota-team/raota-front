@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { loadOAuthSessionMeta, saveRaotaOAuthSession } from '@/lib/auth/accessToken';
 import { parseOAuthCallbackHash } from '@/lib/auth/parseOAuthCallbackHash';
 import { useApp } from '@/app/context/AppContext';
+import { sanitizeReturnTo } from '@/lib/auth/returnTo';
 
 type ViewState =
   | { phase: 'loading' }
@@ -21,7 +22,7 @@ export default function AuthCallbackPage() {
     const getReturnTo = () => {
       const returnTo = sessionStorage.getItem('raota_login_return_to');
       sessionStorage.removeItem('raota_login_return_to');
-      return returnTo?.startsWith('/') ? returnTo : '/';
+      return sanitizeReturnTo(returnTo);
     };
 
     let parsed = parseOAuthCallbackHash();

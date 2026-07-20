@@ -79,7 +79,7 @@ const LOGIN_RETURN_TO_KEY = "raota_login_return_to";
 export default function ShopDetailClient({ initialShop }: ShopDetailClientProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { showToast, showConfirm, isLoggedIn } = useApp();
+  const { showToast, showConfirm, isLoggedIn, isAuthChecking } = useApp();
   
   // URL 파라미터에서 ID 추출
   const useParamsData = useParams();
@@ -160,6 +160,8 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   };
 
   const handleOpenVoteModal = () => {
+    if (isAuthChecking) return;
+
     if (!isLoggedIn) {
       showConfirm("메뉴 투표는 로그인 후 이용할 수 있습니다.\n로그인 페이지로 이동하시겠습니까?", () => {
         router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shopId}`)}`);
@@ -171,6 +173,8 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   };
 
   const handleBookmarkToggle = async () => {
+    if (isAuthChecking) return;
+
     if (!isLoggedIn) {
       showConfirm("가보고 싶은 가게로 저장하려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?", () => {
         router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shopId}`)}`);
@@ -197,6 +201,8 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
   };
 
   const openRamenLogModal = () => {
+    if (isAuthChecking) return;
+
     if (!isLoggedIn) {
       showConfirm("라멘로그는 로그인 후 남길 수 있습니다.\n로그인 페이지로 이동하시겠습니까?", () => {
         router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shopId}`)}`);
@@ -205,6 +211,19 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     }
 
     setIsRamenLogModalOpen(true);
+  };
+
+  const openReportModal = () => {
+    if (isAuthChecking) return;
+
+    if (!isLoggedIn) {
+      showConfirm("가게 정보 제보는 로그인 후 이용할 수 있습니다. 로그인 페이지로 이동하시겠습니까?", () => {
+        router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shopId}`)}`);
+      });
+      return;
+    }
+
+    setIsReportModalOpen(true);
   };
 
   const completeRamenLogCreate = useCallback(async (data: RamenLogFormData) => {
@@ -577,13 +596,13 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                 key={`${shop.id}-${ramenLogRefreshKey}`}
                 shopId={shop.id}
                 shopName={shop.name}
-                onWrite={() => setIsRamenLogModalOpen(true)}
+                onWrite={openRamenLogModal}
               />
             </div>
 
             <div className="order-4 hidden text-center lg:block">
               <button 
-                onClick={() => setIsReportModalOpen(true)}
+                onClick={openReportModal}
                 className="inline-flex min-h-11 items-center text-xs text-stone-600 underline underline-offset-4 transition-colors hover:text-stone-800"
                 aria-label="가게 정보 수정 및 이벤트 제보하기"
               >
@@ -600,7 +619,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
       <div className="mb-10 text-center lg:hidden">
         <button
-          onClick={() => setIsReportModalOpen(true)}
+          onClick={openReportModal}
           className="inline-flex min-h-11 items-center text-xs text-stone-600 underline underline-offset-4 transition-colors hover:text-stone-800"
           aria-label="가게 정보 수정 및 이벤트 제보하기"
         >

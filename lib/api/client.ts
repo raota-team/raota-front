@@ -10,6 +10,7 @@ interface ApiClientOptions {
   headers?: HeadersInit;
   cache?: RequestCache;
   redirectOnUnauthorized?: boolean;
+  authRetryAttempted?: boolean;
 }
 
 const getApiBaseUrl = () => {
@@ -136,8 +137,16 @@ export const apiClient = async <T>(
   // 신규 회원이 데이터를 생성/수정하려고 할 때 가드 (GET은 허용, 프로필 업데이트는 예외)
   const isRegistrationRequest = path.includes("/users/me/profile");
   const isAccountDeletionRequest = path.endsWith("/users/me") && options.method === "DELETE";
+  const isLogoutRequest = path.endsWith("/auth/logout") && options.method === "POST";
   
-  if (typeof window !== "undefined" && options.method && options.method !== "GET" && !isRegistrationRequest && !isAccountDeletionRequest) {
+  if (
+    typeof window !== "undefined" &&
+    options.method &&
+    options.method !== "GET" &&
+    !isRegistrationRequest &&
+    !isAccountDeletionRequest &&
+    !isLogoutRequest
+  ) {
     const meta = loadOAuthSessionMeta();
     const isNewMember = meta && (meta.newMember === true || String(meta.newMember) === "true");
     if (isNewMember) {
@@ -169,13 +178,14 @@ export const apiClient = async <T>(
   const response = await fetch(buildUrl(fullUrl, options.query), fetchOptions);
 
   // 401 Unauthorized 발생 시 토큰 갱신 시도
-  if (response.status === 401 && typeof window !== "undefined" && token) {
+  if (response.status === 401 && typeof window !== "undefined" && token && !options.authRetryAttempted) {
     try {
       const newToken = await refreshAuthSession();
 
       // 새 토큰으로 원래 요청 재시도
-      return apiClient<T>(path, {
+      return await apiClient<T>(path, {
         ...options,
+        authRetryAttempted: true,
         headers: {
           ...options.headers,
           Authorization: `Bearer ${newToken}`,

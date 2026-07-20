@@ -7,15 +7,17 @@ import Loading from '@/app/loading';
 
 export default function MyPageRedirect() {
   const router = useRouter();
-  const { isLoggedIn, currentUser } = useApp();
+  const { isLoggedIn, isAuthChecking, currentUser } = useApp();
 
   useEffect(() => {
+    if (isAuthChecking) return;
+
     if (!isLoggedIn) {
       router.replace('/login');
     } else if (currentUser) {
       router.replace(`/user/${currentUser.user_id || currentUser.id}`);
     }
-  }, [isLoggedIn, currentUser, router]);
+  }, [isAuthChecking, isLoggedIn, currentUser, router]);
 
   return <Loading />;
 }

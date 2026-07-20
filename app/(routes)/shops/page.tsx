@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ArrowUp, ChevronDown, ChevronLeft, ChevronRight, Sparkles, X, Search } from "lucide-react";
 import ShopCard from "../../components/ShopCard";
 import { useRamenShops } from "@/hooks/queries/useRamenShops";
@@ -9,6 +10,8 @@ import { searchAiRamenShops } from "@/lib/api/ramen-shops";
 import TasteRecommendationPanel, { type AiTasteCriteria } from "@/app/components/TasteRecommendationPanel";
 import type { Shop } from "@/app/types";
 import { trackEvent } from "@/lib/utils/analytics";
+import { useApp } from "@/app/context/AppContext";
+import { ApiClientError } from "@/lib/api/client";
 
 const PAGE_SIZE = 12;
 const MAX_VISIBLE_PAGES = 5;
@@ -116,6 +119,8 @@ const getFilterStateKey = ({
 }) => [region, district, type, ramenTypeId ?? "", sort, keyword].join("|");
 
 export default function ShopsListPage() {
+  const router = useRouter();
+  const { isLoggedIn, isAuthChecking, showConfirm } = useApp();
   const [currentPage, setCurrentPage] = useState(0);
   const [activeRegion, setActiveRegion] = useState(ALL_FILTER);
   const [activeDistrict, setActiveDistrict] = useState(ALL_FILTER);
@@ -257,6 +262,18 @@ export default function ShopsListPage() {
       return;
     }
 
+    if (isAuthChecking) {
+      setIsAiSearching(false);
+      return;
+    }
+
+    if (!isLoggedIn) {
+      setAiSearchShops([]);
+      setAiSearchError("AI 취향 검색은 로그인 후 이용할 수 있습니다.");
+      setIsAiSearching(false);
+      return;
+    }
+
     let ignoreResult = false;
 
     setIsAiSearching(true);
@@ -267,10 +284,16 @@ export default function ShopsListPage() {
         if (ignoreResult) return;
         setAiSearchShops(result.shops.slice(0, 6));
       })
-      .catch(() => {
+      .catch((error) => {
         if (ignoreResult) return;
         setAiSearchShops([]);
-        setAiSearchError("AI 라멘 가게 검색 결과를 불러오지 못했습니다.");
+        if (error instanceof ApiClientError && error.status === 401) {
+          setAiSearchError("로그인 정보가 만료되었습니다. 다시 로그인해주세요.");
+        } else if (error instanceof ApiClientError && error.status === 403) {
+          setAiSearchError("AI 취향 검색을 이용할 권한이 없습니다.");
+        } else {
+          setAiSearchError("AI 라멘 가게 검색 결과를 불러오지 못했습니다.");
+        }
       })
       .finally(() => {
         if (!ignoreResult) setIsAiSearching(false);
@@ -279,7 +302,7 @@ export default function ShopsListPage() {
     return () => {
       ignoreResult = true;
     };
-  }, [aiSearchQuery]);
+  }, [aiSearchQuery, isAuthChecking, isLoggedIn]);
 
   const { data, isLoading, isFetching, isError: isListError } = useRamenShops({
     page: currentPage,
@@ -566,7 +589,19 @@ export default function ShopsListPage() {
           <div id="mobile-ai-taste-panel" className={`${isAiPanelOpen ? "block" : "hidden"} md:block`}>
             <TasteRecommendationPanel
               activeCriteria={aiTasteCriteria}
+              disabled={isAuthChecking}
               onApply={(criteria) => {
+                if (isAuthChecking) return;
+
+                if (!isLoggedIn) {
+                  const query = getAiCriteriaQuery(criteria);
+                  const returnTo = `/shops?aiKeyword=${encodeURIComponent(query)}`;
+                  showConfirm("AI 취향 검색은 로그인 후 이용할 수 있습니다. 로그인하시겠습니까?", () => {
+                    router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+                  });
+                  return;
+                }
+
                 trackEvent("ai_taste_search_submitted", {
                   source: "shops_ai_panel",
                   query: criteria.prompt || undefined,

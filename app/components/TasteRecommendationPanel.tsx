@@ -12,6 +12,7 @@ type TasteRecommendationPanelProps = {
   activeCriteria: AiTasteCriteria | null;
   onApply: (criteria: AiTasteCriteria) => void;
   onClear: () => void;
+  disabled?: boolean;
 };
 
 const QUICK_CHIPS = [
@@ -35,6 +36,7 @@ export default function TasteRecommendationPanel({
   activeCriteria,
   onApply,
   onClear,
+  disabled = false,
 }: TasteRecommendationPanelProps) {
   const [prompt, setPrompt] = useState("");
   const [selectedChips, setSelectedChips] = useState<string[]>([]);
@@ -56,7 +58,7 @@ export default function TasteRecommendationPanel({
 
   const handleSubmit = (event?: FormEvent) => {
     event?.preventDefault();
-    if (!isReady) return;
+    if (disabled || !isReady) return;
 
     const trimmedPrompt = prompt.trim();
 
@@ -96,6 +98,7 @@ export default function TasteRecommendationPanel({
               <input
                 id="ai-taste-search"
                 value={prompt}
+                disabled={disabled}
                 onChange={(event) => {
                   const nextPrompt = event.target.value;
                   setPrompt(nextPrompt);
@@ -134,7 +137,7 @@ export default function TasteRecommendationPanel({
               )}
               <button
                 type="submit"
-                disabled={!isReady}
+                disabled={disabled || !isReady}
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-sm bg-[#e60000] px-5 text-sm font-black text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:opacity-80 sm:h-12"
               >
                 찾아보기
@@ -150,6 +153,7 @@ export default function TasteRecommendationPanel({
                 <button
                   key={chip}
                   type="button"
+                  disabled={disabled}
                   onClick={() => selectChip(chip)}
                   className={`min-h-11 shrink-0 rounded-sm border px-3 py-1.5 text-xs font-black transition-colors sm:min-h-0 ${
                     isSelected
@@ -168,6 +172,7 @@ export default function TasteRecommendationPanel({
               <button
                 key={example}
                 type="button"
+                disabled={disabled}
                 onClick={() => {
                   setPrompt(example);
                   setSelectedChips([]);

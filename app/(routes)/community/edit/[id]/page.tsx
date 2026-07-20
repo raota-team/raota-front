@@ -21,7 +21,7 @@ const categories = [
 export default function CommunityEditPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
-  const { showToast, currentUser } = useApp();
+  const { showToast, currentUser, isLoggedIn, isAuthChecking } = useApp();
   const postId = Number(resolvedParams.id);
   
   const { data: shopData } = useRamenShops({ page: 0, size: 100, sort: "NAME" });
@@ -41,6 +41,13 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
   const [isLoading, setIsLoading] = useState(true);
   const [shopSearchQuery, setShopSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isAuthChecking || isLoggedIn) return;
+
+    const returnTo = `/community/edit/${postId}`;
+    router.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+  }, [isAuthChecking, isLoggedIn, postId, router]);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -84,8 +91,9 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
       }
     };
 
-    if (shops.length > 0) fetchPost();
-  }, [postId, shops, currentUser]);
+    if (isAuthChecking || !isLoggedIn || !currentUser || shops.length === 0) return;
+    fetchPost();
+  }, [currentUser, isAuthChecking, isLoggedIn, postId, router, shops, showToast]);
 
   const handleEditorImageUpload = async (file: File): Promise<string> => {
     const compressedFile = await compressImage(file);
@@ -146,7 +154,7 @@ export default function CommunityEditPage({ params }: { params: Promise<{ id: st
     }
   };
 
-  if (isLoading) return <Loading />;
+  if (isAuthChecking || !isLoggedIn || !currentUser || isLoading) return <Loading />;
 
   const selectedShop = shops?.find(s => s.id === selectedShopId);
 
