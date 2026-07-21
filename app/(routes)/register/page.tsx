@@ -7,6 +7,7 @@ import { useApp } from '../../context/AppContext';
 import { updateUserProfile } from '@/lib/api/user';
 import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
 import { compressImage } from '@/lib/utils/image-optimization';
+import { sanitizeReturnTo } from '@/lib/auth/returnTo';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -73,7 +74,7 @@ export default function RegisterPage() {
       // 4. 로그인 전 작성 중이던 작업이 있으면 해당 화면으로 복귀
       const returnTo = sessionStorage.getItem('raota_login_return_to');
       sessionStorage.removeItem('raota_login_return_to');
-      router.push(returnTo?.startsWith('/') ? returnTo : '/');
+      router.push(sanitizeReturnTo(returnTo));
       showToast('반갑습니다! 회원가입이 완료되었습니다.', 'success');
     } catch (error: any) {
       console.error('Registration failed:', error);

@@ -4,16 +4,15 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { MessageCircle, Fingerprint } from 'lucide-react';
 import { useApp } from '@/app/context/AppContext';
+import { sanitizeReturnTo } from '@/lib/auth/returnTo';
 
 export default function LoginPage() {
   const router = useRouter();
   const { showToast } = useApp();
 
   const rememberReturnTo = () => {
-    const returnTo = new URLSearchParams(window.location.search).get('returnTo');
-    if (returnTo?.startsWith('/')) {
-      sessionStorage.setItem('raota_login_return_to', returnTo);
-    }
+    const returnTo = sanitizeReturnTo(new URLSearchParams(window.location.search).get('returnTo'));
+    sessionStorage.setItem('raota_login_return_to', returnTo);
   };
 
   const getCanonicalOrigin = () => {

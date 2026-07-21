@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { BarChart3, Loader2 } from "lucide-react";
 
 import { compareShops } from "@/lib/api/recommend";
@@ -8,6 +9,8 @@ import { ShopOptionList } from "@/app/(routes)/recommend/_components/ShopOptionL
 import { compareFocusExamples } from "@/app/(routes)/recommend/constants";
 import type { ShopOption } from "@/app/(routes)/recommend/types";
 import type { Shop } from "@/app/types";
+import { useApp } from "@/app/context/AppContext";
+import { ApiClientError } from "@/lib/api/client";
 
 type ShopComparePanelProps = {
   shop: Shop;
@@ -135,6 +138,8 @@ function CompactCompareResult({
 }
 
 export default function ShopComparePanel({ shop }: ShopComparePanelProps) {
+  const router = useRouter();
+  const { isLoggedIn, isAuthChecking, showConfirm } = useApp();
   const [compareTarget, setCompareTarget] = useState<ShopOption | null>(null);
   const [compareFocus, setCompareFocus] = useState("");
   const [compareResult, setCompareResult] = useState<any>(null);
@@ -157,7 +162,14 @@ export default function ShopComparePanel({ shop }: ShopComparePanelProps) {
   }, [shop, submittedTarget]);
 
   const handleCompare = async () => {
-    if (!compareTarget) return;
+    if (!compareTarget || isAuthChecking) return;
+
+    if (!isLoggedIn) {
+      showConfirm("AI 가게 비교는 로그인 후 이용할 수 있습니다. 로그인하시겠습니까?", () => {
+        router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shop.id}`)}`);
+      });
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -175,11 +187,28 @@ export default function ShopComparePanel({ shop }: ShopComparePanelProps) {
         Number(nextCompareData?.shopA?.id) === Number(shop.id) &&
         Number(nextCompareData?.shopB?.id) === Number(compareTarget.id);
 
-      setCompareResult(responseMatchesSelection ? nextCompareData : null);
-    } catch {
-      setErrorMessage("AI 비교 응답이 잠시 불안정해서, 기본 비교 지표를 먼저 보여드려요.");
-    } finally {
+      if (!responseMatchesSelection) {
+        setErrorMessage("선택한 가게의 비교 결과를 확인하지 못했습니다. 다시 시도해주세요.");
+        return;
+      }
+
+      setCompareResult(nextCompareData);
       setSubmittedTarget(compareTarget);
+    } catch (error) {
+      if (error instanceof ApiClientError && error.status === 401) {
+        showConfirm("로그인 정보가 만료되었습니다. 다시 로그인하시겠습니까?", () => {
+          router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shop.id}`)}`);
+        });
+        return;
+      }
+
+      if (error instanceof ApiClientError && error.status === 403) {
+        setErrorMessage("AI 가게 비교를 이용할 권한이 없습니다.");
+        return;
+      }
+
+      setErrorMessage("AI 비교 응답을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -261,7 +290,7 @@ export default function ShopComparePanel({ shop }: ShopComparePanelProps) {
           <button
             type="button"
             onClick={handleCompare}
-            disabled={!compareTarget || isLoading}
+            disabled={!compareTarget || isLoading || isAuthChecking}
             className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-sm bg-[#e60000] px-5 text-sm font-black text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:opacity-80"
           >
             {isLoading ? (
