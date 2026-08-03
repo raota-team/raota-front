@@ -326,7 +326,7 @@ export default function RamenLogPage() {
                   RAMEN LOG EVENT
                 </span>
                 <h2 className="break-keep text-base font-black leading-snug md:text-lg">
-                  라멘로그 남기고 커피 한 잔 받아가세요. (~7월 31일까지)
+                  라멘로그 남기고 커피 한 잔 받아가세요. (~8월 31일까지)
                 </h2>
                 <p className="mt-1 break-keep text-xs leading-relaxed text-white/70 md:text-sm">
                   라멘로그를 작성한 분들 중 추첨을 통해 메가커피 기프티콘을 드립니다.
