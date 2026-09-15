@@ -20,10 +20,23 @@ import { ApiClientError } from "@/lib/api/client";
 const typeLabels: Record<EvaluationType, string> = { SEARCH: "매장 검색", SUMMARY: "리뷰 요약", CHAT: "추가 질문", COMPARE: "매장 비교" };
 
 const metric = (run: RunView | null, key: string) => {
+  const numberValue = metricNumber(run, key);
+  return numberValue === null ? "–" : `${Math.round(numberValue * 100)}%`;
+};
+
+const metricNumber = (run: RunView | null, key: string): number | null => {
   const value = run?.aggregateMetrics?.metrics;
-  if (!value || typeof value !== "object") return "–";
+  if (!value || typeof value !== "object") return null;
   const numberValue = (value as Record<string, unknown>)[key];
-  return typeof numberValue === "number" ? `${Math.round(numberValue * 100)}%` : "–";
+  return typeof numberValue === "number" ? numberValue : null;
+};
+
+const metricDelta = (current: RunView, previous: RunView, key: string) => {
+  const currentValue = metricNumber(current, key);
+  const previousValue = metricNumber(previous, key);
+  if (currentValue === null || previousValue === null) return "–";
+  const delta = Math.round((currentValue - previousValue) * 100);
+  return `${delta > 0 ? "+" : ""}${delta}%p`;
 };
 
 const prettyJson = (value: unknown) => JSON.stringify(value ?? {}, null, 2);
@@ -68,6 +81,31 @@ export default function RagEvaluationsPage() {
   }, [loadRun, selectedRun]);
 
   const selectedCase = useMemo(() => cases.find((item) => item.caseId === selectedCaseId) ?? null, [cases, selectedCaseId]);
+  const previousComparableRun = useMemo(() => {
+    if (!selectedRun) return null;
+    return runs.find((run) => run.runId !== selectedRun.runId
+      && run.datasetVersion === selectedRun.datasetVersion
+      && run.split === selectedRun.split) ?? null;
+  }, [runs, selectedRun]);
+  const hasIncompatiblePreviousRun = useMemo(() => {
+    if (!selectedRun) return false;
+    return runs.some((run) => run.runId !== selectedRun.runId
+      && (run.datasetVersion !== selectedRun.datasetVersion || run.split !== selectedRun.split));
+  }, [runs, selectedRun]);
+
+  useEffect(() => {
+    const saved = selectedCase?.finalReview;
+    if (saved && typeof saved === "object") {
+      const values = saved as Record<string, unknown>;
+      setReview({
+        finalScore: typeof values.finalScore === "number" ? values.finalScore : 2,
+        approved: values.approved !== false,
+        opinion: typeof values.opinion === "string" ? values.opinion : "",
+      });
+      return;
+    }
+    setReview({ finalScore: 2, approved: true, opinion: "" });
+  }, [selectedCase]);
 
   const runEvaluation = async () => {
     if (!dataset) return;
@@ -120,7 +158,7 @@ export default function RagEvaluationsPage() {
       {(message || error) && <div className={`rounded-2xl px-4 py-3 text-sm ${error ? "bg-rose-100 text-rose-800" : "bg-emerald-100 text-emerald-800"}`}>{error || message}</div>}
       <section className="grid gap-6 lg:grid-cols-[19rem_1fr]">
         <aside className="space-y-4 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><div className="flex items-center justify-between"><h2 className="font-bold">실행 이력</h2><span className="text-xs text-slate-500">{dataset?.version}</span></div><div className="space-y-2">{runs.length === 0 && <p className="text-sm text-slate-500">아직 실행한 평가가 없습니다.</p>}{runs.map((run) => <button key={run.runId} onClick={() => loadRun(run.runId).catch((cause) => setError(readError(cause)))} className={`w-full rounded-2xl border p-3 text-left ${selectedRun?.runId === run.runId ? "border-cyan-400 bg-cyan-50" : "border-slate-200 hover:bg-slate-50"}`}><div className="flex justify-between text-sm font-semibold"><span>{run.split === "DEV" ? "개발셋" : "보류셋"}</span><StatusBadge status={run.status} /></div><p className="mt-1 truncate text-xs text-slate-500">{run.runId}</p><p className="mt-2 text-xs text-slate-400">{formatDate(run.createdAt)}</p></button>)}</div></aside>
-        <div className="space-y-6">{selectedRun ? <><section className="grid gap-3 sm:grid-cols-4"><MetricCard label="모바일 예상 HitRate@1" value={metric(selectedRun, "hitrateAt1")} /><MetricCard label="모바일 예상 NDCG@1" value={metric(selectedRun, "ndcgAt1")} /><MetricCard label="서버 진단 Recall@6" value={metric(selectedRun, "recallAt6")} /><MetricCard label="서버 진단 MRR@6" value={metric(selectedRun, "mrrAt6")} /></section><section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><div className="flex flex-wrap items-start justify-between gap-4"><div><div className="flex items-center gap-3"><h2 className="text-xl font-bold">실행 상세</h2><StatusBadge status={selectedRun.status} /></div><p className="mt-1 text-sm text-slate-500">평가셋 {selectedRun.datasetVersion} · {selectedRun.split === "DEV" ? "개발셋" : "보류셋"}</p></div><button onClick={finalize} disabled={selectedRun.status !== "REVIEW_REQUIRED"} className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">기준선 확정</button></div>{selectedRun.fatalError && <p className="mt-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{selectedRun.fatalError}</p>}<div className="mt-5 grid gap-3 text-sm sm:grid-cols-3"><Info label="서버 커밋" value={selectedRun.serverCommit || "unknown"} /><Info label="앱 계약" value={selectedRun.appContractVersion || "unknown"} /><Info label="Vector 인덱스" value={selectedRun.vectorIndexVersion || "unknown"} /></div></section><section className="grid gap-6 xl:grid-cols-[1fr_1.2fr]"><div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><h2 className="font-bold">사례 목록 <span className="font-normal text-slate-400">({cases.length})</span></h2><div className="mt-4 space-y-2">{cases.map((item) => <button key={item.caseId} onClick={() => setSelectedCaseId(item.caseId)} className={`w-full rounded-2xl border p-3 text-left ${selectedCaseId === item.caseId ? "border-cyan-400 bg-cyan-50" : "border-slate-200"}`}><div className="flex items-center justify-between gap-2"><span className="text-sm font-semibold">{item.caseId}</span><span className="text-xs text-slate-500">{typeLabels[item.caseType]}</span></div><div className="mt-2 flex justify-between text-xs text-slate-500"><span>{item.caseType === "SEARCH" ? "모바일 예상 1위 · 서버 후보 6곳" : "생성 답변 검수"}</span><span>{item.status}</span></div></button>)}</div></div>{selectedCase ? <CasePanel item={selectedCase} review={review} onReviewChange={setReview} onSave={saveReview} /> : <div className="rounded-3xl bg-white p-8 text-sm text-slate-500">사례를 선택하세요.</div>}</section></> : <div className="rounded-3xl bg-white p-10 text-center text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">왼쪽에서 실행을 선택하거나 평가를 새로 실행하세요.</div>}</div>
+        <div className="space-y-6">{selectedRun ? <><section className="grid gap-3 sm:grid-cols-4"><MetricCard label="모바일 예상 HitRate@1" value={metric(selectedRun, "hitrateAt1")} /><MetricCard label="모바일 예상 NDCG@1" value={metric(selectedRun, "ndcgAt1")} /><MetricCard label="서버 진단 Recall@6" value={metric(selectedRun, "recallAt6")} /><MetricCard label="서버 진단 MRR@6" value={metric(selectedRun, "mrrAt6")} /></section><section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><div className="flex items-center justify-between gap-3"><div><h2 className="font-bold">이전 실행 비교</h2><p className="mt-1 text-sm text-slate-500">같은 평가셋 버전과 split을 사용한 가장 최근 실행과 비교합니다.</p></div>{previousComparableRun && <span className="text-xs text-slate-400">기준 {previousComparableRun.runId.slice(0, 8)}</span>}</div>{previousComparableRun ? <div className="mt-4 grid gap-3 sm:grid-cols-4"><DeltaCard label="HitRate@1" value={metricDelta(selectedRun, previousComparableRun, "hitrateAt1")} /><DeltaCard label="NDCG@1" value={metricDelta(selectedRun, previousComparableRun, "ndcgAt1")} /><DeltaCard label="Recall@6" value={metricDelta(selectedRun, previousComparableRun, "recallAt6")} /><DeltaCard label="MRR@6" value={metricDelta(selectedRun, previousComparableRun, "mrrAt6")} /></div> : <p className="mt-4 rounded-xl bg-slate-50 p-3 text-sm text-slate-500">{hasIncompatiblePreviousRun ? "이전 실행이 있지만 평가셋 버전 또는 split이 달라 비교할 수 없습니다." : "동일한 평가셋과 split의 이전 실행이 없습니다."}</p>}</section><section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><div className="flex flex-wrap items-start justify-between gap-4"><div><div className="flex items-center gap-3"><h2 className="text-xl font-bold">실행 상세</h2><StatusBadge status={selectedRun.status} /></div><p className="mt-1 text-sm text-slate-500">평가셋 {selectedRun.datasetVersion} · {selectedRun.split === "DEV" ? "개발셋" : "보류셋"}</p></div><button onClick={finalize} disabled={selectedRun.status !== "REVIEW_REQUIRED"} className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">기준선 확정</button></div>{selectedRun.fatalError && <p className="mt-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{selectedRun.fatalError}</p>}<div className="mt-5 grid gap-3 text-sm sm:grid-cols-3"><Info label="서버 커밋" value={selectedRun.serverCommit || "unknown"} /><Info label="앱 계약" value={selectedRun.appContractVersion || "unknown"} /><Info label="Vector 인덱스" value={selectedRun.vectorIndexVersion || "unknown"} /></div></section><section className="grid gap-6 xl:grid-cols-[1fr_1.2fr]"><div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><h2 className="font-bold">사례 목록 <span className="font-normal text-slate-400">({cases.length})</span></h2><div className="mt-4 space-y-2">{cases.map((item) => <button key={item.caseId} onClick={() => setSelectedCaseId(item.caseId)} className={`w-full rounded-2xl border p-3 text-left ${selectedCaseId === item.caseId ? "border-cyan-400 bg-cyan-50" : "border-slate-200"}`}><div className="flex items-center justify-between gap-2"><span className="text-sm font-semibold">{item.caseId}</span><span className="text-xs text-slate-500">{typeLabels[item.caseType]}</span></div><div className="mt-2 flex justify-between text-xs text-slate-500"><span>{item.caseType === "SEARCH" ? "모바일 예상 1위 · 서버 후보 6곳" : "생성 답변 검수"}</span><span>{item.status}</span></div></button>)}</div></div>{selectedCase ? <CasePanel item={selectedCase} review={review} onReviewChange={setReview} onSave={saveReview} /> : <div className="rounded-3xl bg-white p-8 text-sm text-slate-500">사례를 선택하세요.</div>}</section></> : <div className="rounded-3xl bg-white p-10 text-center text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">왼쪽에서 실행을 선택하거나 평가를 새로 실행하세요.</div>}</div>
       </section>
     </main>
   );
@@ -133,6 +171,7 @@ function CasePanel({ item, review, onReviewChange, onSave }: { item: CaseView; r
 
 function JsonBlock({ title, value }: { title: string; value: unknown }) { return <div><h3 className="mb-2 text-xs font-semibold text-slate-500">{title}</h3><pre className="max-h-52 overflow-auto rounded-xl bg-slate-950 p-3 text-xs leading-relaxed text-slate-200">{prettyJson(value)}</pre></div>; }
 function MetricCard({ label, value }: { label: string; value: string }) { return <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200"><p className="text-xs text-slate-500">{label}</p><p className="mt-2 text-2xl font-bold">{value}</p></div>; }
+function DeltaCard({ label, value }: { label: string; value: string }) { return <div className="rounded-2xl bg-slate-50 p-3"><p className="text-xs text-slate-500">{label}</p><p className="mt-1 font-semibold">{value}</p></div>; }
 function Info({ label, value }: { label: string; value: string }) { return <div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-slate-500">{label}</p><p className="mt-1 truncate font-medium">{value}</p></div>; }
 function StatusBadge({ status }: { status: string }) { const color = status === "COMPLETED" ? "bg-emerald-100 text-emerald-700" : status === "FAILED" ? "bg-rose-100 text-rose-700" : status === "REVIEW_REQUIRED" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"; return <span className={`rounded-full px-2 py-1 text-[11px] font-semibold ${color}`}>{status}</span>; }
 function formatDate(value: string | null) { return value ? new Date(value).toLocaleString("ko-KR") : "시간 대기 중"; }
