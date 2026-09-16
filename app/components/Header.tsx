@@ -4,8 +4,9 @@ import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronRight, LogIn, LogOut, Menu, X, Home, MessageSquare, User, UtensilsCrossed, NotebookPen } from 'lucide-react';
+import { ChevronRight, LogIn, LogOut, Menu, X, Home, MessageSquare, User, UtensilsCrossed, NotebookPen, ShieldCheck } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { checkAdminAccess } from '@/lib/api/admin';
 
 interface HeaderProps {
   isLoggedIn: boolean;
@@ -18,6 +19,8 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
   const pathname = usePathname();
   const currentPath = pathname ?? (isHomePage ? '/' : '');
   const { currentUser } = useApp();
+  const memberId = currentUser?.user_id ?? currentUser?.id;
+  const [adminAccess, setAdminAccess] = useState<'unknown' | 'checking' | 'allowed' | 'denied'>('unknown');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const mobileMenuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -58,6 +61,44 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
   };
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  // 관리자 API의 권한 응답을 기준으로 바로가기를 표시한다. 탭 세션 동안만 회원별 결과를 캐시한다.
+  useEffect(() => {
+    if (!isLoggedIn || memberId == null) {
+      setAdminAccess('unknown');
+      return;
+    }
+
+    if (currentUser?.role === 'ADMIN') {
+      setAdminAccess('allowed');
+      return;
+    }
+
+    const storageKey = `raota-admin-access:${memberId}`;
+    const cached = window.sessionStorage.getItem(storageKey);
+    if (cached === 'allowed' || cached === 'denied') {
+      setAdminAccess(cached);
+      return;
+    }
+
+    let mounted = true;
+    setAdminAccess('checking');
+    checkAdminAccess()
+      .then(() => {
+        if (!mounted) return;
+        window.sessionStorage.setItem(storageKey, 'allowed');
+        setAdminAccess('allowed');
+      })
+      .catch(() => {
+        if (!mounted) return;
+        window.sessionStorage.setItem(storageKey, 'denied');
+        setAdminAccess('denied');
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [currentUser?.role, isLoggedIn, memberId]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
@@ -126,6 +167,13 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
       icon: User,
       active: currentPath === myPagePath || (isLoggedIn && currentPath.startsWith('/user/')),
     },
+    ...(adminAccess === 'allowed' ? [{
+      href: '/admin',
+      label: '관리자',
+      description: '운영 콘솔과 품질 검수',
+      icon: ShieldCheck,
+      active: isActive('/admin'),
+    }] : []),
   ];
 
   return (
@@ -156,6 +204,16 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
                   <Link href="/shops" className={`text-sm transition-colors ${currentPath === '/shops' || currentPath.startsWith('/shop/') ? activeTextColor : navTextColor}`}>가게</Link>
                   <Link href="/community" className={`text-sm transition-colors ${currentPath === '/community' || currentPath.startsWith('/community/') ? activeTextColor : navTextColor}`}>커뮤니티</Link>
                   <Link href={myPagePath} className={`text-sm transition-colors ${currentPath === myPagePath ? activeTextColor : navTextColor}`}>마이페이지</Link>
+
+                  {adminAccess === 'allowed' && (
+                    <Link
+                      href="/admin"
+                      className={`inline-flex items-center gap-1.5 text-sm transition-colors ${currentPath.startsWith('/admin') ? activeTextColor : navTextColor}`}
+                    >
+                      <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                      관리자
+                    </Link>
+                  )}
 
                   {isLoggedIn ? (
                     <button
@@ -244,7 +302,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
                     }`}
                   >
                     <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-sm transition-colors ${
-                      item.active ? 'bg-[#e60000] text-white' : 'bg-stone-100 text-stone-600 group-hover:bg-red-50 group-hover:text-[#e60000]'
+                      item.active ? 'bg-[#e60000] text-white' : 'bg-stone-100 text-stone-600 group-hover:bg-red-50 group-hover:text-[#ac1811]'
                     }`}>
                       <Icon className="h-5 w-5" />
                     </span>
