@@ -62,6 +62,7 @@ export default function RagEvaluationsPage() {
   const loadRun = useCallback(async (runId: string) => {
     const [run, casePage] = await Promise.all([getRagEvaluationRun(runId), getRagEvaluationCases(runId)]);
     setSelectedRun(run);
+    setRuns((items) => items.map((item) => item.runId === run.runId ? run : item));
     setCases(casePage.items);
     setSelectedCaseId((current) => current ?? casePage.items[0]?.caseId ?? null);
     return run;
