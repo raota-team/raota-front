@@ -1,6 +1,6 @@
 'use client';
 
-import { useSelectedLayoutSegments } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import Header from './Header';
@@ -12,9 +12,10 @@ import { ApiClientError } from '@/lib/api/client';
 import { clearAccessToken } from '@/lib/auth/accessToken';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
-  const routeSegments = useSelectedLayoutSegments();
+  const pathname = usePathname();
   const { isLoggedIn, setIsLoggedIn, isAuthChecking, handleLogout, toast, confirm, setConfirm, currentUser, setCurrentUser } = useApp();
-  const isHomePage = routeSegments.length === 0;
+  const isAdminRoute = pathname?.startsWith('/admin') ?? false;
+  const isHomePage = pathname === '/';
 
   // 실제 프로필 정보 동기화
   useEffect(() => {
@@ -47,17 +48,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#25282b] selection:bg-red-100 selection:text-red-900">
-      <GlobalScrollIndicator />
-      <Header
+      {!isAdminRoute && <GlobalScrollIndicator />}
+      {!isAdminRoute && <Header
         isLoggedIn={isLoggedIn}
         isAuthChecking={isAuthChecking}
         handleLogout={onLogout}
         isHomePage={isHomePage}
-      />
+      />}
 
-      <main className={`flex-1 w-full ${isHomePage ? 'pt-0' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-8'}`}>
+      {isAdminRoute ? children : <main className={`flex-1 w-full ${isHomePage ? 'pt-0' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-8'}`}>
         {children}
-      </main>
+      </main>}
 
       {/* Global Confirm Modal */}
       {confirm && (
@@ -109,7 +110,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
       )}
 
-      <Footer />
+      {!isAdminRoute && <Footer />}
     </div>
   );
 }
