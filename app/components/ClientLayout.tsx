@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { useSelectedLayoutSegments } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import Header from './Header';
@@ -12,10 +12,12 @@ import { ApiClientError } from '@/lib/api/client';
 import { clearAccessToken } from '@/lib/auth/accessToken';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  // 운영(Vercel ISR) HTML에서 usePathname 기준 판정이 '/'로 렌더링되지 않아 홈 컨테이너 클래스가 어긋났다.
+  // 하이드레이션은 className 불일치를 고치지 않으므로 라우트 트리 기준 세그먼트로 판정한다(route group 제외).
+  const routeSegments = useSelectedLayoutSegments().filter((segment) => !segment.startsWith('('));
   const { isLoggedIn, setIsLoggedIn, isAuthChecking, handleLogout, toast, confirm, setConfirm, currentUser, setCurrentUser } = useApp();
-  const isAdminRoute = pathname?.startsWith('/admin') ?? false;
-  const isHomePage = pathname === '/';
+  const isAdminRoute = routeSegments[0] === 'admin';
+  const isHomePage = routeSegments.length === 0;
 
   // 실제 프로필 정보 동기화
   useEffect(() => {
