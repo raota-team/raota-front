@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, AlertTriangle, CheckCircle2, Clock3, Play, RotateCw } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle2, Clock3, Play, RotateCw, X } from "lucide-react";
 import { ApiClientError } from "@/lib/api/client";
 import {
   CaseView,
@@ -188,6 +188,12 @@ export default function RagEvaluationsPage() {
     }
   };
 
+  useEffect(() => {
+    if (!message || error) return;
+    const timer = window.setTimeout(() => setMessage(""), 5000);
+    return () => window.clearTimeout(timer);
+  }, [message, error]);
+
   if (loading) return <LoadingState />;
 
   return (
@@ -229,13 +235,23 @@ export default function RagEvaluationsPage() {
       </header>
 
       {(message || error) && (
-        <div
-          className={`flex items-start gap-2 border px-4 py-3 text-sm ${error ? "border-rose-200 bg-rose-50 text-rose-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}
-          role={error ? "alert" : "status"}
-          aria-live="polite"
-        >
-          {error ? <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" /> : <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />}
-          <span>{error || message}</span>
+        <div className="pointer-events-none fixed inset-x-0 top-20 z-40 flex justify-center px-4 lg:pl-64">
+          <div
+            className={`pointer-events-auto flex w-full max-w-xl items-start gap-2 border px-4 py-3 text-sm shadow-lg ${error ? "border-rose-200 bg-rose-50 text-rose-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}
+            role={error ? "alert" : "status"}
+            aria-live="polite"
+          >
+            {error ? <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" /> : <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />}
+            <span className="flex-1">{error || message}</span>
+            <button
+              type="button"
+              onClick={() => { setError(""); setMessage(""); }}
+              className="-m-1 shrink-0 p-1 opacity-60 transition-opacity hover:opacity-100"
+              aria-label="알림 닫기"
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
         </div>
       )}
 
