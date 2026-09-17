@@ -32,14 +32,14 @@ const fetchPublicHomeData = async <T,>(
 };
 
 export default async function HomePage() {
-  const [stats, recentShops] = await Promise.all([
-    fetchPublicHomeData<HomeInitialData['stats']>('/api/v1/discovery/stats', 300),
-    fetchPublicHomeData<HomeInitialData['recentShops']>('/api/v1/shops/recent-verified?limit=4', 60),
-  ]);
+  const recentShops = await fetchPublicHomeData<HomeInitialData['recentShops']>(
+    '/api/v1/shops/recent-verified?limit=4',
+    60,
+  );
 
   return (
     <LandingContent
-      initialData={{ stats, recentShops }}
+      initialData={{ recentShops }}
     />
   );
 }

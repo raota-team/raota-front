@@ -9,11 +9,8 @@ import AnimatedCounter from './AnimatedCounter';
 import ContactUsBanner from './ContactUsBanner';
 import TrendingTagsRanking from './TrendingTagsRanking';
 import { Do_Hyeon } from 'next/font/google';
-import { useDiscoveryStats, useRecentVerifiedShops } from '@/hooks/queries/useDiscovery';
-import type {
-  DiscoveryStatsResponse,
-  RecentVerifiedShopResponse,
-} from '@/lib/api/discovery';
+import { useRecentVerifiedShops } from '@/hooks/queries/useDiscovery';
+import type { RecentVerifiedShopResponse } from '@/lib/api/discovery';
 import ResilientImage from './ResilientImage';
 import {
   Sparkles,
@@ -35,8 +32,13 @@ const doHyeon = Do_Hyeon({
   preload: false,
 });
 
+// 홈 통계 API(/api/v1/discovery/stats)가 제거되어 고정값으로 표시한다.
+const HOME_STATS = {
+  totalShops: 152,
+  totalReviews: 76000,
+};
+
 export type HomeInitialData = {
-  stats?: { success: boolean; data: DiscoveryStatsResponse };
   recentShops?: { success: boolean; data: RecentVerifiedShopResponse[] };
 };
 
@@ -58,13 +60,11 @@ export default function LandingContent({
   }, []);
   
   // 서버 연동 데이터
-  const { data: statsData } = useDiscoveryStats(initialData?.stats);
   const { data: recentShopsData } = useRecentVerifiedShops(
     4,
     initialData?.recentShops,
   );
 
-  const stats = statsData?.data || { totalShops: 0, totalReviews: 0, totalUsers: 0 };
   const homeNotices = notices.slice(0, 3);
   const recentVerifiedShops = recentShopsData?.data || [];
   const heroSearchHref = heroSearchQuery.trim()
@@ -176,20 +176,20 @@ export default function LandingContent({
           <div className="hidden md:flex items-center gap-6 lg:gap-10 text-[11px] md:text-xs text-white/60 border-t border-b border-white/10 py-4 px-1 max-w-none">
             <div className="flex-shrink-0 whitespace-nowrap">
               <AnimatedCounter 
-                value={stats.totalShops || 0} 
+                value={HOME_STATS.totalShops} 
                 suffix="개+" 
                 className="text-white text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
-                shouldStart={startPCAnim && stats.totalShops > 0} 
+                shouldStart={startPCAnim} 
               />
               등록된 라멘집
             </div>
             <div className="h-8 w-px bg-white/10 flex-shrink-0"></div>
             <div className="flex-shrink-0 whitespace-nowrap">
               <AnimatedCounter 
-                value={stats.totalReviews || 0} 
+                value={HOME_STATS.totalReviews} 
                 suffix="건+" 
                 className="text-[#e60000] text-xl md:text-2xl block font-black tracking-tight mb-1 whitespace-nowrap" 
-                shouldStart={startPCAnim && stats.totalReviews > 0} 
+                shouldStart={startPCAnim} 
               />
               쌓인 라멘 기록
             </div>

@@ -2,10 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  type DiscoveryStatsResponse,
   type RecentVerifiedShopResponse,
   type WeekendRecommendationResponse,
-  getDiscoveryStats,
   getRecentVerifiedShops,
   getPopularShopsToday,
   getHomeTips,
@@ -14,17 +12,6 @@ import {
 } from "@/lib/api/discovery";
 
 type DiscoveryResponse<T> = { success: boolean; data: T };
-
-export const useDiscoveryStats = (
-  initialData?: DiscoveryResponse<DiscoveryStatsResponse>,
-) => {
-  return useQuery({
-    queryKey: ["discovery", "stats"],
-    queryFn: () => getDiscoveryStats(),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    initialData,
-  });
-};
 
 export const useRecentVerifiedShops = (
   limit: number = 4,

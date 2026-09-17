@@ -1,11 +1,5 @@
 import { apiClient } from "./client";
 
-export interface DiscoveryStatsResponse {
-  totalShops: number;
-  totalReviews: number;
-  totalUsers: number;
-}
-
 export interface RecentVerifiedShopResponse {
   id: string | number;
   name: string;
@@ -39,10 +33,6 @@ export interface CommunityHomePostResponse {
   commentCount: number;
   createdAt: string;
 }
-
-export const getDiscoveryStats = async (): Promise<{ success: boolean; data: DiscoveryStatsResponse }> => {
-  return apiClient<{ success: boolean; data: DiscoveryStatsResponse }>("/api/v1/discovery/stats");
-};
 
 export const getRecentVerifiedShops = async (limit: number = 4): Promise<{ success: boolean; data: RecentVerifiedShopResponse[] }> => {
   return apiClient<{ success: boolean; data: RecentVerifiedShopResponse[] }>(`/api/v1/shops/recent-verified?limit=${limit}`);
