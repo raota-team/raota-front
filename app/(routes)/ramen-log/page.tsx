@@ -7,7 +7,6 @@ import dynamic from 'next/dynamic';
 import {
   Camera,
   ChevronDown,
-  Gift,
   Loader2,
   Plus,
   Search,
@@ -310,29 +309,6 @@ export default function RamenLogPage() {
             <p className="mx-auto max-w-lg break-keep text-sm font-medium leading-relaxed text-white/85 sm:text-lg">
               유저들의 생생한 라멘 기록을 둘러보세요
             </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-white px-4 py-4 sm:px-6 md:py-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="rounded-md bg-[#25282b] px-4 py-3 text-white shadow-sm md:px-5 md:py-4">
-            <div className="flex min-w-0 items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-[#e60000] text-white">
-                <Gift className="h-5 w-5" />
-              </span>
-              <div className="min-w-0">
-                <span className="mb-1 inline-flex rounded-sm bg-white/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-white/80">
-                  RAMEN LOG EVENT
-                </span>
-                <h2 className="break-keep text-base font-black leading-snug md:text-lg">
-                  라멘로그 남기고 커피 한 잔 받아가세요. (~8월 31일까지)
-                </h2>
-                <p className="mt-1 break-keep text-xs leading-relaxed text-white/70 md:text-sm">
-                  라멘로그를 작성한 분들 중 추첨을 통해 메가커피 기프티콘을 드립니다.
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </section>

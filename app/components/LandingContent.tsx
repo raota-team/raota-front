@@ -6,7 +6,6 @@ import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { useApp } from '@/app/context/AppContext';
 import UserProfileCard from './UserProfileCard';
 import AnimatedCounter from './AnimatedCounter';
-import ContactUsBanner from './ContactUsBanner';
 import TrendingTagsRanking from './TrendingTagsRanking';
 import { Do_Hyeon } from 'next/font/google';
 import { useRecentVerifiedShops } from '@/hooks/queries/useDiscovery';
@@ -289,11 +288,6 @@ export default function LandingContent({
               </Link>
             ))}
           </section>
-
-          {/* PC Only: Ramen Log Event Banner aligned to the bottom */}
-          <div className="hidden lg:mt-auto lg:block">
-            <ContactUsBanner />
-          </div>
         </main>
 
         {/* Right Column: Sidebar (Desktop) / Bottom Content (Mobile) */}
@@ -340,11 +334,6 @@ export default function LandingContent({
             </div>
           </div>
         </aside>
-
-        {/* Mobile Only: Ramen Log Event Banner at the very bottom */}
-        <div className="lg:hidden mt-4">
-          <ContactUsBanner />
-        </div>
       </div>
     </div>
   );
