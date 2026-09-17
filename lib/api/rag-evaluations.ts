@@ -3,7 +3,7 @@ import { apiClient } from "@/lib/api/client";
 export type EvaluationSplit = "DEV" | "HOLDOUT";
 export type EvaluationType = "SEARCH" | "SUMMARY" | "CHAT" | "COMPARE";
 export type EvaluationStatus = "QUEUED" | "RUNNING" | "REVIEW_REQUIRED" | "COMPLETED" | "FAILED";
-export type CaseStatus = "PENDING" | "RUNNING" | "COMPLETED" | "SKIPPED" | "ERROR";
+export type CaseStatus = "PENDING" | "RUNNING" | "COMPLETED" | "EXPECTED_ERROR" | "SKIPPED" | "ERROR";
 
 export interface ApiEnvelope<T> {
   status?: string;

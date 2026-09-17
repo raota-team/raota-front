@@ -33,7 +33,17 @@ const statusLabels: Record<string, string> = {
   FAILED: "실패",
   PENDING: "대기",
   ERROR: "오류",
+  EXPECTED_ERROR: "예상 오류",
   SKIPPED: "건너뜀",
+};
+
+const isReviewable = (item: CaseView) =>
+  item.caseType !== "SEARCH" && item.status !== "EXPECTED_ERROR" && item.status !== "SKIPPED";
+
+const caseHint = (item: CaseView) => {
+  if (item.status === "EXPECTED_ERROR") return "예상 오류 계약 · 검수 제외";
+  if (item.status === "SKIPPED") return "계약 전용 사례 · 실행 제외";
+  return item.caseType === "SEARCH" ? "모바일 예상 1위 · 서버 후보 6곳" : "생성 답변 검수";
 };
 
 const metric = (run: RunView | null, key: string) => {
@@ -115,6 +125,7 @@ export default function RagEvaluationsPage() {
   const caseSummary = useMemo(() => ({
     completed: cases.filter((item) => item.status === "COMPLETED").length,
     errors: cases.filter((item) => item.status === "ERROR").length,
+    expectedErrors: cases.filter((item) => item.status === "EXPECTED_ERROR").length,
     skipped: cases.filter((item) => item.status === "SKIPPED").length,
   }), [cases]);
 
@@ -150,7 +161,7 @@ export default function RagEvaluationsPage() {
   };
 
   const saveReview = async () => {
-    if (!selectedRun || !selectedCase || selectedCase.caseType === "SEARCH") return;
+    if (!selectedRun || !selectedCase || !isReviewable(selectedCase)) return;
     setError("");
     try {
       const updated = await reviewRagEvaluationCase(selectedRun.runId, selectedCase.caseId, {
@@ -331,7 +342,7 @@ export default function RagEvaluationsPage() {
                       <h2 className="text-lg font-black tracking-[-0.03em]">사례 목록 <span className="font-normal text-stone-400">({cases.length})</span></h2>
                       <Activity className="h-4 w-4 text-[#e60000]" aria-hidden="true" />
                     </div>
-                    <p className="mt-2 text-xs leading-5 text-stone-500">완료 {caseSummary.completed} · 오류 {caseSummary.errors} · 건너뜀 {caseSummary.skipped}</p>
+                    <p className="mt-2 text-xs leading-5 text-stone-500">완료 {caseSummary.completed} · 예상 오류 {caseSummary.expectedErrors} · 오류 {caseSummary.errors} · 건너뜀 {caseSummary.skipped}</p>
                   </div>
                   <div className="max-h-[38rem] divide-y divide-stone-100 overflow-y-auto">
                     {cases.length === 0 && <p className="px-5 py-10 text-sm text-stone-500">실행 사례를 불러오는 중입니다.</p>}
@@ -350,7 +361,7 @@ export default function RagEvaluationsPage() {
                             <StatusBadge status={item.status} />
                           </div>
                           <p className="mt-2 text-xs text-stone-500">{typeLabels[item.caseType]}</p>
-                          <p className="mt-1 text-[11px] text-stone-400">{item.caseType === "SEARCH" ? "모바일 예상 1위 · 서버 후보 6곳" : "생성 답변 검수"}</p>
+                          <p className="mt-1 text-[11px] text-stone-400">{caseHint(item)}</p>
                         </button>
                       );
                     })}
@@ -375,6 +386,7 @@ function CasePanel({ item, review, onReviewChange, onSave }: {
   onSave: () => void;
 }) {
   const generated = item.caseType !== "SEARCH";
+  const expectedError = item.status === "EXPECTED_ERROR";
 
   return (
     <article className="min-w-0 border border-stone-200 bg-white">
@@ -403,9 +415,14 @@ function CasePanel({ item, review, onReviewChange, onSave }: {
           <JsonBlock title="자동 판정 제안" value={item.autoJudgement} />
         </div>
 
-        {item.errorMessage && <p className="border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700">{item.errorMessage}</p>}
+        {item.errorMessage && (
+          <p className={`border px-4 py-3 text-sm leading-6 ${expectedError ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-700"}`}>
+            {expectedError && <span className="mr-2 font-bold">의도한 오류 응답</span>}
+            {item.errorMessage}
+          </p>
+        )}
 
-        {generated && (
+        {isReviewable(item) && (
           <div className="border border-stone-200 bg-stone-50 p-4 sm:p-5">
             <div className="flex flex-wrap items-center gap-4">
               <label className="text-sm font-bold text-stone-700">
@@ -487,7 +504,7 @@ function Info({ label, value }: { label: string; value: string }) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const color = status === "COMPLETED"
+  const color = status === "COMPLETED" || status === "EXPECTED_ERROR"
     ? "bg-emerald-100 text-emerald-700"
     : status === "FAILED" || status === "ERROR"
       ? "bg-rose-100 text-rose-700"
