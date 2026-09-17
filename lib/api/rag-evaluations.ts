@@ -115,6 +115,9 @@ export const reviewRagEvaluationCase = async (runId: string, caseId: string, rev
   return unwrap(response);
 };
 
+export const exportRagEvaluationRun = async (runId: string): Promise<unknown> =>
+  apiClient<unknown>(`/admin/api/rag-evaluations/runs/${runId}/export`);
+
 export const finalizeRagEvaluation = async (runId: string): Promise<RunView> => {
   const response = await apiClient<ApiEnvelope<RunView>>(`/admin/api/rag-evaluations/runs/${runId}/finalize`, { method: "POST" });
   return unwrap(response);

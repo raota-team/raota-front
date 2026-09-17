@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, AlertTriangle, CheckCircle2, Clock3, Play, RotateCw, X } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle2, Clock3, Download, Play, RotateCw, X } from "lucide-react";
 import { ApiClientError } from "@/lib/api/client";
 import {
   CaseView,
@@ -9,6 +9,7 @@ import {
   EvaluationSplit,
   EvaluationType,
   RunView,
+  exportRagEvaluationRun,
   finalizeRagEvaluation,
   getRagEvaluationCases,
   getRagEvaluationDataset,
@@ -188,6 +189,24 @@ export default function RagEvaluationsPage() {
     }
   };
 
+  const downloadRun = async () => {
+    if (!selectedRun) return;
+    setError("");
+    try {
+      const payload = await exportRagEvaluationRun(selectedRun.runId);
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `rag-evaluation-${selectedRun.runId}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      setMessage("평가 결과 JSON을 내려받았습니다.");
+    } catch (cause) {
+      setError(readError(cause));
+    }
+  };
+
   useEffect(() => {
     if (!message || error) return;
     const timer = window.setTimeout(() => setMessage(""), 5000);
@@ -334,6 +353,15 @@ export default function RagEvaluationsPage() {
                     </div>
                     <p className="mt-1 text-sm text-stone-500">평가셋 {selectedRun.datasetVersion} · {selectedRun.split === "DEV" ? "개발셋" : "보류셋"}</p>
                   </div>
+                  <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void downloadRun()}
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-stone-300 px-3 py-2 text-xs font-bold text-stone-700 transition-colors hover:border-[#e60000] hover:text-[#e60000]"
+                  >
+                    <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                    JSON 내려받기
+                  </button>
                   <button
                     type="button"
                     onClick={() => void finalize()}
@@ -342,6 +370,7 @@ export default function RagEvaluationsPage() {
                   >
                     기준선 확정
                   </button>
+                  </div>
                 </div>
                 {selectedRun.fatalError && <p className="mx-5 mt-5 border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 sm:mx-6">{selectedRun.fatalError}</p>}
                 <div className="grid gap-3 px-5 py-5 text-sm sm:grid-cols-3 sm:px-6">
