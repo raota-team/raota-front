@@ -5,6 +5,7 @@ import { useCallback, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import Header from './Header';
 import Footer from './Footer';
+import AppPreRegisterModal from './AppPreRegisterModal';
 import GlobalScrollIndicator from './GlobalScrollIndicator';
 import { CheckCircle2, AlertCircle, Info, HelpCircle } from 'lucide-react';
 import { getMyProfile } from '@/lib/api/user';
@@ -112,7 +113,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
       )}
 
-      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && (
+        <>
+          <Footer />
+          <AppPreRegisterModal />
+        </>
+      )}
     </div>
   );
 }
