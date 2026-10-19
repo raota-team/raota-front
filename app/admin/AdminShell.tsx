@@ -9,6 +9,7 @@ import {
   FileWarning,
   LayoutDashboard,
   LogOut,
+  NotebookPen,
   Menu,
   ShieldCheck,
   Store,
@@ -19,8 +20,10 @@ import { useApp } from "@/app/context/AppContext";
 export const adminNavItems = [
   { href: "/admin", label: "개요", description: "오늘의 운영 상태", icon: LayoutDashboard },
   { href: "/admin/shops", label: "매장 관리", description: "공개 상태와 색인", icon: Store },
+  { href: "/admin/app-shops", label: "앱 매장", description: "앱 매장·영업 정보", icon: Store },
   { href: "/admin/users", label: "회원 관리", description: "회원·권한 조회", icon: Users },
   { href: "/admin/reports", label: "제보·신고", description: "매장 정보 제보", icon: FileWarning },
+  { href: "/admin/app-reports", label: "앱 신고", description: "기록·댓글 신고 처리", icon: NotebookPen },
   { href: "/admin/retrieval", label: "검색 색인", description: "Vector 문서 운영", icon: Database },
   { href: "/admin/rag-evaluations", label: "RAG 평가", description: "모바일 품질 검수", icon: Activity },
 ];
