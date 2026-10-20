@@ -11,7 +11,7 @@ export default function PrivacyPage() {
       <div className="mb-10 border-b border-stone-200 pb-8">
         <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#e60000]">Privacy</p>
         <h1 className="text-4xl font-black tracking-tight text-[#25282b] md:text-5xl">개인정보처리방침</h1>
-        <p className="mt-4 text-sm font-medium text-[#7e7e7e]">시행일: 2026년 6월 11일</p>
+        <p className="mt-4 text-sm font-medium text-[#7e7e7e]">시행일: 2026년 10월 27일</p>
       </div>
 
       <div className="space-y-8 text-base leading-8 text-[#25282b]">
@@ -54,12 +54,24 @@ export default function PrivacyPage() {
                   <td className="border-b border-stone-200 px-3 py-2">게시글, 댓글, 사진, 사진 설명, 북마크, 방문·투표·신고 등 서비스 이용 과정에서 생성되는 정보</td>
                 </tr>
                 <tr>
+                  <td className="border-b border-stone-200 px-3 py-2 font-bold">위치 정보</td>
+                  <td className="border-b border-stone-200 px-3 py-2">이용자가 기기의 위치 권한을 허용한 경우 현재 위치(위도·경도). 내 주변 매장의 거리 표시, 거리순 정렬, 주변 매장 추천에 사용</td>
+                </tr>
+                <tr>
+                  <td className="border-b border-stone-200 px-3 py-2 font-bold">추천 요청 조건</td>
+                  <td className="border-b border-stone-200 px-3 py-2">AI 추천을 요청할 때 고른 국물·분위기·우선순위, 직접 입력한 문장, 지역</td>
+                </tr>
+                <tr>
                   <td className="px-3 py-2 font-bold">자동 생성</td>
                   <td className="px-3 py-2">IP 주소, 접속 일시, 브라우저 및 기기 정보, 쿠키, 서비스 이용 기록, 오류 로그</td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <p className="mt-3">
+            위치 정보는 위치 권한을 허용한 경우에만 수집합니다. 허용하지 않아도 지역을 직접 골라 서비스를 이용할 수 있고, 기기 설정에서 언제든
+            권한을 끌 수 있습니다.
+          </p>
         </section>
 
         <section>
@@ -71,6 +83,11 @@ export default function PrivacyPage() {
           <ul className="list-disc space-y-2 pl-5">
             <li>회원 계정 정보: 회원 탈퇴 요청일로부터 30일 후까지</li>
             <li>소셜 계정, 인증 토큰, 북마크, 인증샷 정보: 회원 탈퇴 요청일로부터 30일 후까지</li>
+            <li>
+              위치 정보: 매장 조회와 거리 계산에는 요청을 처리하는 데에만 쓰고 별도로 저장하지 않습니다. AI 추천을 요청할 때 보낸 위치는 약 1km
+              단위로 낮춘 값만 추천 기록과 함께 저장하며, 회원 탈퇴 요청일로부터 30일 후까지 보관합니다
+            </li>
+            <li>추천 요청 조건과 추천 결과 기록: 회원 탈퇴 요청일로부터 30일 후까지</li>
             <li>게시글, 댓글 등 커뮤니티 공개 콘텐츠: 서비스 운영상 필요가 종료될 때까지 보관될 수 있으며, 탈퇴 후 작성자 프로필은 탈퇴한 사용자로 익명화</li>
             <li>접속 로그 등 서비스 이용 기록: 보안 및 부정 이용 방지를 위해 필요한 기간</li>
             <li>관계 법령상 보존 의무가 있는 정보: 해당 법령에서 정한 기간</li>
