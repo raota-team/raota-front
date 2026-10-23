@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   ArrowLeft,
+  BarChart3,
   Database,
   FileWarning,
   LayoutDashboard,
@@ -24,6 +25,7 @@ export const adminNavItems = [
   { href: "/admin/users", label: "회원 관리", description: "회원·권한 조회", icon: Users },
   { href: "/admin/reports", label: "제보·신고", description: "매장 정보 제보", icon: FileWarning },
   { href: "/admin/app-reports", label: "앱 신고", description: "기록·댓글 신고 처리", icon: NotebookPen },
+  { href: "/admin/recommendations", label: "AI 추천 성과", description: "열기·찜·기록 전환", icon: BarChart3 },
   { href: "/admin/retrieval", label: "검색 색인", description: "Vector 문서 운영", icon: Database },
   { href: "/admin/rag-evaluations", label: "RAG 평가", description: "모바일 품질 검수", icon: Activity },
 ];
