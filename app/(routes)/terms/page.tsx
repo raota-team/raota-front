@@ -11,7 +11,15 @@ export default function TermsPage() {
       <div className="mb-10 border-b border-stone-200 pb-8">
         <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#e60000]">Legal</p>
         <h1 className="text-4xl font-black tracking-tight text-[#25282b] md:text-5xl">이용약관</h1>
-        <p className="mt-4 text-sm font-medium text-[#7e7e7e]">시행일: 2026년 6월 11일</p>
+        <p className="mt-4 text-sm font-medium text-[#7e7e7e]">시행일: 2026년 11월 3일</p>
+        <div className="mt-6 rounded-lg bg-[#f2f2f2] px-4 py-3 text-sm leading-6 text-[#25282b]">
+          <p className="font-black">개정 안내</p>
+          <p className="mt-1">
+            2026년 11월 3일부터 개정 약관이 적용됩니다. 제8조에 부적절한 콘텐츠 신고, 이용자 차단, 신고 후 24시간 이내 조치 기준을
+            추가했습니다. 시행일 전까지는 이전 약관이 적용됩니다.{' '}
+            <a href="/terms/2026-06-11" className="underline underline-offset-4">이전 약관 보기</a>
+          </p>
+        </div>
       </div>
 
       <div className="space-y-8 text-base leading-8 text-[#25282b]">
@@ -78,10 +86,19 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 text-xl font-black">8. 콘텐츠 관리와 이용 제한</h2>
+          <h2 className="mb-3 text-xl font-black">8. 콘텐츠 관리, 신고와 차단</h2>
+          <p className="mb-3">
+            서비스는 부적절한 콘텐츠와 이를 게시하는 이용자를 허용하지 않습니다. 회원은 게시글·댓글의 메뉴에서 부적절한 콘텐츠를
+            신고할 수 있고, 특정 이용자를 차단(숨기기)할 수 있습니다. 차단한 이용자의 게시글과 댓글은 그 회원에게 더 이상 보이지 않으며,
+            차단은 설정에서 언제든 해제할 수 있습니다.
+          </p>
+          <p className="mb-3">
+            서비스는 신고를 접수한 때부터 24시간 이내에 검토하여, 본 약관이나 관계 법령을 위반한 콘텐츠를 숨기거나 삭제하고 해당 콘텐츠를
+            게시한 회원의 이용을 일시 또는 영구적으로 제한합니다.
+          </p>
           <p>
-            서비스는 신고, 모니터링 또는 운영상 확인을 통해 본 약관이나 관계 법령을 위반한 콘텐츠를 숨김, 삭제, 수정 요청하거나
-            회원의 이용을 일시 또는 영구적으로 제한할 수 있습니다. 긴급한 피해 방지나 법적 요청 대응이 필요한 경우 사전 통지 없이 조치할 수 있습니다.
+            서비스는 신고 외에도 모니터링 또는 운영상 확인을 통해 같은 조치를 할 수 있습니다. 긴급한 피해 방지나 법적 요청 대응이 필요한 경우
+            사전 통지 없이 조치할 수 있습니다.
           </p>
         </section>
 

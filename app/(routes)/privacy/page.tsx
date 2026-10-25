@@ -11,7 +11,15 @@ export default function PrivacyPage() {
       <div className="mb-10 border-b border-stone-200 pb-8">
         <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#e60000]">Privacy</p>
         <h1 className="text-4xl font-black tracking-tight text-[#25282b] md:text-5xl">개인정보처리방침</h1>
-        <p className="mt-4 text-sm font-medium text-[#7e7e7e]">시행일: 2026년 10월 27일</p>
+        <p className="mt-4 text-sm font-medium text-[#7e7e7e]">시행일: 2026년 11월 3일</p>
+        <div className="mt-6 rounded-lg bg-[#f2f2f2] px-4 py-3 text-sm leading-6 text-[#25282b]">
+          <p className="font-black">개정 안내</p>
+          <p className="mt-1">
+            2026년 11월 3일부터 개정 처리방침이 적용됩니다. 제6조(위탁)와 제7조(국외 이전)에 실제 수탁자와 이전받는 자를 밝히고,
+            앱 이용 통계 수집(제2조·제10조)을 추가했습니다. 시행일 전까지는 이전 처리방침이 적용됩니다.{' '}
+            <a href="/privacy/2026-10-27" className="underline underline-offset-4">이전 처리방침 보기</a>
+          </p>
+        </div>
       </div>
 
       <div className="space-y-8 text-base leading-8 text-[#25282b]">
@@ -63,7 +71,10 @@ export default function PrivacyPage() {
                 </tr>
                 <tr>
                   <td className="px-3 py-2 font-bold">자동 생성</td>
-                  <td className="px-3 py-2">IP 주소, 접속 일시, 브라우저 및 기기 정보, 쿠키, 서비스 이용 기록, 오류 로그</td>
+                  <td className="px-3 py-2">
+                    IP 주소, 접속 일시, 브라우저 및 기기 정보, 쿠키, 서비스 이용 기록, 오류 로그, 앱 이용 기록(화면·기능 사용 이벤트,
+                    앱 설치 때 만든 임의 기기 식별값, 기기·OS·앱 버전)
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -112,18 +123,47 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="mb-3 text-xl font-black">6. 개인정보 처리업무의 위탁</h2>
-          <p>
-            RAOTA는 안정적인 서비스 제공을 위해 서버 운영, 데이터 저장, 이미지 저장, 인증, 알림, 보안 및 장애 대응 등 일부 업무를
-            외부 서비스에 위탁할 수 있습니다. 위탁이 발생하는 경우 수탁자, 위탁 업무의 내용, 보유 및 이용 기간 등 필요한 사항을
-            본 처리방침 또는 별도 안내를 통해 공개합니다.
+          <p className="mb-3">RAOTA는 서비스 제공을 위해 다음 업무를 위탁합니다. 국외에 있는 수탁자는 제7조에서 이전 내용을 함께 밝힙니다.</p>
+          <LegalTable
+            head={['수탁자', '위탁 업무']}
+            rows={[
+              ['Oracle Corporation (Oracle Cloud Infrastructure, 대한민국 춘천 리전)', '서버·데이터베이스 운영, 앱에서 올린 사진 저장'],
+              ['NAVER Cloud Corp.', '앱 지도 표시'],
+              ['Cloudflare, Inc.', '사진 전송과 크기 변환'],
+              ['Cloudinary Ltd.', '웹에서 올린 사진 저장'],
+              ['OpenAI, L.L.C.', 'AI 추천의 매장 검색(요청 조건을 검색용 값으로 변환)'],
+              ['Groq, Inc.', 'AI 추천 이유 작성'],
+              ['Grafana Labs', '서버 로그 보관과 장애 대응'],
+              ['Discord Inc.', '운영 알림(오류, 신고 접수)'],
+              ['PostHog, Inc.', '앱 이용 통계'],
+            ]}
+          />
+          <p className="mt-3">
+            위탁한 개인정보는 회원 탈퇴 또는 위탁 계약 종료 시까지 보유하며, 제7조에 따로 정한 기간이 있으면 그에 따릅니다. 수탁자가 바뀌면
+            본 처리방침을 통해 알립니다.
           </p>
         </section>
 
         <section>
           <h2 className="mb-3 text-xl font-black">7. 국외 이전</h2>
-          <p>
-            RAOTA는 서비스 인프라, OAuth 로그인, 이미지 저장 또는 보안 운영 과정에서 국외에 위치한 서버나 외부 서비스를 이용할 수 있습니다.
-            국외 이전이 구체적으로 발생하는 경우 이전받는 자, 이전 국가, 이전 항목, 이전 목적, 보유 및 이용 기간 등을 관련 법령에 따라 안내합니다.
+          <p className="mb-3">
+            RAOTA는 서비스 제공을 위해 다음과 같이 개인정보를 국외로 이전합니다. 이전은 서비스를 이용하는 시점에 암호화된 네트워크로
+            전송하는 방식으로 이루어집니다.
+          </p>
+          <LegalTable
+            head={['이전받는 자 (국가)', '이전 항목', '목적', '보유 및 이용 기간']}
+            rows={[
+              ['Cloudflare, Inc. (미국 등 세계 각지)', '사진을 볼 때의 IP 주소, 기기 정보', '사진 전송과 크기 변환', '전송 처리 후 지체 없이 삭제'],
+              ['Cloudinary Ltd. (미국)', '웹에서 올린 사진', '사진 저장', '회원 탈퇴 후 30일'],
+              ['OpenAI, L.L.C. (미국)', 'AI 추천 요청 조건(국물·분위기·우선순위, 입력한 문장, 지역)', '매장 검색', '처리 후 최대 30일(오남용 확인 목적)'],
+              ['Groq, Inc. (미국)', 'AI 추천 요청 조건과 추천 후보 매장 정보', '추천 이유 작성', '처리 후 지체 없이 삭제'],
+              ['Grafana Labs (일본)', '서버 로그(회원 ID, IP 주소, 요청 정보, 오류 내용)', '장애 대응과 보안', '수집일로부터 30일'],
+              ['Discord Inc. (미국)', '운영 알림에 담긴 회원 ID, 신고 사유, 오류 내용', '운영 알림', '운영자가 알림을 지울 때까지'],
+              ['PostHog, Inc. (미국)', '앱 이용 기록(화면·기능 사용 이벤트, 임의 기기 식별값, 기기·OS·앱 버전)', '이용 통계와 서비스 개선', '수집일로부터 1년'],
+            ]}
+          />
+          <p className="mt-3">
+            국외 이전을 원하지 않으면 AI 추천 기능을 쓰지 않거나 회원 탈퇴로 거부할 수 있습니다. 이 경우 해당 기능을 이용할 수 없습니다.
           </p>
         </section>
 
@@ -157,6 +197,10 @@ export default function PrivacyPage() {
             <li>Safari: 설정 &gt; 개인정보 보호 &gt; 쿠키 및 웹사이트 데이터 관리</li>
             <li>Edge: 설정 &gt; 쿠키 및 사이트 권한 &gt; 쿠키 및 사이트 데이터 관리</li>
           </ul>
+          <p className="mt-3">
+            앱에서는 쿠키 대신 이용 통계 도구(PostHog)로 화면·기능 사용 이벤트를 수집합니다. 앱 설치 때 만든 임의 기기 식별값으로만 묶고
+            회원 ID나 이름과 연결하지 않으며, 서비스 개선과 이용 통계에만 사용합니다.
+          </p>
         </section>
 
         <section>
@@ -195,5 +239,36 @@ export default function PrivacyPage() {
         </section>
       </div>
     </article>
+  );
+}
+
+/** 열이 셋 이상이면 좁은 화면에서 글자가 한 자씩 끊기지 않게 최소 너비를 두고 가로로 밀어 본다 */
+function LegalTable({ head, rows }: { head: string[]; rows: string[][] }) {
+  const wide = head.length > 2;
+  return (
+    <div className="overflow-x-auto rounded-sm border border-stone-200">
+      <table className={`w-full border-collapse text-left text-sm leading-6 ${wide ? 'min-w-[40rem]' : ''}`}>
+        <thead className="bg-[#f2f2f2] text-[#25282b]">
+          <tr>
+            {head.map((cell) => (
+              <th key={cell} className="border-b border-stone-200 px-3 py-2 font-black">
+                {cell}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row[0]}>
+              {row.map((cell, index) => (
+                <td key={index} className={`border-b border-stone-200 px-3 py-2 ${index === 0 ? 'font-bold' : ''}`}>
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
