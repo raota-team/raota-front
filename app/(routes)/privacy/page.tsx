@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <p className="font-black">개정 안내</p>
           <p className="mt-1">
             2026년 11월 3일부터 개정 처리방침이 적용됩니다. 제6조(위탁)와 제7조(국외 이전)에 실제 수탁자와 이전받는 자를 밝히고,
-            앱 이용 통계 수집(제2조·제10조)을 추가했습니다. 시행일 전까지는 이전 처리방침이 적용됩니다.{' '}
+            앱 이용 통계와 앱 오류 수집(제2조·제3조·제10조)을 추가했습니다. 시행일 전까지는 이전 처리방침이 적용됩니다.{' '}
             <a href="/privacy/2026-10-27" className="underline underline-offset-4">이전 처리방침 보기</a>
           </p>
         </div>
@@ -73,7 +73,8 @@ export default function PrivacyPage() {
                   <td className="px-3 py-2 font-bold">자동 생성</td>
                   <td className="px-3 py-2">
                     IP 주소, 접속 일시, 브라우저 및 기기 정보, 쿠키, 서비스 이용 기록, 오류 로그, 앱 이용 기록(화면·기능 사용 이벤트,
-                    앱 설치 때 만든 임의 기기 식별값, 기기·OS·앱 버전)
+                    앱 설치 때 만든 임의 기기 식별값, 기기·OS·앱 버전), 앱 오류 정보(오류 내용과 발생 위치, 기기·OS·앱 버전, 앱 설치 때
+                    만든 임의 식별값)
                   </td>
                 </tr>
               </tbody>
@@ -101,6 +102,7 @@ export default function PrivacyPage() {
             <li>추천 요청 조건과 추천 결과 기록: 회원 탈퇴 요청일로부터 30일 후까지</li>
             <li>게시글, 댓글 등 커뮤니티 공개 콘텐츠: 서비스 운영상 필요가 종료될 때까지 보관될 수 있으며, 탈퇴 후 작성자 프로필은 탈퇴한 사용자로 익명화</li>
             <li>접속 로그 등 서비스 이용 기록: 보안 및 부정 이용 방지를 위해 필요한 기간</li>
+            <li>앱 오류 정보: 수집일로부터 최대 90일</li>
             <li>관계 법령상 보존 의무가 있는 정보: 해당 법령에서 정한 기간</li>
           </ul>
         </section>
@@ -136,6 +138,7 @@ export default function PrivacyPage() {
               ['Grafana Labs', '서버 로그 보관과 장애 대응'],
               ['Discord Inc.', '운영 알림(오류, 신고 접수)'],
               ['PostHog, Inc.', '앱 이용 통계'],
+              ['Functional Software, Inc. (Sentry)', '앱 오류·충돌 수집과 분석'],
             ]}
           />
           <p className="mt-3">
@@ -160,6 +163,7 @@ export default function PrivacyPage() {
               ['Grafana Labs (일본)', '서버 로그(회원 ID, IP 주소, 요청 정보, 오류 내용)', '장애 대응과 보안', '수집일로부터 30일'],
               ['Discord Inc. (미국)', '운영 알림에 담긴 회원 ID, 신고 사유, 오류 내용', '운영 알림', '운영자가 알림을 지울 때까지'],
               ['PostHog, Inc. (미국)', '앱 이용 기록(화면·기능 사용 이벤트, 임의 기기 식별값, 기기·OS·앱 버전)', '이용 통계와 서비스 개선', '수집일로부터 1년'],
+              ['Functional Software, Inc. (Sentry, 미국)', '앱 오류 정보(오류 내용과 발생 위치, 기기·OS·앱 버전, 임의 설치 식별값)', '앱 오류 확인과 수정', '수집일로부터 최대 90일'],
             ]}
           />
           <p className="mt-3">
@@ -199,7 +203,8 @@ export default function PrivacyPage() {
           </ul>
           <p className="mt-3">
             앱에서는 쿠키 대신 이용 통계 도구(PostHog)로 화면·기능 사용 이벤트를 수집합니다. 앱 설치 때 만든 임의 기기 식별값으로만 묶고
-            회원 ID나 이름과 연결하지 않으며, 서비스 개선과 이용 통계에만 사용합니다.
+            회원 ID나 이름과 연결하지 않으며, 서비스 개선과 이용 통계에만 사용합니다. 앱에서 오류가 나면 오류 수집 도구(Sentry)로 오류 내용과
+            기기·앱 정보를 보냅니다. 회원 ID나 이름과 연결하지 않고 IP 주소는 저장하지 않으며, 오류를 찾아 고치는 데에만 사용합니다.
           </p>
         </section>
 
