@@ -248,7 +248,7 @@ The shop-detail 1:1 compare panel is a secondary action at the bottom of a detai
 Global app-launch notice (`AppPreRegisterModal`, mounted in `ClientLayout` for every non-admin route).
 
 - Layout: desktop is a two-column dialog (charcoal `#25282b` panel with three real in-development app screens, white form column); mobile is a bottom sheet whose whole form, CTA included, fits a 390×844 viewport without scrolling. The feature list is desktop-only for that reason
-- App screens come from `raota-app/scratch/figma-spec/shots/` as 480px-wide webp in `public/app-preview/`; keep the three at the same aspect ratio
+- App screens are iOS simulator screenshots of the real app (`raota-app`, status bar 09:41) as 480px-wide webp in `public/app-preview/`; keep the three at the same aspect ratio
 - Surface: flat, 2px rectangles, one red CTA (`출시 알림 받기`); dismiss actions (`오늘 하루 보지 않기` 24h, `닫기` session) are quiet footer text buttons
 - Data goes to the "라오타 사전예약" Google Form via `no-cors` POST. Browser code cannot see rejections, so radio/checkbox values (`IOS`, `안드로이드`, `옵션 1`) and entry IDs must match the form exactly; change both together
 
