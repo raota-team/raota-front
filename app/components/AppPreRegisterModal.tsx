@@ -25,9 +25,9 @@ const PLATFORMS = [
 type Platform = (typeof PLATFORMS)[number]['value'];
 
 const APP_SCREENS = [
-  { src: '/app-preview/home.webp', label: '홈', alt: '라오타 앱 홈 화면: AI 라멘 큐레이터와 스타일별 탐색' },
-  { src: '/app-preview/map.webp', label: '지도', alt: '라오타 앱 지도 화면: 주변 라멘집 핀과 매장 카드' },
-  { src: '/app-preview/my.webp', label: '마이', alt: '라오타 앱 마이 화면: 누적 라멘로그와 취향 리포트' },
+  { src: '/app-preview/home.webp', label: '홈', alt: '라오타 앱 홈 화면: AI 라멘 추천과 오늘의 큐레이션' },
+  { src: '/app-preview/map.webp', label: '지도', alt: '라오타 앱 지도 화면: 주변 라멘집 핀과 영업 중인 매장 카드' },
+  { src: '/app-preview/my.webp', label: '마이', alt: '라오타 앱 마이 화면: 라멘로그 수, 등급, 종류별 기록' },
 ];
 
 const FEATURES = [
@@ -124,7 +124,7 @@ export default function AppPreRegisterModal() {
                     src={screen.src}
                     alt={screen.alt}
                     width={480}
-                    height={1039}
+                    height={1044}
                     sizes="(min-width: 768px) 160px, 90px"
                     priority={index === 1}
                     className="h-auto w-full rounded-[10px] ring-1 ring-white/15"
@@ -146,7 +146,7 @@ export default function AppPreRegisterModal() {
             >
               라오타 앱이
               <br />
-              10월 중에 나와요
+              11월 중에 나와요
             </h2>
             <p className="mt-2 text-[15px] leading-relaxed text-stone-600">
               iPhone(iOS) 앱부터 먼저 출시돼요.
