@@ -22,10 +22,11 @@ const PLATFORM_ENTRY = 'entry.1371125767';
 // 구글 폼 "IOS인지 안드로이드인지?" 선택지 문구와 정확히 같아야 한다. iOS는 출시돼 이제 Android만 사전예약을 받는다
 const ANDROID_PLATFORM_VALUE = '안드로이드';
 
+// 화면을 바꾸면 파일 이름도 바꾼다. 이미지가 같은 주소로 7일 캐시돼(next.config minimumCacheTTL) 이름이 같으면 예전 화면이 계속 보인다
 const APP_SCREENS = [
-  { src: '/app-preview/home.webp', label: '홈', alt: '라오타 앱 홈 화면: AI 라멘 추천과 오늘의 큐레이션' },
-  { src: '/app-preview/map.webp', label: '지도', alt: '라오타 앱 지도 화면: 주변 라멘집 핀과 영업 중인 매장 카드' },
-  { src: '/app-preview/my.webp', label: '마이', alt: '라오타 앱 마이 화면: 라멘로그 수, 등급, 종류별 기록' },
+  { src: '/app-preview/home-20261030.webp', label: '홈', alt: '라오타 앱 홈 화면: AI 라멘 추천과 오늘의 큐레이션' },
+  { src: '/app-preview/map-20261030.webp', label: '지도', alt: '라오타 앱 지도 화면: 주변 라멘집 핀과 영업 중인 매장 카드' },
+  { src: '/app-preview/my-20261030.webp', label: '마이', alt: '라오타 앱 마이 화면: 라멘로그 수, 등급, 종류별 기록' },
 ];
 
 const FEATURES = [
@@ -160,14 +161,16 @@ export default function AppPreRegisterModal() {
             </ul>
 
             {!isAndroid && (
+              // Apple 로고는 공식 배지 안에서만 쓸 수 있어 배지(Apple 마케팅 도구의 한국어 검정 배지)를 고치지 않고 그대로 넣는다.
+              // 버튼 바탕을 배지와 같은 검정으로 두고 위아래로 배지 높이의 1/4 이상 여백을 둔다(배지 최소 여백 규정)
               <a
                 href={APP_STORE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => hideFor(365 * DAY_MS)}
-                className="mt-4 flex h-12 w-full items-center justify-center rounded-sm bg-[#e60000] text-[15px] font-bold text-white transition-opacity hover:opacity-90 active:opacity-90 md:mt-5"
+                className="mt-4 flex h-[60px] w-full items-center justify-center rounded-sm bg-black transition-opacity hover:opacity-85 active:opacity-85 md:mt-5"
               >
-                App Store에서 받기
+                <Image src="/app-store-badge-ko.svg" alt="App Store에서 다운로드하기" width={130} height={40} unoptimized className="h-10 w-auto" />
                 <span className="sr-only"> (새 창)</span>
               </a>
             )}
