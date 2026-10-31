@@ -247,10 +247,19 @@ The shop-detail 1:1 compare panel is a secondary action at the bottom of a detai
 
 Global app-launch notice (`AppPreRegisterModal`, mounted in `ClientLayout` for every non-admin route). The iPhone app is out (App Store `id6825202179`); Android launches in November and still takes pre-registrations.
 
-- Layout: desktop is a two-column dialog (charcoal `#25282b` panel with three real app screens, white column); mobile is a bottom sheet whose whole content, CTA included, fits a 390×844 viewport without scrolling. The feature list is desktop-only for that reason
+- Layout: desktop is a two-column dialog (charcoal `#25282b` panel with three real app screens, white column that scrolls on its own when the consent text is open or the window is short); mobile is a bottom sheet whose whole content, CTA included, fits a 390×844 viewport without scrolling. The feature lists are desktop-only for that reason: "지금 앱에서" (only what the released app does) beside "곧 나와요" (from `app/lib/upcomingFeatures.ts`)
 - App screens are iOS simulator screenshots of the real app (`raota-app`, status bar 09:41) as 480px-wide webp in `public/app-preview/`; keep the three at the same aspect ratio. When replacing a screen, give the file a new name (`home-YYYYMMDD.webp`): images are cached for 7 days per URL, so a same-name swap keeps showing the old screen
 - iPhone/desktop get a full-width App Store link drawn as Apple's Korean black badge stretched to the column: black fill, 1px `#a6a6a6` border, 10px radius, 52px tall, with the badge's own Apple logo and "App Store에서 다운로드하기" lettering unchanged inside (`public/app-store-badge-ko-mark.svg` is the official badge minus its frame; user decision 2026.11.01, so this one surface allows pure black). Below it sits an outlined `Android 출시 알림 받기`. Android devices (user agent) get an Android headline, no App Store link, and a red `Android 출시 알림 받기`. Dismiss actions (`오늘 하루 보지 않기` 24h, `닫기` session) are quiet footer text buttons; opening the App Store or signing up hides the popup for a year (`HIDE_APP_LAUNCH_UNTIL`)
 - Data goes to the "라오타 사전예약" Google Form via `no-cors` POST, always with platform `안드로이드`. Browser code cannot see rejections, so the values (`안드로이드`, `옵션 1`) and entry IDs must match the form exactly; change both together
+
+### Upcoming Features (home "곧 나와요")
+
+Last block on the home page, full content width under the two-column grid. Content lives in `app/lib/upcomingFeatures.ts`, shared with the popup.
+
+- Teased on the web only: never inside the app or in App Store copy (Apple can reject "coming soon" features). When a feature ships, remove it here and add it to the popup's "지금 앱에서"
+- Status chip says only a month ("11월 출시", "12월 중"); no vague "곧/조만간". If a month slips, change the chip
+- Only the dated, actionable item (Android) is a charcoal card with the red `출시 알림 받기` button, which opens the launch popup even if it was dismissed; the rest are quiet outlined cards with a muted note line
+- Desktop 3-up cards; mobile stacks the same cards with the status chip and icon on one row
 
 ### Ramen Log Feed Actions
 
