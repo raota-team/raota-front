@@ -57,7 +57,7 @@ export default function UpcomingFeatures() {
               {lead ? (
                 <button
                   type="button"
-                  onClick={openAppLaunchModal}
+                  onClick={() => openAppLaunchModal()}
                   className="mt-4 h-11 w-full rounded-sm bg-[#e60000] text-sm font-bold text-white transition-opacity hover:opacity-90"
                 >
                   출시 알림 받기

@@ -13,6 +13,7 @@ import {
   Store,
 } from 'lucide-react';
 import RamenLogModal, { type RamenLogFormData } from '@/app/components/RamenLogModal';
+import { openRamenLogAppPrompt } from '@/app/components/AppPreRegisterModal';
 import RamenLogCard, {
   formatRamenLogDate,
   tasteNoteLabels,
@@ -22,7 +23,6 @@ import { useApp } from '@/app/context/AppContext';
 import { getAccessToken } from '@/lib/auth/accessToken';
 import { useRamenShops } from '@/hooks/queries/useRamenShops';
 import {
-  createRamenLog,
   deleteRamenLog,
   getRamenLogs,
   toggleRamenLogLike,
@@ -33,7 +33,6 @@ import {
   type RamenLogRequest,
   type RamenLogSort,
 } from '@/lib/api/ramen-logs';
-import { trackEvent } from '@/lib/utils/analytics';
 
 const PhotoModal = dynamic(() => import('@/app/components/PhotoModal'), { ssr: false });
 
@@ -67,7 +66,7 @@ const toRamenLogRequest = (data: RamenLogFormData): RamenLogRequest => {
 
 export default function RamenLogPage() {
   const router = useRouter();
-  const { isLoggedIn, isAuthChecking, showConfirm, showToast } = useApp();
+  const { showConfirm, showToast } = useApp();
   const [logItems, setLogItems] = useState<RamenLog[]>([]);
   const [pageInfo, setPageInfo] = useState<RamenLogPageInfo | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -85,7 +84,6 @@ export default function RamenLogPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<RamenLog | null>(null);
   const [editingLog, setEditingLog] = useState<RamenLog | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -199,50 +197,18 @@ export default function RamenLogPage() {
     return () => observer.disconnect();
   }, [isInitialLoading, isLoadingMore, loadLogs, pageInfo]);
 
-  const openCreateModal = () => {
-    const hasAccessToken = Boolean(getAccessToken());
+  const handleUpdateLog = async (data: RamenLogFormData) => {
+    if (!editingLog) return;
 
-    if (isAuthChecking && !hasAccessToken) return;
-
-    if (!isLoggedIn && !hasAccessToken) {
-      showConfirm('로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?', () => {
-        router.push('/login');
-      });
-      return;
-    }
-
-    trackEvent('ramen_log_started', { source: 'ramen_log_feed' });
-    setIsLogModalOpen(true);
-  };
-
-  const handleCreateLog = async (data: RamenLogFormData) => {
-    const request = toRamenLogRequest(data);
-
-    if (editingLog) {
-      const updated = await updateRamenLog(editingLog.id, request);
-      setLogItems((current) =>
-        updated.isPublic
-          ? current.map((log) => log.id === updated.id ? updated : log)
-          : current.filter((log) => log.id !== updated.id),
-      );
-      setSelectedLog((current) => current?.id === updated.id ? updated : current);
-      setEditingLog(null);
-      showToast('라멘로그를 수정했습니다.', 'success');
-      return;
-    }
-
-    const created = await createRamenLog(request);
-    if (created?.isPublic && sortBy === 'LATEST' && !selectedShopId && !debouncedSearchQuery) {
-      setLogItems((current) => [created, ...current]);
-      setPageInfo((current) => current ? {
-        ...current,
-        totalElements: current.totalElements + 1,
-      } : current);
-    } else {
-      await loadLogs(0, true);
-    }
-    trackEvent('ramen_log_completed', { source: 'ramen_log_feed' });
-    showToast('라멘로그를 저장했습니다.', 'success');
+    const updated = await updateRamenLog(editingLog.id, toRamenLogRequest(data));
+    setLogItems((current) =>
+      updated.isPublic
+        ? current.map((log) => log.id === updated.id ? updated : log)
+        : current.filter((log) => log.id !== updated.id),
+    );
+    setSelectedLog((current) => current?.id === updated.id ? updated : current);
+    setEditingLog(null);
+    showToast('라멘로그를 수정했습니다.', 'success');
   };
 
   const handleLikeChange = async (logId: number) => {
@@ -273,7 +239,6 @@ export default function RamenLogPage() {
     if (!log) return;
     setSelectedLog(null);
     setEditingLog(log);
-    setIsLogModalOpen(true);
   };
 
   const handleDeleteLog = async (logId: number) => {
@@ -427,7 +392,7 @@ export default function RamenLogPage() {
 
             <button
               type="button"
-              onClick={openCreateModal}
+              onClick={() => openRamenLogAppPrompt('ramen_log_feed')}
               className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 text-sm font-black text-white transition-opacity hover:opacity-90 w-full sm:w-auto"
             >
               <Plus className="h-4 w-4" />
@@ -521,12 +486,9 @@ export default function RamenLogPage() {
       </main>
 
       <RamenLogModal
-        isOpen={isLogModalOpen}
-        onClose={() => {
-          setIsLogModalOpen(false);
-          setEditingLog(null);
-        }}
-        onCreate={handleCreateLog}
+        isOpen={Boolean(editingLog)}
+        onClose={() => setEditingLog(null)}
+        onCreate={handleUpdateLog}
         initialLog={editingLog ? {
           shopName: editingLog.shop.name,
           shopId: editingLog.shop.id,
