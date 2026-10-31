@@ -27,13 +27,6 @@ interface RamenLogModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate?: (data: RamenLogFormData) => void | Promise<void>;
-  initialShop?: {
-    id: number;
-    name: string;
-    branchName?: string;
-    type?: string;
-    menus?: string[];
-  };
   initialLog?: RamenLogFormData;
 }
 
@@ -128,7 +121,7 @@ const convertHeicToJpeg = async (file: File): Promise<File> => {
   });
 };
 
-export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, initialLog }: RamenLogModalProps) {
+export default function RamenLogModal({ isOpen, onClose, onCreate, initialLog }: RamenLogModalProps) {
   const [shopName, setShopName] = useState('');
   const [menuName, setMenuName] = useState('');
   const [ramenType, setRamenType] = useState(ramenTypes[0]);
@@ -203,19 +196,11 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
   useEffect(() => {
     if (!isOpen) return;
 
-    const initialShopName = initialLog?.shopName || (initialShop
-      ? `${initialShop.name}${initialShop.branchName ? ` ${initialShop.branchName}` : ''}`
-      : '');
-    const initialMenus = initialShop?.menus?.filter(Boolean) || [];
-    const initialMenuOptions = initialMenus.length > 0
-      ? [...initialMenus, '직접 입력']
-      : initialShop || initialLog
-        ? ['직접 입력']
-        : [];
+    const initialShopName = initialLog?.shopName || '';
 
     setShopName(initialShopName);
-    setMenuName(initialLog?.menuName || initialMenus[0] || '');
-    setRamenType(initialLog?.ramenType || ramenTypes.find((type) => initialShop?.type?.includes(type)) || (initialShop ? '기타' : ramenTypes[0]));
+    setMenuName(initialLog?.menuName || '');
+    setRamenType(initialLog?.ramenType || ramenTypes[0]);
     setVisitedAt(toDateInputValue(initialLog?.visitedAt));
     setRevisit(initialLog?.revisit || '자주 감');
     setNote(initialLog?.note || '');
@@ -227,13 +212,13 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     setIsPublic(initialLog?.isPublic ?? true);
 
     setShopQuery(initialShopName);
-    setSelectedShopId(initialLog?.shopId || initialShop?.id || null);
+    setSelectedShopId(initialLog?.shopId || null);
     setSearchResults([]);
     setIsSearching(false);
     setShowDropdown(false);
 
-    setAvailableMenus(initialMenuOptions);
-    setIsCustomMenu(Boolean(initialLog || (initialShop && initialMenus.length === 0)));
+    setAvailableMenus(initialLog ? ['직접 입력'] : []);
+    setIsCustomMenu(Boolean(initialLog));
     setIsLoadingMenus(false);
 
     setSelectedFile(null);
@@ -243,7 +228,7 @@ export default function RamenLogModal({ isOpen, onClose, onCreate, initialShop, 
     setIsSubmitting(false);
     setIsScrolling(false);
     setScrollThumb({ height: 0, top: 0, visible: false });
-  }, [isOpen, initialLog, initialShop]);
+  }, [isOpen, initialLog]);
 
   // Debounced API search effect
   useEffect(() => {

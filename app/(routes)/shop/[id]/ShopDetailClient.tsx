@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -25,13 +25,11 @@ import { useApp } from "@/app/context/AppContext";
 import { ApiClientError } from "@/lib/api/client";
 import ResilientImage from "@/app/components/ResilientImage";
 import ShopRamenLogPreview from "@/app/components/ShopRamenLogPreview";
-import type { RamenLogFormData } from "@/app/components/RamenLogModal";
-import { createRamenLog, toRevisitValue } from "@/lib/api/ramen-logs";
+import { openRamenLogAppPrompt } from "@/app/components/AppPreRegisterModal";
 import ShopComparePanel from "@/app/components/ShopComparePanel";
 
 const ReportModal = dynamic(() => import("../../../components/ReportModal"), { ssr: false });
 const VoteMenuModal = dynamic(() => import("../../../components/VoteMenuModal"), { ssr: false });
-const RamenLogModal = dynamic(() => import("../../../components/RamenLogModal"), { ssr: false });
 
 interface ShopDetailClientProps {
   initialShop?: Shop;
@@ -73,8 +71,6 @@ const splitReviewSummaryParagraphs = (description?: string) => {
     return paragraphs;
   }, []);
 };
-const PENDING_RAMEN_LOG_KEY = "raota_pending_ramen_log";
-const LOGIN_RETURN_TO_KEY = "raota_login_return_to";
 
 export default function ShopDetailClient({ initialShop }: ShopDetailClientProps) {
   const router = useRouter();
@@ -93,10 +89,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
-  const [isRamenLogModalOpen, setIsRamenLogModalOpen] = useState(false);
-  const [ramenLogRefreshKey, setRamenLogRefreshKey] = useState(0);
   const lastIncrementedId = useRef<number | null>(null);
-  const resumedRamenLogRef = useRef(false);
 
   const refreshShopData = async () => {
     try {
@@ -200,18 +193,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     }
   };
 
-  const openRamenLogModal = () => {
-    if (isAuthChecking) return;
-
-    if (!isLoggedIn) {
-      showConfirm("라멘로그는 로그인 후 남길 수 있습니다.\n로그인 페이지로 이동하시겠습니까?", () => {
-        router.push(`/login?returnTo=${encodeURIComponent(`/shop/${shopId}`)}`);
-      });
-      return;
-    }
-
-    setIsRamenLogModalOpen(true);
-  };
+  const openRamenLogAppPromptFromShop = () => openRamenLogAppPrompt("shop_detail");
 
   const openReportModal = () => {
     if (isAuthChecking) return;
@@ -225,77 +207,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
     setIsReportModalOpen(true);
   };
-
-  const completeRamenLogCreate = useCallback(async (data: RamenLogFormData) => {
-    if (!data.shopId) {
-      throw new Error("라멘 가게를 선택해주세요.");
-    }
-
-    await createRamenLog({
-      shopId: data.shopId,
-      menuName: data.menuName,
-      ramenType: data.ramenType,
-      imageUrl: data.imageUrl,
-      visitedAt: data.visitedAt,
-      note: data.note || undefined,
-      tasteNotes: data.tasteNotes,
-      revisit: toRevisitValue(data.revisit),
-      public: data.isPublic,
-    });
-
-    setRamenLogRefreshKey((current) => current + 1);
-    setShopDetail((current) => current ? {
-      ...current,
-      ramenLogCount: current.ramenLogCount + 1,
-    } : current);
-    queryClient.invalidateQueries({ queryKey: ["ramen-shop-detail", shopId] });
-    showToast("라멘로그를 저장했습니다.", "success");
-  }, [queryClient, shopId, showToast]);
-
-  const handleCreateRamenLog = async (data: RamenLogFormData) => {
-    if (!isLoggedIn) {
-      const returnTo = `/shop/${shopId}?resumeRamenLog=1`;
-      sessionStorage.setItem(PENDING_RAMEN_LOG_KEY, JSON.stringify(data));
-      sessionStorage.setItem(LOGIN_RETURN_TO_KEY, returnTo);
-      router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
-      return;
-    }
-
-    await completeRamenLogCreate(data);
-  };
-
-  useEffect(() => {
-    if (!isLoggedIn || resumedRamenLogRef.current || !shopId) return;
-
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("resumeRamenLog") !== "1") return;
-
-    const pendingLog = sessionStorage.getItem(PENDING_RAMEN_LOG_KEY);
-    if (!pendingLog) return;
-
-    resumedRamenLogRef.current = true;
-
-    try {
-      const data = JSON.parse(pendingLog) as RamenLogFormData;
-      if (data.shopId !== shopId) {
-        resumedRamenLogRef.current = false;
-        return;
-      }
-
-      void completeRamenLogCreate(data)
-        .then(() => {
-          sessionStorage.removeItem(PENDING_RAMEN_LOG_KEY);
-          sessionStorage.removeItem(LOGIN_RETURN_TO_KEY);
-          window.history.replaceState(null, "", `/shop/${shopId}`);
-        })
-        .catch(() => {
-          resumedRamenLogRef.current = false;
-          showToast("작성한 라멘로그를 저장하지 못했습니다. 다시 시도해주세요.", "error");
-        });
-    } catch {
-      sessionStorage.removeItem(PENDING_RAMEN_LOG_KEY);
-    }
-  }, [completeRamenLogCreate, isLoggedIn, shopId, showToast]);
 
   const shop = shopDetail;
   
@@ -328,22 +239,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
     () => votingMenus.find((menu) => menu.id === bestMenuId) ?? null,
     [bestMenuId, votingMenus],
   );
-  const ramenLogInitialShop = useMemo(() => {
-    if (!shop) return undefined;
-
-    const menuNames = [
-      ...(shop.menu_list || []).map((menu) => menu.name),
-      ...(shop.menus || []).map((menu) => menu.name),
-    ].filter((name, index, names) => Boolean(name) && names.indexOf(name) === index);
-
-    return {
-      id: shop.id,
-      name: shop.name,
-      branchName: shop.branch_name,
-      type: shop.type,
-      menus: menuNames,
-    };
-  }, [shop]);
   const reviewSummaryParagraphs = useMemo(
     () => splitReviewSummaryParagraphs(shop?.description),
     [shop?.description],
@@ -450,7 +345,7 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
                 <div className="flex items-center border-t border-stone-200 p-4 md:border-l md:border-t-0 md:p-5">
                   <button
                     type="button"
-                    onClick={openRamenLogModal}
+                    onClick={openRamenLogAppPromptFromShop}
                     className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-sm bg-[#e60000] px-4 py-3.5 text-sm font-black text-white transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e60000]"
                   >
                     먹은 라멘 기록하기
@@ -593,10 +488,10 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
 
             <div className="order-2 lg:order-3">
               <ShopRamenLogPreview
-                key={`${shop.id}-${ramenLogRefreshKey}`}
+                key={shop.id}
                 shopId={shop.id}
                 shopName={shop.name}
-                onWrite={openRamenLogModal}
+                onWrite={openRamenLogAppPromptFromShop}
               />
             </div>
 
@@ -644,13 +539,6 @@ export default function ShopDetailClient({ initialShop }: ShopDetailClientProps)
         totalVotes={totalVotes}
         bestMenuId={bestMenuId}
         shopName={shop.name}
-      />
-
-      <RamenLogModal
-        isOpen={isRamenLogModalOpen}
-        onClose={() => setIsRamenLogModalOpen(false)}
-        onCreate={handleCreateRamenLog}
-        initialShop={ramenLogInitialShop}
       />
     </div>
   );

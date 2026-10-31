@@ -191,14 +191,6 @@ export const getRamenLog = async (logId: number): Promise<RamenLog> => {
   return normalizeRamenLog(response.data);
 };
 
-export const createRamenLog = async (request: RamenLogRequest): Promise<RamenLog | null> => {
-  const response = await apiClient<ApiResponse<RamenLogDto>>("/ramen-logs", {
-    method: "POST",
-    body: request,
-  });
-  return response.data ? normalizeRamenLog(response.data) : null;
-};
-
 export const updateRamenLog = async (
   logId: number,
   request: RamenLogRequest,

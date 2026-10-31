@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { BookOpen, Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Shield, Mail } from 'lucide-react';
 import PhotoModal from '../../../components/PhotoModal';
 import RamenLogModal, { type RamenLogFormData } from '../../../components/RamenLogModal';
+import { openRamenLogAppPrompt } from '../../../components/AppPreRegisterModal';
 import RamenLogCard, {
   emptyTasteNotes,
   formatRamenLogDate,
@@ -604,9 +605,15 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     <div className="flex flex-col items-center justify-center rounded-sm border border-dashed border-stone-300 bg-stone-50 py-20 text-center">
       <div className="mb-4 rounded-full border border-stone-100 bg-white p-5"><Icon className="h-10 w-10 text-stone-300" /></div>
       <p className="text-stone-500 font-bold mb-6">{message}</p>
-      <Link href={tab === 'logs' ? '/ramen-log' : tab === 'posts' || tab === 'comments' ? '/community' : '/shops'} className="inline-flex items-center gap-2 rounded-sm bg-[#e60000] px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
-        {tab === 'logs' ? '라멘로그 기록하기' : tab === 'posts' || tab === 'comments' ? '커뮤니티 가기' : '맛집 찾아보기'} <ArrowRight className="w-4 h-4" />
-      </Link>
+      {tab === 'logs' ? (
+        <button type="button" onClick={() => openRamenLogAppPrompt('user_profile_empty')} className="inline-flex items-center gap-2 rounded-sm bg-[#e60000] px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
+          라멘로그 기록하기 <ArrowRight className="w-4 h-4" />
+        </button>
+      ) : (
+        <Link href={tab === 'posts' || tab === 'comments' ? '/community' : '/shops'} className="inline-flex items-center gap-2 rounded-sm bg-[#e60000] px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
+          {tab === 'posts' || tab === 'comments' ? '커뮤니티 가기' : '맛집 찾아보기'} <ArrowRight className="w-4 h-4" />
+        </Link>
+      )}
     </div>
   );
 

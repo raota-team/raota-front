@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useApp } from '../context/AppContext';
 import { UPCOMING_FEATURES } from '../lib/upcomingFeatures';
+import { trackEvent } from '@/lib/utils/analytics';
 
 // iOS 출시(2026.11) 안내로 바뀌어 키를 새로 둔다. 예전 키로 1년 숨긴 사람(사전예약 신청자)에게도 출시를 한 번 보여 준다
 const HIDE_UNTIL_KEY = 'HIDE_APP_LAUNCH_UNTIL';
@@ -39,14 +40,24 @@ const AVAILABLE_FEATURES = [
 
 const OPEN_EVENT = 'raota:open-app-launch';
 
+/** 'ramen-log': 웹에서 기록하기를 눌렀을 때. 웹은 새 기록을 받지 않고 앱으로 안내한다 */
+type LaunchReason = 'ramen-log';
+
 /** 다른 화면(홈 "곧 나와요")에서 출시 팝업을 연다. "보지 않기"로 숨겼어도 직접 누른 것이라 연다 */
-export function openAppLaunchModal() {
-  window.dispatchEvent(new Event(OPEN_EVENT));
+export function openAppLaunchModal(reason?: LaunchReason) {
+  window.dispatchEvent(new CustomEvent<LaunchReason | undefined>(OPEN_EVENT, { detail: reason }));
+}
+
+/** 웹의 모든 "기록하기" 버튼이 쓴다. source로 어느 버튼에서 앱 안내를 봤는지 남긴다 */
+export function openRamenLogAppPrompt(source: string) {
+  trackEvent('ramen_log_app_prompt_opened', { source });
+  openAppLaunchModal('ramen-log');
 }
 
 export default function AppPreRegisterModal() {
   const { showToast } = useApp();
   const [isOpen, setIsOpen] = useState(false);
+  const [reason, setReason] = useState<LaunchReason | null>(null);
   const [email, setEmail] = useState('');
   // Android 기기에서는 App Store 버튼이 쓸모없어 빼고, 사전예약을 주 버튼으로 둔다
   const [isAndroid, setIsAndroid] = useState(false);
@@ -57,7 +68,10 @@ export default function AppPreRegisterModal() {
   useEffect(() => {
     // iPadOS 사파리는 Mac으로 보고하지만 iPad는 App Store를 쓰니 따로 가릴 필요가 없다
     setIsAndroid(/Android/.test(navigator.userAgent));
-    const open = () => setIsOpen(true);
+    const open = (event: Event) => {
+      setReason((event as CustomEvent<LaunchReason | undefined>).detail ?? null);
+      setIsOpen(true);
+    };
     window.addEventListener(OPEN_EVENT, open);
     const hideUntil = Number(localStorage.getItem(HIDE_UNTIL_KEY));
     if (!hideUntil || Date.now() > hideUntil) setIsOpen(true);
@@ -154,12 +168,16 @@ export default function AppPreRegisterModal() {
               id="app-pre-register-title"
               className="text-[24px] font-bold leading-[1.3] tracking-[-0.02em] text-[#25282b] md:text-[28px]"
             >
-              {isAndroid ? '라오타 Android 앱은' : '라오타 iPhone 앱이'}
+              {reason === 'ramen-log' ? '라멘로그는 이제' : isAndroid ? '라오타 Android 앱은' : '라오타 iPhone 앱이'}
               <br />
-              {isAndroid ? '11월에 나와요' : '나왔어요'}
+              {reason === 'ramen-log' ? '앱에서 기록해요' : isAndroid ? '11월에 나와요' : '나왔어요'}
             </h2>
             <p className="mt-2 text-[15px] leading-relaxed text-stone-600">
-              {isAndroid ? 'iPhone 앱이 먼저 나왔어요. 출시되면 메일로 알려드릴게요.' : 'App Store에서 지금 받을 수 있어요. Android 앱은 11월에 나와요.'}
+              {reason === 'ramen-log'
+                ? isAndroid
+                  ? '앱에서 사진과 맛 노트까지 편하게 기록하고 관리할 수 있어요. Android 앱은 11월에 나와요.'
+                  : '앱에서 사진과 맛 노트까지 편하게 기록하고 관리할 수 있어요.'
+                : isAndroid ? 'iPhone 앱이 먼저 나왔어요. 출시되면 메일로 알려드릴게요.' : 'App Store에서 지금 받을 수 있어요. Android 앱은 11월에 나와요.'}
             </p>
 
             {/* 모바일은 위 앱 화면 3장이 기능을 대신 보여주고, 시트가 한 화면에 들어오도록 목록을 뺀다 */}
@@ -200,7 +218,10 @@ export default function AppPreRegisterModal() {
                 href={APP_STORE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => hideFor(365 * DAY_MS)}
+                onClick={() => {
+                  trackEvent('app_store_clicked', { source: reason ?? 'launch_popup' });
+                  hideFor(365 * DAY_MS);
+                }}
                 className="mt-4 flex h-[52px] w-full items-center justify-center rounded-[10px] border border-[#a6a6a6] bg-black transition-opacity hover:opacity-85 active:opacity-85 md:mt-5"
               >
                 <Image src="/app-store-badge-ko-mark.svg" alt="App Store에서 다운로드하기" width={130} height={40} unoptimized className="h-12 w-auto" />
@@ -266,14 +287,19 @@ export default function AppPreRegisterModal() {
 
         {/* 모바일: 시트 하단 고정 / 데스크톱: 폼 영역 하단 */}
         <div className="flex shrink-0 border-t border-stone-200 pb-[env(safe-area-inset-bottom)] md:absolute md:bottom-0 md:left-[440px] md:right-0 md:pb-0">
-          <button
-            type="button"
-            onClick={() => hideFor(DAY_MS)}
-            className="h-12 flex-1 text-sm font-medium text-stone-600 hover:bg-stone-50 hover:text-[#25282b]"
-          >
-            오늘 하루 보지 않기
-          </button>
-          <span aria-hidden="true" className="my-3 w-px bg-stone-200" />
+          {/* 기록하기를 눌러 연 안내는 사용자가 직접 연 것이라 "보지 않기"가 뜻이 없다 */}
+          {!reason && (
+            <>
+              <button
+                type="button"
+                onClick={() => hideFor(DAY_MS)}
+                className="h-12 flex-1 text-sm font-medium text-stone-600 hover:bg-stone-50 hover:text-[#25282b]"
+              >
+                오늘 하루 보지 않기
+              </button>
+              <span aria-hidden="true" className="my-3 w-px bg-stone-200" />
+            </>
+          )}
           <button
             type="button"
             onClick={() => setIsOpen(false)}
