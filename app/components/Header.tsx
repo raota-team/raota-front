@@ -7,6 +7,8 @@ import { usePathname } from 'next/navigation';
 import { ChevronRight, LogIn, LogOut, Menu, X, Home, MessageSquare, User, UtensilsCrossed, NotebookPen, ShieldCheck } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { checkAdminAccess } from '@/lib/api/admin';
+import { ApiClientError } from '@/lib/api/client';
+import { adminAccessCacheKey } from '@/lib/auth/accessToken';
 
 interface HeaderProps {
   isLoggedIn: boolean;
@@ -62,7 +64,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-  // 관리자 API의 권한 응답을 기준으로 바로가기를 표시한다. 탭 세션 동안만 회원별 결과를 캐시한다.
+  // 관리자 API의 권한 응답을 기준으로 바로가기를 표시한다. 허용과 403 거부만 탭 세션 동안 회원별로 캐시하고, 그 밖의 실패는 다음 화면에서 다시 확인한다.
   useEffect(() => {
     if (!isLoggedIn || memberId == null) {
       setAdminAccess('unknown');
@@ -74,7 +76,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
       return;
     }
 
-    const storageKey = `raota-admin-access:${memberId}`;
+    const storageKey = adminAccessCacheKey(memberId);
     const cached = window.sessionStorage.getItem(storageKey);
     if (cached === 'allowed' || cached === 'denied') {
       setAdminAccess(cached);
@@ -89,9 +91,11 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, isAuthChecking, handleLogou
         window.sessionStorage.setItem(storageKey, 'allowed');
         setAdminAccess('allowed');
       })
-      .catch(() => {
+      .catch((cause: unknown) => {
         if (!mounted) return;
-        window.sessionStorage.setItem(storageKey, 'denied');
+        if (cause instanceof ApiClientError && cause.status === 403) {
+          window.sessionStorage.setItem(storageKey, 'denied');
+        }
         setAdminAccess('denied');
       });
 
