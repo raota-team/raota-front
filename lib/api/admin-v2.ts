@@ -18,6 +18,9 @@ export type AdminV2ReportStatus = "OPEN" | "RESOLVED" | "DISMISSED";
 export type AdminV2ReportReason = "SPAM" | "ABUSE" | "SEXUAL" | "PRIVACY" | "OTHER";
 export type AdminV2PerkType = "NOODLE_REFILL" | "RICE_REFILL" | "SOUP_REFILL" | "CONDIMENT";
 export type AdminV2PerkStatus = "FREE" | "PAID" | "NOT_OFFERED" | "UNKNOWN";
+export type AdminV2RamenLogVisibility = "PUBLIC" | "PRIVATE";
+export type AdminV2RamenLogState = "LIVE" | "DELETED" | "ALL";
+export type AdminV2RevisitIntention = "OFTEN" | "SOMETIMES" | "ONCE_IS_ENOUGH";
 
 export interface AdminV2ShopRow {
   id: string;
@@ -112,8 +115,47 @@ export interface AdminV2Report {
   };
 }
 
+export interface AdminV2RamenLogRow {
+  id: string;
+  author: { id: string; nickname: string | null };
+  shop: { id: string; name: string | null; branchName: string | null };
+  menuName: string;
+  ramenType: string;
+  visitedAt: string;
+  visibility: AdminV2RamenLogVisibility;
+  note: string;
+  thumbnailUrl: string | null;
+  imageCount: number;
+  likeCount: number;
+  commentCount: number;
+  openReportCount: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface AdminV2RamenLogDetail extends AdminV2RamenLogRow {
+  imageUrls: string[];
+  // 서버 정의에 없는 옛 코드는 category·label이 null로 온다.
+  tasteNotes: Array<{ code: string; category: string | null; label: string | null }>;
+  revisitIntention: AdminV2RevisitIntention | null;
+  // v1에서 옮긴 기록은 점수가 없다.
+  scores: { satisfaction: number; brothDensity: number; noodleFirmness: number; topping: number } | null;
+}
+
+export type AdminV2RamenLogQuery = {
+  visibility?: AdminV2RamenLogVisibility;
+  state?: AdminV2RamenLogState;
+  keyword?: string;
+  userId?: string;
+  shopId?: string;
+  page?: number;
+  size?: number;
+};
+
 const SHOP_PATH = "/admin/api/v2/shops";
 const REPORT_PATH = "/admin/api/v2/reports";
+const RAMEN_LOG_PATH = "/admin/api/v2/ramen-logs";
 const shopPath = (id: string) => `${SHOP_PATH}/${encodeURIComponent(id)}`;
 
 export async function getAdminV2Shops(params: { keyword?: string; published?: boolean; page?: number; size?: number } = {}): Promise<AdminPage<AdminV2ShopRow>> {
@@ -150,6 +192,18 @@ export async function getAdminV2Reports(params: { status?: AdminV2ReportStatus; 
 
 export async function resolveAdminV2Report(id: string, action: "DELETE_CONTENT" | "DISMISS"): Promise<{ closedReportCount: number }> {
   return unwrap(await apiClient<AdminV2Envelope<{ closedReportCount: number }>>(`${REPORT_PATH}/${encodeURIComponent(id)}/resolve`, { method: "POST", body: { action } }));
+}
+
+export async function getAdminV2RamenLogs(params: AdminV2RamenLogQuery = {}): Promise<AdminPage<AdminV2RamenLogRow>> {
+  return unwrap(await apiClient<AdminV2Envelope<AdminPage<AdminV2RamenLogRow>>>(RAMEN_LOG_PATH, { query: params }));
+}
+
+export async function getAdminV2RamenLog(id: string): Promise<AdminV2RamenLogDetail> {
+  return unwrap(await apiClient<AdminV2Envelope<AdminV2RamenLogDetail>>(`${RAMEN_LOG_PATH}/${encodeURIComponent(id)}`));
+}
+
+export async function deleteAdminV2RamenLog(id: string): Promise<{ closedReportCount: number }> {
+  return unwrap(await apiClient<AdminV2Envelope<{ closedReportCount: number }>>(`${RAMEN_LOG_PATH}/${encodeURIComponent(id)}`, { method: "DELETE" }));
 }
 
 export function readAdminV2Error(cause: unknown, fallback: string): string {

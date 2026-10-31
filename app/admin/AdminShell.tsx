@@ -13,6 +13,7 @@ import {
   NotebookPen,
   Menu,
   ShieldCheck,
+  Soup,
   Store,
   Users,
 } from "lucide-react";
@@ -24,6 +25,7 @@ export const adminNavItems = [
   { href: "/admin/app-shops", label: "앱 매장", description: "앱 매장·영업 정보", icon: Store },
   { href: "/admin/users", label: "회원 관리", description: "회원·권한 조회", icon: Users },
   { href: "/admin/reports", label: "제보·신고", description: "매장 정보 제보", icon: FileWarning },
+  { href: "/admin/app-ramen-logs", label: "앱 라멘로그", description: "비공개 포함 기록 조회", icon: Soup },
   { href: "/admin/app-reports", label: "앱 신고", description: "기록·댓글 신고 처리", icon: NotebookPen },
   { href: "/admin/recommendations", label: "AI 추천 성과", description: "열기·찜·기록 전환", icon: BarChart3 },
   { href: "/admin/retrieval", label: "검색 색인", description: "Vector 문서 운영", icon: Database },
