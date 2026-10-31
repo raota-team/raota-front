@@ -5,8 +5,8 @@ import Link from "next/link";
 import { Lock, Search } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 import { type AdminPage } from "@/lib/api/admin";
-import { getAdminV2RamenLogs, readAdminV2Error, type AdminV2RamenLogQuery, type AdminV2RamenLogRow, type AdminV2RamenLogState, type AdminV2RamenLogVisibility } from "@/lib/api/admin-v2";
-import { authorLabel, formatDateTime, shopLabel, stateLabels, visibilityBadgeClass, visibilityLabels } from "./ramen-log-labels";
+import { getAdminV2RamenLogCounts, getAdminV2RamenLogs, readAdminV2Error, type AdminV2RamenLogCounts, type AdminV2RamenLogQuery, type AdminV2RamenLogRow, type AdminV2RamenLogVisibility } from "@/lib/api/admin-v2";
+import { authorLabel, formatCount, formatDateTime, shopLabel, visibilityBadgeClass, visibilityLabels } from "./ramen-log-labels";
 
 const PAGE_SIZE = 20;
 const PAGE_WINDOW = 10;
@@ -14,22 +14,23 @@ type VisibilityFilter = "ALL" | AdminV2RamenLogVisibility;
 type TextFilters = { keyword: string; userId: string; shopId: string };
 const emptyFilters: TextFilters = { keyword: "", userId: "", shopId: "" };
 const inputClass = "min-h-11 w-full border border-stone-300 bg-white px-3 text-sm outline-none placeholder:text-stone-500 focus:border-[#e60000]";
+const publicOnlyHint = <span className="mt-1 block text-[11px] text-stone-500">공개 기록에서만 찾아요</span>;
 
 export default function AdminAppRamenLogsPage() {
   const [draft, setDraft] = useState<TextFilters>(emptyFilters);
   const [filters, setFilters] = useState<TextFilters>(emptyFilters);
   const [visibility, setVisibility] = useState<VisibilityFilter>("ALL");
-  const [state, setState] = useState<AdminV2RamenLogState>("LIVE");
   const [page, setPage] = useState(0);
   const [result, setResult] = useState<AdminPage<AdminV2RamenLogRow> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // 요청한 작성자 ID를 함께 담아 두고, 지금 거른 작성자와 같을 때만 보여 줘야 이전 작성자의 개수가 섞이지 않는다.
+  const [counts, setCounts] = useState<{ userId: string; result: AdminV2RamenLogCounts | null; error: string } | null>(null);
 
   useEffect(() => {
     let active = true;
     const query: AdminV2RamenLogQuery = {
       visibility: visibility === "ALL" ? undefined : visibility,
-      state,
       keyword: filters.keyword || undefined,
       userId: filters.userId || undefined,
       shopId: filters.shopId || undefined,
@@ -40,7 +41,17 @@ export default function AdminAppRamenLogsPage() {
       .then((data) => { if (active) { setResult(data); setLoading(false); } })
       .catch((cause: unknown) => { if (active) { setError(readAdminV2Error(cause, "앱 라멘로그를 불러오지 못했습니다.")); setLoading(false); } });
     return () => { active = false; };
-  }, [filters, visibility, state, page]);
+  }, [filters, visibility, page]);
+
+  useEffect(() => {
+    const userId = filters.userId;
+    if (!userId) return;
+    let active = true;
+    getAdminV2RamenLogCounts(userId)
+      .then((data) => { if (active) setCounts({ userId, result: data, error: "" }); })
+      .catch((cause: unknown) => { if (active) setCounts({ userId, result: null, error: readAdminV2Error(cause, "기록 개수를 불러오지 못했습니다.") }); });
+    return () => { active = false; };
+  }, [filters.userId]);
 
   const reload = () => {
     setResult(null);
@@ -67,7 +78,6 @@ export default function AdminAppRamenLogsPage() {
     // 새 객체로 바꿔야 이미 초기값일 때도 다시 불러온다.
     setFilters({ ...emptyFilters });
     setVisibility("ALL");
-    setState("LIVE");
   };
 
   const goToPage = (next: number) => {
@@ -77,22 +87,21 @@ export default function AdminAppRamenLogsPage() {
 
   return (
     <div className="space-y-7">
-      <header className="border-b border-stone-200 pb-7"><h1 className="text-3xl font-black tracking-[-0.03em] sm:text-4xl">앱 라멘로그</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">앱 사용자가 남긴 라멘 기록을 비공개·삭제된 기록까지 포함해 조회합니다. 상세 화면에서 운영자 삭제를 할 수 있습니다.</p></header>
+      <header className="border-b border-stone-200 pb-7"><h1 className="text-3xl font-black tracking-[-0.03em] sm:text-4xl">앱 라멘로그</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">앱 사용자가 남긴 라멘 기록을 조회합니다. 비공개 기록은 기록 ID·작성자·만든 날짜만 보이고, 삭제된 기록은 나오지 않습니다. 공개 기록은 상세 화면에서 운영자 삭제를 할 수 있습니다.</p></header>
       {error && <div role="alert" className="whitespace-pre-line border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
       <form onSubmit={search} className="border border-stone-200 bg-white p-4 sm:p-5">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[10rem_10rem_minmax(0,1fr)_9rem_9rem_auto] xl:items-end">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[10rem_minmax(0,1fr)_9rem_9rem_auto] xl:items-start">
           <label className="block"><span className="mb-1.5 block text-xs font-bold text-stone-600">공개 범위</span><select value={visibility} onChange={(event) => { reload(); setVisibility(event.target.value as VisibilityFilter); }} className={`${inputClass} font-bold`}><option value="ALL">전체</option><option value="PUBLIC">{visibilityLabels.PUBLIC}</option><option value="PRIVATE">{visibilityLabels.PRIVATE}</option></select></label>
-          <label className="block"><span className="mb-1.5 block text-xs font-bold text-stone-600">상태</span><select value={state} onChange={(event) => { reload(); setState(event.target.value as AdminV2RamenLogState); }} className={`${inputClass} font-bold`}>{(["LIVE", "DELETED", "ALL"] as const).map((item) => <option key={item} value={item}>{stateLabels[item]}</option>)}</select></label>
-          <label className="block"><span className="mb-1.5 block text-xs font-bold text-stone-600">키워드</span><span className="flex min-h-11 items-center gap-2 border border-stone-300 px-3 focus-within:border-[#e60000]"><Search className="h-4 w-4 text-stone-500" aria-hidden="true" /><input value={draft.keyword} maxLength={100} onChange={(event) => setDraft({ ...draft, keyword: event.target.value })} placeholder="메뉴명, 메모" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-stone-500" /></span></label>
+          <label className="block"><span className="mb-1.5 block text-xs font-bold text-stone-600">키워드</span><span className="flex min-h-11 items-center gap-2 border border-stone-300 px-3 focus-within:border-[#e60000]"><Search className="h-4 w-4 text-stone-500" aria-hidden="true" /><input value={draft.keyword} maxLength={100} onChange={(event) => setDraft({ ...draft, keyword: event.target.value })} placeholder="메뉴명, 메모" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-stone-500" /></span>{publicOnlyHint}</label>
           <label className="block"><span className="mb-1.5 block text-xs font-bold text-stone-600">작성자 ID</span><input value={draft.userId} inputMode="numeric" onChange={(event) => setDraft({ ...draft, userId: event.target.value })} placeholder="예: 12" className={inputClass} /></label>
-          <label className="block"><span className="mb-1.5 block text-xs font-bold text-stone-600">매장 ID</span><input value={draft.shopId} inputMode="numeric" onChange={(event) => setDraft({ ...draft, shopId: event.target.value })} placeholder="예: 34" className={inputClass} /></label>
-          <div className="flex gap-2"><button type="submit" className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-sm bg-[#25282b] px-5 py-3 text-sm font-bold text-white hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25282b]"><Search className="h-4 w-4" />검색</button><button type="button" onClick={resetFilters} className="min-h-11 rounded-sm border border-stone-300 bg-white px-4 text-sm font-bold text-stone-700 hover:border-[#e60000] hover:text-[#e60000]">초기화</button></div>
+          <label className="block"><span className="mb-1.5 block text-xs font-bold text-stone-600">매장 ID</span><input value={draft.shopId} inputMode="numeric" onChange={(event) => setDraft({ ...draft, shopId: event.target.value })} placeholder="예: 34" className={inputClass} />{publicOnlyHint}</label>
+          <div className="flex gap-2 xl:pt-[1.375rem]"><button type="submit" className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-sm bg-[#25282b] px-5 py-3 text-sm font-bold text-white hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25282b]"><Search className="h-4 w-4" />검색</button><button type="button" onClick={resetFilters} className="min-h-11 rounded-sm border border-stone-300 bg-white px-4 text-sm font-bold text-stone-700 hover:border-[#e60000] hover:text-[#e60000]">초기화</button></div>
         </div>
       </form>
       <section className="border border-stone-200 bg-white">
-        <div className="border-b border-stone-200 px-5 py-4 sm:px-6"><h2 className="text-lg font-black">기록 목록</h2><p className="mt-1 text-xs text-stone-600">{loading ? "목록을 불러오는 중…" : `총 ${(result?.page.totalElements ?? 0).toLocaleString("ko-KR")}건 · ${result ? result.page.number + 1 : 1} / ${Math.max(result?.page.totalPages ?? 1, 1)}페이지`}</p></div>
-        <div className="overflow-x-auto"><table className="w-full min-w-[1150px] text-left text-sm"><thead className="bg-stone-50 text-xs font-bold text-stone-600"><tr><th className="px-5 py-3 sm:px-6">메뉴 · 매장</th><th className="px-4 py-3">작성자</th><th className="px-4 py-3">공개 범위</th><th className="px-4 py-3">방문일</th><th className="px-4 py-3">공감 / 댓글</th><th className="px-4 py-3">열린 신고</th><th className="px-4 py-3">작성일</th><th className="px-5 py-3 sm:px-6">상태</th></tr></thead><tbody className="divide-y divide-stone-100">
-          {loading ? Array.from({ length: 5 }, (_, index) => <tr key={index} aria-hidden="true"><td colSpan={8} className="px-5 py-5"><div className="h-5 animate-pulse bg-stone-100" /></td></tr>) : result?.items.length ? result.items.map((log) => <LogRow key={log.id} log={log} />) : <tr><td colSpan={8} className="px-5 py-14 text-center text-sm text-stone-600">조건에 맞는 라멘로그가 없습니다. 필터를 바꿔 보세요.</td></tr>}
+        <div className="border-b border-stone-200 px-5 py-4 sm:px-6"><h2 className="text-lg font-black">기록 목록</h2><p className="mt-1 text-xs text-stone-600">{loading ? "목록을 불러오는 중…" : `총 ${(result?.page.totalElements ?? 0).toLocaleString("ko-KR")}건 · ${result ? result.page.number + 1 : 1} / ${Math.max(result?.page.totalPages ?? 1, 1)}페이지`}</p>{filters.userId && <AuthorCounts userId={filters.userId} counts={counts?.userId === filters.userId ? counts : null} />}</div>
+        <div className="overflow-x-auto"><table className="w-full min-w-[1050px] text-left text-sm"><thead className="bg-stone-50 text-xs font-bold text-stone-600"><tr><th className="px-5 py-3 sm:px-6">메뉴 · 매장</th><th className="px-4 py-3">작성자</th><th className="px-4 py-3">공개 범위</th><th className="px-4 py-3">방문일</th><th className="px-4 py-3">공감 / 댓글</th><th className="px-4 py-3">열린 신고</th><th className="px-5 py-3 sm:px-6">작성일</th></tr></thead><tbody className="divide-y divide-stone-100">
+          {loading ? Array.from({ length: 5 }, (_, index) => <tr key={index} aria-hidden="true"><td colSpan={7} className="px-5 py-5"><div className="h-5 animate-pulse bg-stone-100" /></td></tr>) : result?.items.length ? result.items.map((log) => <LogRow key={log.id} log={log} />) : <tr><td colSpan={7} className="px-5 py-14 text-center text-sm text-stone-600">조건에 맞는 라멘로그가 없습니다. 필터를 바꿔 보세요.</td></tr>}
         </tbody></table></div>
         {result && result.page.totalPages > 1 && <PageNumbers page={result.page} disabled={loading} onChange={goToPage} />}
       </section>
@@ -100,17 +109,26 @@ export default function AdminAppRamenLogsPage() {
   );
 }
 
+function AuthorCounts({ userId, counts }: { userId: string; counts: { result: AdminV2RamenLogCounts | null; error: string } | null }) {
+  if (!counts) return <p className="mt-2 text-xs text-stone-500">회원 #{userId}의 기록 개수를 불러오는 중…</p>;
+  if (!counts.result) return <p role="alert" className="mt-2 text-xs text-rose-700">{counts.error}</p>;
+  return <p className="mt-2 text-sm text-stone-700">회원 #{userId} · <strong>공개 {counts.result.publicCount.toLocaleString("ko-KR")}건</strong> · <strong>비공개 {counts.result.privateCount.toLocaleString("ko-KR")}건</strong></p>;
+}
+
 function LogRow({ log }: { log: AdminV2RamenLogRow }) {
   const href = `/admin/app-ramen-logs/${encodeURIComponent(log.id)}`;
-  return <tr className={`hover:bg-stone-50 ${log.deletedAt ? "text-stone-500" : ""}`}>
-    <td className="px-5 py-4 sm:px-6"><div className="flex items-center gap-3"><div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-sm bg-stone-100">{log.thumbnailUrl ? <Image src={log.thumbnailUrl} alt="" fill sizes="56px" unoptimized className="object-cover" /> : <span className="flex h-full items-center justify-center text-[11px] text-stone-500">사진 없음</span>}</div><div className="min-w-0"><Link href={href} className="font-bold hover:text-[#e60000] focus-visible:underline">{log.menuName}</Link><p className="mt-1 truncate text-xs text-stone-600">{shopLabel(log.shop)} · {log.ramenType}</p><p className="mt-0.5 text-xs text-stone-500">기록 #{log.id}{log.imageCount > 1 ? ` · 사진 ${log.imageCount}장` : ""}</p></div></div></td>
+  const isPrivate = log.visibility === "PRIVATE";
+  const openReportCount = log.openReportCount ?? 0;
+  return <tr className={`hover:bg-stone-50 ${isPrivate ? "text-stone-500" : ""}`}>
+    <td className="px-5 py-4 sm:px-6">{isPrivate
+      ? <div className="flex items-center gap-3"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-sm bg-stone-100"><Lock className="h-5 w-5 text-stone-500" aria-hidden="true" /></div><div className="min-w-0"><Link href={href} className="font-bold text-stone-700 hover:text-[#e60000] focus-visible:underline">비공개 기록 · 내용을 볼 수 없어요</Link><p className="mt-0.5 text-xs text-stone-500">기록 #{log.id}</p></div></div>
+      : <div className="flex items-center gap-3"><div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-sm bg-stone-100">{log.thumbnailUrl ? <Image src={log.thumbnailUrl} alt="" fill sizes="56px" unoptimized className="object-cover" /> : <span className="flex h-full items-center justify-center text-[11px] text-stone-500">사진 없음</span>}</div><div className="min-w-0"><Link href={href} className="font-bold hover:text-[#e60000] focus-visible:underline">{log.menuName ?? "—"}</Link><p className="mt-1 truncate text-xs text-stone-600">{log.shop ? shopLabel(log.shop) : "—"} · {log.ramenType ?? "—"}</p><p className="mt-0.5 text-xs text-stone-500">기록 #{log.id}{(log.imageCount ?? 0) > 1 ? ` · 사진 ${log.imageCount}장` : ""}</p></div></div>}</td>
     <td className="px-4 py-4"><p className="font-bold">{authorLabel(log.author)}</p><p className="mt-1 text-xs text-stone-500">#{log.author.id}</p></td>
-    <td className="px-4 py-4"><span className={`inline-flex items-center gap-1 rounded-sm px-2 py-1 text-xs font-bold ${visibilityBadgeClass[log.visibility]}`}>{log.visibility === "PRIVATE" && <Lock className="h-3.5 w-3.5" aria-hidden="true" />}{visibilityLabels[log.visibility]}</span></td>
-    <td className="whitespace-nowrap px-4 py-4 tabular-nums">{log.visitedAt}</td>
-    <td className="whitespace-nowrap px-4 py-4 tabular-nums">{log.likeCount.toLocaleString("ko-KR")} / {log.commentCount.toLocaleString("ko-KR")}</td>
-    <td className="whitespace-nowrap px-4 py-4 tabular-nums">{log.openReportCount > 0 ? <strong className="text-[#b00000]">{log.openReportCount}건</strong> : <span className="text-stone-500">0</span>}</td>
-    <td className="whitespace-nowrap px-4 py-4 text-xs text-stone-600">{formatDateTime(log.createdAt)}</td>
-    <td className="whitespace-nowrap px-5 py-4 sm:px-6">{log.deletedAt ? <span className="inline-flex rounded-sm bg-stone-200 px-2 py-1 text-xs font-bold text-stone-700" title={formatDateTime(log.deletedAt)}>삭제됨</span> : <span className="inline-flex rounded-sm bg-red-50 px-2 py-1 text-xs font-bold text-[#b00000]">게시 중</span>}</td>
+    <td className="px-4 py-4"><span className={`inline-flex items-center gap-1 rounded-sm px-2 py-1 text-xs font-bold ${visibilityBadgeClass[log.visibility]}`}>{isPrivate && <Lock className="h-3.5 w-3.5" aria-hidden="true" />}{visibilityLabels[log.visibility]}</span></td>
+    <td className="whitespace-nowrap px-4 py-4 tabular-nums">{log.visitedAt ?? "—"}</td>
+    <td className="whitespace-nowrap px-4 py-4 tabular-nums">{isPrivate ? "—" : `${formatCount(log.likeCount)} / ${formatCount(log.commentCount)}`}</td>
+    <td className="whitespace-nowrap px-4 py-4 tabular-nums">{isPrivate ? "—" : openReportCount > 0 ? <strong className="text-[#b00000]">{openReportCount}건</strong> : <span className="text-stone-500">0</span>}</td>
+    <td className="whitespace-nowrap px-5 py-4 text-xs text-stone-600 sm:px-6">{formatDateTime(log.createdAt)}</td>
   </tr>;
 }
 
