@@ -387,21 +387,6 @@ export const getShopPhotos = async (shopId: number, page = 0, size = 6): Promise
   return [];
 };
 
-/** 인증샷 등록 (URL 기반 최종 등록) */
-export const addProofPicture = async (shopId: number, data: {
-  imageUrl: string;
-  menuName: string;
-  description: string;
-}): Promise<any> => {
-  return await apiClient(
-    buildApiUrl(`/ramen-shops/${shopId}/photos`),
-    {
-      method: "POST",
-      body: data
-    }
-  );
-};
-
 /** 인증샷 삭제 */
 export const deleteProofPicture = async (shopId: number, photoId: number): Promise<any> => {
   return await apiClient(

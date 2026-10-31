@@ -19,7 +19,6 @@ export type AdminV2ReportReason = "SPAM" | "ABUSE" | "SEXUAL" | "PRIVACY" | "OTH
 export type AdminV2PerkType = "NOODLE_REFILL" | "RICE_REFILL" | "SOUP_REFILL" | "CONDIMENT";
 export type AdminV2PerkStatus = "FREE" | "PAID" | "NOT_OFFERED" | "UNKNOWN";
 export type AdminV2RamenLogVisibility = "PUBLIC" | "PRIVATE";
-export type AdminV2RamenLogState = "LIVE" | "DELETED" | "ALL";
 export type AdminV2RevisitIntention = "OFTEN" | "SOMETIMES" | "ONCE_IS_ENOUGH";
 
 export interface AdminV2ShopRow {
@@ -108,44 +107,51 @@ export interface AdminV2Report {
     id: string;
     ramenLogId: string | null;
     author: { id: string; nickname: string | null } | null;
+    // 지금 비공개이거나 삭제된 대상은 서버가 hidden=true로 보내고 미리보기(text·menuName·imageUrl)를 비운다.
     text: string | null;
     menuName: string | null;
     imageUrl: string | null;
     deleted: boolean;
+    hidden: boolean;
   };
 }
 
+// 비공개 기록은 서버가 내용 필드를 null로 비워 보낸다. id·visibility·createdAt·author만 항상 온다.
 export interface AdminV2RamenLogRow {
   id: string;
-  author: { id: string; nickname: string | null };
-  shop: { id: string; name: string | null; branchName: string | null };
-  menuName: string;
-  ramenType: string;
-  visitedAt: string;
   visibility: AdminV2RamenLogVisibility;
-  note: string;
-  thumbnailUrl: string | null;
-  imageCount: number;
-  likeCount: number;
-  commentCount: number;
-  openReportCount: number;
   createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+  author: { id: string; nickname: string | null };
+  shop: { id: string; name: string | null; branchName: string | null } | null;
+  menuName: string | null;
+  ramenType: string | null;
+  visitedAt: string | null;
+  note: string | null;
+  thumbnailUrl: string | null;
+  imageCount: number | null;
+  likeCount: number | null;
+  commentCount: number | null;
+  openReportCount: number | null;
+  updatedAt: string | null;
 }
 
 export interface AdminV2RamenLogDetail extends AdminV2RamenLogRow {
-  imageUrls: string[];
+  imageUrls: string[] | null;
   // 서버 정의에 없는 옛 코드는 category·label이 null로 온다.
-  tasteNotes: Array<{ code: string; category: string | null; label: string | null }>;
+  tasteNotes: Array<{ code: string; category: string | null; label: string | null }> | null;
   revisitIntention: AdminV2RevisitIntention | null;
   // v1에서 옮긴 기록은 점수가 없다.
   scores: { satisfaction: number; brothDensity: number; noodleFirmness: number; topping: number } | null;
 }
 
+export interface AdminV2RamenLogCounts {
+  userId: string;
+  publicCount: number;
+  privateCount: number;
+}
+
 export type AdminV2RamenLogQuery = {
   visibility?: AdminV2RamenLogVisibility;
-  state?: AdminV2RamenLogState;
   keyword?: string;
   userId?: string;
   shopId?: string;
@@ -202,6 +208,10 @@ export async function getAdminV2RamenLog(id: string): Promise<AdminV2RamenLogDet
   return unwrap(await apiClient<AdminV2Envelope<AdminV2RamenLogDetail>>(`${RAMEN_LOG_PATH}/${encodeURIComponent(id)}`));
 }
 
+export async function getAdminV2RamenLogCounts(userId: string): Promise<AdminV2RamenLogCounts> {
+  return unwrap(await apiClient<AdminV2Envelope<AdminV2RamenLogCounts>>(`${RAMEN_LOG_PATH}/counts`, { query: { userId } }));
+}
+
 export async function deleteAdminV2RamenLog(id: string): Promise<{ closedReportCount: number }> {
   return unwrap(await apiClient<AdminV2Envelope<{ closedReportCount: number }>>(`${RAMEN_LOG_PATH}/${encodeURIComponent(id)}`, { method: "DELETE" }));
 }
@@ -209,12 +219,13 @@ export async function deleteAdminV2RamenLog(id: string): Promise<{ closedReportC
 export function readAdminV2Error(cause: unknown, fallback: string): string {
   if (cause instanceof ApiClientError) {
     if (cause.status === 401) return "로그인이 필요합니다.";
-    if (cause.status === 403) return "관리자 권한이 필요합니다.";
     const payload = cause.payload as { error?: { message?: string; fields?: Array<{ field: string; message: string }> } } | null;
     if (payload?.error?.message) {
       const fields = payload.error.fields?.map(({ field, message }) => `${field}: ${message}`) ?? [];
       return [payload.error.message, ...fields].join("\n");
     }
+    // 비공개 기록 삭제 거절처럼 사유가 담긴 403은 위에서 그 사유를 보여주고, 사유 없는 403만 권한 부족으로 본다.
+    if (cause.status === 403) return "관리자 권한이 필요합니다.";
   }
   return cause instanceof Error ? cause.message : fallback;
 }
