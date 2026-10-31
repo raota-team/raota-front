@@ -161,16 +161,16 @@ export default function AppPreRegisterModal() {
             </ul>
 
             {!isAndroid && (
-              // Apple 로고는 공식 배지 안에서만 쓸 수 있어 배지(Apple 마케팅 도구의 한국어 검정 배지)를 고치지 않고 그대로 넣는다.
-              // 버튼 바탕을 배지와 같은 검정으로 두고 위아래로 배지 높이의 1/4 이상 여백을 둔다(배지 최소 여백 규정)
+              // Apple 공식 한국어 검정 배지를 폭에 맞춰 늘린 모양. 로고·글자(app-store-badge-ko-mark.svg)는 배지 그대로 두고,
+              // 배지의 회색 테두리(#a6a6a6)와 검정 바탕만 버튼이 그린다(사용자 결정 2026.11.01)
               <a
                 href={APP_STORE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => hideFor(365 * DAY_MS)}
-                className="mt-4 flex h-[60px] w-full items-center justify-center rounded-sm bg-black transition-opacity hover:opacity-85 active:opacity-85 md:mt-5"
+                className="mt-4 flex h-[52px] w-full items-center justify-center rounded-[10px] border border-[#a6a6a6] bg-black transition-opacity hover:opacity-85 active:opacity-85 md:mt-5"
               >
-                <Image src="/app-store-badge-ko.svg" alt="App Store에서 다운로드하기" width={130} height={40} unoptimized className="h-10 w-auto" />
+                <Image src="/app-store-badge-ko-mark.svg" alt="App Store에서 다운로드하기" width={130} height={40} unoptimized className="h-12 w-auto" />
                 <span className="sr-only"> (새 창)</span>
               </a>
             )}
