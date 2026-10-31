@@ -23,7 +23,7 @@ export const UPCOMING_FEATURES: UpcomingFeature[] = [
   {
     id: 'taste-report',
     title: '나만의 취향 리포트',
-    when: '12월 중',
+    when: '11월 중',
     description: '기록한 그릇이 쌓이면 국물·면·토핑 취향을 한 장으로 정리해요. 매달 1일엔 지난달 리포트가 와요.',
     note: '기록을 남겨 두면 나오는 날 바로 볼 수 있어요',
   },
