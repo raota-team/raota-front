@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useApp } from '../context/AppContext';
+import { UPCOMING_FEATURES } from '../lib/upcomingFeatures';
 
 // iOS 출시(2026.11) 안내로 바뀌어 키를 새로 둔다. 예전 키로 1년 숨긴 사람(사전예약 신청자)에게도 출시를 한 번 보여 준다
 const HIDE_UNTIL_KEY = 'HIDE_APP_LAUNCH_UNTIL';
@@ -29,11 +30,19 @@ const APP_SCREENS = [
   { src: '/app-preview/my-20261030.webp', label: '마이', alt: '라오타 앱 마이 화면: 라멘로그 수, 등급, 종류별 기록' },
 ];
 
-const FEATURES = [
+/** 지금 출시 앱에서 되는 것만 적는다. 예고는 UPCOMING_FEATURES(app/lib/upcomingFeatures.ts)에 둔다 */
+const AVAILABLE_FEATURES = [
   'AI 큐레이터가 오늘의 한 곳을 골라드려요',
   '지도에서 영업 여부와 라스트오더까지 확인',
-  '먹은 라멘을 기록하면 나만의 취향 리포트가 쌓여요',
+  '먹은 라멘을 그릇마다 기록해요',
 ];
+
+const OPEN_EVENT = 'raota:open-app-launch';
+
+/** 다른 화면(홈 "곧 나와요")에서 출시 팝업을 연다. "보지 않기"로 숨겼어도 직접 누른 것이라 연다 */
+export function openAppLaunchModal() {
+  window.dispatchEvent(new Event(OPEN_EVENT));
+}
 
 export default function AppPreRegisterModal() {
   const { showToast } = useApp();
@@ -46,11 +55,13 @@ export default function AppPreRegisterModal() {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const hideUntil = Number(localStorage.getItem(HIDE_UNTIL_KEY));
-    if (hideUntil && Date.now() <= hideUntil) return;
     // iPadOS 사파리는 Mac으로 보고하지만 iPad는 App Store를 쓰니 따로 가릴 필요가 없다
     setIsAndroid(/Android/.test(navigator.userAgent));
-    setIsOpen(true);
+    const open = () => setIsOpen(true);
+    window.addEventListener(OPEN_EVENT, open);
+    const hideUntil = Number(localStorage.getItem(HIDE_UNTIL_KEY));
+    if (!hideUntil || Date.now() > hideUntil) setIsOpen(true);
+    return () => window.removeEventListener(OPEN_EVENT, open);
   }, []);
 
   useEffect(() => {
@@ -109,7 +120,8 @@ export default function AppPreRegisterModal() {
         tabIndex={-1}
         className="relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-md bg-white focus:outline-none focus-visible:outline-none motion-safe:animate-sheet-up md:max-h-[90dvh] md:max-w-[920px] md:flex-row md:rounded-sm md:motion-safe:animate-slide-up"
       >
-        <div className="overflow-y-auto md:flex md:flex-1 md:flex-row md:overflow-visible">
+        {/* 데스크톱은 오른쪽 열만 스크롤한다. 동의 내용을 펼치거나 화면이 낮으면 아래 고정 버튼 줄에 가리지 않게 한다 */}
+        <div className="overflow-y-auto md:flex md:min-h-0 md:flex-1 md:flex-row md:overflow-visible">
           {/* 실제 앱 화면 */}
           <figure className="relative bg-[#25282b] px-5 pb-3 pt-4 md:flex md:w-[440px] md:shrink-0 md:flex-col md:justify-center md:px-6 md:py-10">
             <div className="mx-auto flex max-w-[216px] items-start justify-center md:max-w-none">
@@ -137,7 +149,7 @@ export default function AppPreRegisterModal() {
           </figure>
 
           {/* 안내, App Store 링크, Android 사전예약 */}
-          <div className="flex flex-1 flex-col px-5 pb-5 pt-5 md:px-9 md:pb-[80px] md:pt-10">
+          <div className="flex flex-1 flex-col px-5 pb-5 pt-5 md:min-h-0 md:overflow-y-auto md:px-9 md:pb-[80px] md:pt-10">
             <h2
               id="app-pre-register-title"
               className="text-[24px] font-bold leading-[1.3] tracking-[-0.02em] text-[#25282b] md:text-[28px]"
@@ -151,14 +163,35 @@ export default function AppPreRegisterModal() {
             </p>
 
             {/* 모바일은 위 앱 화면 3장이 기능을 대신 보여주고, 시트가 한 화면에 들어오도록 목록을 뺀다 */}
-            <ul className="mt-5 hidden space-y-2 border-y border-stone-200 py-4 md:block">
-              {FEATURES.map((feature) => (
-                <li key={feature} className="flex items-start gap-2.5 text-sm font-medium text-[#25282b]">
-                  <span aria-hidden="true" className="mt-[7px] h-1.5 w-1.5 shrink-0 bg-[#e60000]" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
+            <div className="mt-5 hidden grid-cols-2 gap-5 border-y border-stone-200 py-4 md:grid">
+              <div>
+                <h3 className="mb-2.5 text-xs font-bold text-stone-500">지금 앱에서</h3>
+                <ul className="space-y-2">
+                  {AVAILABLE_FEATURES.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2.5 text-[13px] font-semibold leading-snug text-[#25282b]">
+                      <span aria-hidden="true" className="mt-[6px] h-1.5 w-1.5 shrink-0 bg-[#e60000]" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 className="mb-2.5 text-xs font-bold text-stone-500">곧 나와요</h3>
+                <ul className="space-y-2">
+                  {UPCOMING_FEATURES.map((feature) => (
+                    <li key={feature.id} className="flex items-start gap-2.5 text-[13px] font-semibold leading-snug text-[#25282b]">
+                      <span aria-hidden="true" className="mt-[5px] h-[7px] w-[7px] shrink-0 border-[1.5px] border-stone-400" />
+                      <span>
+                        {feature.title}
+                        <span className={`ml-1.5 inline-block rounded-sm px-1.5 align-[1px] text-[11px] font-bold ${feature.id === 'android' ? 'bg-[#e60000] text-white' : 'bg-[#f2f2f2] text-stone-600'}`}>
+                          {feature.when}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
 
             {!isAndroid && (
               // Apple 공식 한국어 검정 배지를 폭에 맞춰 늘린 모양. 로고·글자(app-store-badge-ko-mark.svg)는 배지 그대로 두고,

@@ -11,6 +11,7 @@ import { Do_Hyeon } from 'next/font/google';
 import { useRecentVerifiedShops } from '@/hooks/queries/useDiscovery';
 import type { RecentVerifiedShopResponse } from '@/lib/api/discovery';
 import ResilientImage from './ResilientImage';
+import UpcomingFeatures from './UpcomingFeatures';
 import {
   Sparkles,
   Camera,
@@ -334,6 +335,11 @@ export default function LandingContent({
             </div>
           </div>
         </aside>
+      </div>
+
+      {/* 3. 곧 나와요: 홈 맨 아래(사용자 결정 2026.11.01) */}
+      <div className="mx-auto mt-4 max-w-7xl px-4 md:mt-8 md:px-12">
+        <UpcomingFeatures />
       </div>
     </div>
   );
