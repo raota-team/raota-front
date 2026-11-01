@@ -13,6 +13,7 @@ import type { RecentRamenLogShop } from '@/lib/api/ramen-logs';
 import ResilientImage from './ResilientImage';
 import UpcomingFeatures from './UpcomingFeatures';
 import { formatRamenLogDate } from './RamenLogCard';
+import { openRamenLogAppPrompt } from './AppPreRegisterModal';
 import {
   Sparkles,
   Calendar,
@@ -163,13 +164,14 @@ export default function LandingContent({
             </div>
 
             {isLoggedIn && (
-              <Link
-                href="/mypage"
+              <button
+                type="button"
+                onClick={() => openRamenLogAppPrompt('home_hero_my_logs')}
                 className="mb-5 inline-flex min-h-11 w-fit items-center gap-1.5 text-xs font-black text-white/80 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white md:mb-0 md:text-sm"
               >
-                내 라멘로그 보기
+                내 라멘로그는 앱에서 보기
                 <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
+              </button>
             )}
 
           </div>

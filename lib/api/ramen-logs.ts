@@ -93,12 +93,8 @@ interface CursorPage<T> {
   hasNext: boolean;
 }
 
+/** 작성자는 이름과 프로필 사진만 보여준다. 웹은 회원별 기록을 보여주지 않는다(앱에서 본다) */
 export interface RamenLogAuthor {
-  /**
-   * 웹 프로필(`/user/{id}`) ID. 웹 프로필이 없는 회원은 null이다:
-   * 탈퇴한 회원(서버가 id를 주지 않음)과 앱에서만 가입한 회원(ID가 APP_ONLY_MEMBER_ID_START 이상).
-   */
-  profileId: number | null;
   name: string;
   imageUrl?: string;
 }
@@ -150,14 +146,6 @@ export interface RecentRamenLogShop {
   lastVisitedAt: string;
 }
 
-/**
- * 앱에서 가입한 회원 ID는 이 번호부터 시작한다(서버 V45 마이그레이션, 2026-10-31 운영 변경).
- * 이보다 작은 ID의 앱 회원은 웹 회원을 같은 ID로 복사한 사람이라 웹 프로필이 있고,
- * 이 이상은 웹(v1) 회원이 아니라 웹 프로필을 열면 "정보를 볼 수 없는 사용자"가 된다.
- * 앱 회원 프로필을 비로그인으로 읽는 v2 API가 없어 링크하지 않는다.
- */
-const APP_ONLY_MEMBER_ID_START = 10_000_000;
-
 /** 서버 커서 페이지의 최대 크기(CursorPage.MAX_SIZE) */
 const MAX_PAGE_SIZE = 50;
 const WITHDRAWN_AUTHOR_NAME = "탈퇴한 회원";
@@ -184,14 +172,10 @@ const toTasteNotes = (codes: string[] | null): TasteNotes => {
   return notes;
 };
 
-const toAuthor = (author: MobileRamenLogAuthor): RamenLogAuthor => {
-  const id = author.id === null ? null : Number(author.id);
-  return {
-    profileId: id !== null && id < APP_ONLY_MEMBER_ID_START ? id : null,
-    name: author.nickname || WITHDRAWN_AUTHOR_NAME,
-    imageUrl: author.avatarUrl || undefined,
-  };
-};
+const toAuthor = (author: MobileRamenLogAuthor): RamenLogAuthor => ({
+  name: author.nickname || WITHDRAWN_AUTHOR_NAME,
+  imageUrl: author.avatarUrl || undefined,
+});
 
 const toRamenLog = (log: MobileRamenLogSummary): RamenLog => {
   const imageUrls = log.imageUrls ?? [];
@@ -223,7 +207,6 @@ const getFeedPage = (params: RamenLogFeedParams, revalidate?: number) =>
       sort: params.sort,
       ramenType: params.ramenType,
       shopId: params.shopId,
-      authorId: params.authorId,
       cursor: params.cursor,
       size: params.size,
     },
@@ -234,13 +217,11 @@ export interface RamenLogFeedParams {
   sort?: RamenLogSort;
   ramenType?: string;
   shopId?: number;
-  /** 이 회원의 공개 기록만 */
-  authorId?: number | string;
   cursor?: string | null;
   size?: number;
 }
 
-/** 공개 라멘로그 피드(앱 라운지와 같은 목록). authorId를 주면 그 회원의 공개 기록만 온다 */
+/** 공개 라멘로그 피드(앱 라운지와 같은 목록) */
 export const getRamenLogs = async (params: RamenLogFeedParams = {}): Promise<RamenLogPage> => {
   const page = await getFeedPage(params);
   return {

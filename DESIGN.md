@@ -266,7 +266,7 @@ Last block on the home page, full content width under the two-column grid. Conte
 - Keep one red recording CTA per feed fold. The sticky filter header owns the `기록하기` action, which opens the app launch popup (`openRamenLogAppPrompt`); the web does not create, edit, or delete logs
 - Event banners explain the benefit and period but do not duplicate the recording CTA
 - Ramen logs on the web are read-only and come from the app API (`/api/v2/ramen-logs`), so cards and the detail modal show only what the app feed returns: likes and comment counts are display-only, filters are shop + ramen type (no keyword search), and lists have no total count
-- Author names link to `/user/{id}` only when the author has a web profile; withdrawn and app-only authors render as plain text so nobody lands on the "정보를 볼 수 없는 사용자" error
+- Ramen-log authors (name and avatar) are plain, non-interactive content; ramen-log UI never links to `/user/{id}`. Profiles have no ramen-log tab, only a one-line hint that logs live in the app
 
 ### Navigation
 

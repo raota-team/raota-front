@@ -3,11 +3,9 @@
 import { useState, useEffect, useRef, useCallback, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Shield, Mail } from 'lucide-react';
+import { Camera, MapPin, Heart, Award, FileText, MessageSquare, X, Loader2, ArrowRight, Edit3, AlertCircle, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Shield, Mail, Smartphone } from 'lucide-react';
 import PhotoModal from '../../../components/PhotoModal';
 import { openRamenLogAppPrompt } from '../../../components/AppPreRegisterModal';
-import RamenLogCard from '../../../components/RamenLogCard';
-import RamenLogDetailModal from '../../../components/RamenLogDetailModal';
 import { useApp } from '../../../context/AppContext';
 import {
   getMyProfile,
@@ -24,8 +22,8 @@ import {
   updateUserProfile,
   ActivityVisibility,
   MyProfileData,
+  PageMeta
 } from '@/lib/api/user';
-import { getRamenLogs, type RamenLog } from '@/lib/api/ramen-logs';
 import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
 import { compressImage } from '@/lib/utils/image-optimization';
 import Loading from '@/app/loading';
@@ -80,7 +78,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const userIdFromPath = resolvedParams.id;
   const { showToast, currentUser, setCurrentUser } = useApp();
 
-  const [activeTab, setActiveTab] = useState('logs');
+  const [activeTab, setActiveTab] = useState('visits');
   const [profile, setProfile] = useState<MyProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isBioExpanded, setIsBioExpanded] = useState(false);
@@ -103,11 +101,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   }>({ profile: false, background: false });
 
   const [items, setItems] = useState<any[]>([]);
-  const [pageMeta, setPageMeta] = useState<{ number: number; hasNext: boolean } | null>(null);
+  const [pageMeta, setPageMeta] = useState<PageMeta | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  // 라멘로그 탭은 앱 피드 커서로 이어 읽는다
-  const logCursorRef = useRef<string | null>(null);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastItemRef = useCallback((node: HTMLElement | null) => {
@@ -124,7 +120,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   }, [isLoading, pageMeta]);
 
   const [zoomImage, setZoomImage] = useState<{ url: string; title: string } | null>(null);
-  const [selectedLog, setSelectedLog] = useState<RamenLog | null>(null);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [isPrivacySaving, setIsPrivacySaving] = useState(false);
   const [privacySettings, setPrivacySettings] = useState<ActivityVisibility>(allPublicVisibility);
@@ -142,7 +137,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     if (isOwnProfile || !profile) return;
     const visibility = profile.activity_visibility || allPublicVisibility;
-    const visibleTabs = (['logs', 'visits', 'posts', 'comments'] as const)
+    const visibleTabs = (['visits', 'posts', 'comments'] as const)
       .filter((tab) => visibility[tab]);
     if (!visibleTabs.includes(activeTab as typeof visibleTabs[number])) {
       setActiveTab(visibleTabs[0] || 'none');
@@ -195,12 +190,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     setIsLoading(true);
     try {
       let res;
-      if (activeTab === 'logs') {
-        // 내 프로필도 공개 기록만 보인다(비공개 기록은 앱에서 본다)
-        const result = await getRamenLogs({ authorId: userIdFromPath, sort: 'LATEST', cursor: page === 0 ? null : logCursorRef.current, size: 8 });
-        logCursorRef.current = result.nextCursor;
-        res = { data: { items: result.items, page: { number: page, hasNext: result.hasNext } } };
-      } else if (isOwnProfile) {
+      if (isOwnProfile) {
         switch (activeTab) {
           case 'visits': res = await getMyVisits(page); break;
           case 'bookmarks': res = await getMyBookmarks(page); break;
@@ -219,7 +209,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
       if (res && res.data) {
         const validItems = (res.data.items || []).filter((item: any) => {
-          if (activeTab === 'logs') return !!item.id;
           if (activeTab === 'visits' || activeTab === 'bookmarks') return !!getShopId(item);
           if (activeTab === 'posts') return !!(item.post_id || item.postId || item.id);
           if (activeTab === 'comments') return !!(item.commentId || item.id);
@@ -430,8 +419,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const displayBio = (profile.userDescription && profile.userDescription !== profile.nickname) ? profile.userDescription : '자기소개가 아직 없습니다.';
   const activityVisibility = profile.activity_visibility || allPublicVisibility;
   const profileTabs = [
-    // 라멘로그 수는 웹(v1) 통계와 앱 기록이 달라 보여주지 않는다
-    { id: 'logs', label: '내 로그', icon: BookOpen, count: undefined },
     { id: 'visits', label: '방문기록', icon: MapPin, count: profile.stats.visited_restaurant_count ?? 0 },
     { id: 'posts', label: '게시글', icon: FileText, count: profile.stats.post_count ?? 0 },
     { id: 'comments', label: '댓글', icon: MessageSquare, count: profile.stats.comment_count ?? 0 },
@@ -444,15 +431,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     <div className="flex flex-col items-center justify-center rounded-sm border border-dashed border-stone-300 bg-stone-50 py-20 text-center">
       <div className="mb-4 rounded-full border border-stone-100 bg-white p-5"><Icon className="h-10 w-10 text-stone-300" /></div>
       <p className="text-stone-500 font-bold mb-6">{message}</p>
-      {tab === 'logs' ? (
-        <button type="button" onClick={() => openRamenLogAppPrompt('user_profile_empty')} className="inline-flex items-center gap-2 rounded-sm bg-[#e60000] px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
-          라멘로그 기록하기 <ArrowRight className="w-4 h-4" />
-        </button>
-      ) : (
-        <Link href={tab === 'posts' || tab === 'comments' ? '/community' : '/shops'} className="inline-flex items-center gap-2 rounded-sm bg-[#e60000] px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
-          {tab === 'posts' || tab === 'comments' ? '커뮤니티 가기' : '맛집 찾아보기'} <ArrowRight className="w-4 h-4" />
-        </Link>
-      )}
+      <Link href={tab === 'posts' || tab === 'comments' ? '/community' : '/shops'} className="inline-flex items-center gap-2 rounded-sm bg-[#e60000] px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
+        {tab === 'posts' || tab === 'comments' ? '커뮤니티 가기' : '맛집 찾아보기'} <ArrowRight className="w-4 h-4" />
+      </Link>
     </div>
   );
 
@@ -642,6 +623,21 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         </section>
       )}
 
+      {/* 라멘로그는 회원별로 웹에서 보여주지 않고 앱에서 본다 */}
+      <div className="mb-6 flex items-center justify-between gap-3 rounded-sm border border-stone-200 bg-stone-50 px-4 py-3">
+        <p className="flex min-w-0 items-center gap-2 text-xs font-bold text-stone-600">
+          <Smartphone className="h-4 w-4 shrink-0 text-[#e60000]" />
+          라멘로그는 라오타 앱에서 볼 수 있어요.
+        </p>
+        <button
+          type="button"
+          onClick={() => openRamenLogAppPrompt('user_profile')}
+          className="inline-flex shrink-0 items-center gap-1 text-xs font-black text-[#e60000] hover:underline"
+        >
+          앱 받기 <ArrowRight className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
       {/* Tabs */}
       <div className="mb-8 flex overflow-x-auto border-b border-stone-200 scrollbar-hide">
         {profileTabs.map(tab => (
@@ -652,26 +648,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       </div>
 
       <div className="min-h-[400px] pb-20 relative">
-        {activeTab === 'logs' && isOwnProfile && (
-          <div className="mb-6 border-b border-stone-100 pb-5">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#e60000]">공개 라멘로그</p>
-            <p className="mt-1 text-xs font-medium text-stone-400">공개로 남긴 기록만 보여요. 기록·좋아요·댓글·수정·삭제는 라오타 앱에서 할 수 있어요.</p>
-          </div>
-        )}
-
         {isLoading && (!pageMeta || pageMeta.number === 0) && (
           <div className="absolute inset-0 z-10 flex justify-center bg-white/50 pt-20"><Loader2 className="h-10 w-10 animate-spin text-[#e60000]" /></div>
         )}
         {items.length > 0 ? (
-          activeTab === 'logs' ? (
-            <div className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {(items as RamenLog[]).map((log) => (
-                <div key={`logs-${log.id}`} className="h-full">
-                  <RamenLogCard log={log} onClick={setSelectedLog} />
-                </div>
-              ))}
-            </div>
-          ) : (
           <div className="flex flex-col gap-3">
             {items.map((item, index) => {
               const itemId = item.photo_id || getShopId(item) || item.post_id || item.postId || item.commentId || item.id || 'no-id';
@@ -708,11 +688,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
               return null;
             })}
           </div>
-          )
-        ) : !isLoading && !(activeTab === 'logs' && pageMeta?.hasNext) && <EmptyState tab={activeTab} message={activeTab === 'none' ? '공개된 활동이 없습니다.' : activeTab === 'logs' ? '아직 공개한 라멘로그가 없습니다.' : '아직 항목이 없습니다.'} icon={activeTab === 'logs' ? BookOpen : activeTab === 'visits' ? MapPin : activeTab === 'bookmarks' ? Heart : activeTab === 'posts' ? FileText : MessageSquare} />}
-        {activeTab === 'logs' && pageMeta?.hasNext && !isLoading && (
-          <div ref={lastItemRef} className="h-1" aria-hidden="true" />
-        )}
+        ) : !isLoading && <EmptyState tab={activeTab} message={activeTab === 'none' ? '공개된 활동이 없습니다.' : '아직 항목이 없습니다.'} icon={activeTab === 'visits' ? MapPin : activeTab === 'bookmarks' ? Heart : activeTab === 'posts' ? FileText : MessageSquare} />}
         {isLoading && pageMeta && pageMeta.number > 0 && <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-[#e60000]" /></div>}
       </div>
       {isOwnProfile && (
@@ -730,8 +706,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         date: '-',
         isUserPhoto: true,
       }} onClose={() => setZoomImage(null)} />}
-
-      {selectedLog && <RamenLogDetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />}
 
       {/* Privacy Settings Modal */}
       {isPrivacyModalOpen && (
@@ -755,7 +729,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
             <div className="p-6 space-y-1">
               {[
-                { key: 'logs' as const, label: '내 로그', description: '내가 남긴 라멘로그', icon: BookOpen },
                 { key: 'visits' as const, label: '방문기록', description: '방문한 가게 목록', icon: MapPin },
                 { key: 'posts' as const, label: '게시글', description: '커뮤니티 작성 글', icon: FileText },
                 { key: 'comments' as const, label: '댓글', description: '커뮤니티 작성 댓글', icon: MessageSquare },

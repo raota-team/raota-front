@@ -13,7 +13,6 @@ interface Photo {
   imageUrls?: string[];
   menuName: string;
   user?: string;           // 업로더 닉네임
-  userId?: number | null;  // 업로더 ID(탈퇴한 회원은 null)
   userImageUrl?: string;   // 업로더 프로필 이미지
   restaurantName?: string; // 식당 이름
   restaurantId?: number;   // 식당 이동 ID
@@ -34,7 +33,6 @@ interface Photo {
 interface PhotoModalProps {
   photo: Photo | null;
   onClose: () => void;
-  disableNavigation?: boolean;
 }
 
 /** 앱 라운지의 맛 평가 다섯 줄과 같은 이름과 말 */
@@ -52,7 +50,7 @@ const tasteGroupMeta: Record<string, { icon: string }> = {
   토핑: { icon: '🥚' },
 };
 
-const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableNavigation = false }) => {
+const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
   const router = useRouter();
   const [imgError, setImgError] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -90,18 +88,10 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableNavigati
 
   const handleRestaurantClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (disableNavigation || photo.isUserPhoto || !photo.restaurantId) return;
+    if (photo.isUserPhoto || !photo.restaurantId) return;
 
     onClose();
     router.push(`/shop/${photo.restaurantId}`);
-  };
-
-  const handleUserClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (disableNavigation || photo.isUserPhoto || !photo.userId) return;
-
-    onClose();
-    router.push(`/user/${photo.userId}`);
   };
 
   const imageUrls = photo.imageUrls?.length ? photo.imageUrls : [photo.imageUrl];
@@ -199,8 +189,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableNavigati
                 {photo.restaurantName && (
                   <button
                     onClick={handleRestaurantClick}
-                    disabled={disableNavigation}
-                    className={`flex items-center gap-1.5 ${!disableNavigation ? 'hover:text-[#e60000]' : ''}`}
+                    className="flex items-center gap-1.5 hover:text-[#e60000]"
                   >
                     <MapPin className="h-3.5 w-3.5" />
                     {photo.restaurantName}
@@ -215,13 +204,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableNavigati
               {(photo.user || photo.likes !== undefined) && (
                 <div className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-stone-100 pt-3 md:-mr-10">
                   {photo.user ? (
-                    <button
-                      onClick={handleUserClick}
-                      disabled={disableNavigation || !photo.userId}
-                      className={`flex min-w-0 items-center gap-2 text-sm font-black text-stone-600 ${
-                        !disableNavigation && photo.userId ? 'hover:text-[#e60000]' : ''
-                      }`}
-                    >
+                    <span className="flex min-w-0 items-center gap-2 text-sm font-black text-stone-600">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200 bg-stone-100">
                         {photo.userImageUrl ? (
                           <img src={photo.userImageUrl} alt={photo.user} className="h-full w-full object-cover" />
@@ -230,7 +213,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableNavigati
                         )}
                       </span>
                       <span className="truncate">{photo.user}</span>
-                    </button>
+                    </span>
                   ) : (
                     <span />
                   )}

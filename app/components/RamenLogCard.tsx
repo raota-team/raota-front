@@ -28,26 +28,6 @@ export default function RamenLogCard({
   const tasteSummary = TASTE_NOTE_GROUPS.flatMap(({ key }) => log.tasteNotes[key]);
   const visibleTasteNotes = tasteSummary.slice(0, featured ? 4 : 2);
   const isCompactMobile = compactMobile && !featuredMobile;
-  const authorBadge = (
-    <>
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200 bg-stone-100 sm:h-7 sm:w-7">
-        {log.author.imageUrl ? (
-          <ResilientImage
-            src={log.author.imageUrl}
-            alt={log.author.name}
-            width={28}
-            height={28}
-            sizes="28px"
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <UserRound className="h-3 w-3 text-stone-400 sm:h-3.5 sm:w-3.5" />
-        )}
-      </span>
-      <span className="truncate text-[11px] font-semibold text-[#7e7e7e] sm:text-xs">{log.author.name}</span>
-    </>
-  );
-
   return (
     <article
       onClick={() => onClick?.(log)}
@@ -141,17 +121,23 @@ export default function RamenLogCard({
         )}
 
         <div className={`mt-auto flex items-center justify-between ${isCompactMobile ? 'pt-0 sm:pt-4' : 'pt-4'}`}>
-          {log.author.profileId === null ? (
-            <span className="flex min-w-0 items-center gap-2">{authorBadge}</span>
-          ) : (
-            <Link
-              href={`/user/${log.author.profileId}`}
-              className="flex min-w-0 items-center gap-2"
-              onClick={(event) => event.stopPropagation()}
-            >
-              {authorBadge}
-            </Link>
-          )}
+          <span className="flex min-w-0 items-center gap-2">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200 bg-stone-100 sm:h-7 sm:w-7">
+              {log.author.imageUrl ? (
+                <ResilientImage
+                  src={log.author.imageUrl}
+                  alt={log.author.name}
+                  width={28}
+                  height={28}
+                  sizes="28px"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <UserRound className="h-3 w-3 text-stone-400 sm:h-3.5 sm:w-3.5" />
+              )}
+            </span>
+            <span className="truncate text-[11px] font-semibold text-[#7e7e7e] sm:text-xs">{log.author.name}</span>
+          </span>
         </div>
       </div>
     </article>
