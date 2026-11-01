@@ -245,6 +245,12 @@ export const getRamenLog = async (logId: number): Promise<RamenLogDetail> => {
   };
 };
 
+/** 가게 대표 사진(앱 가게 상세와 같은 값). 못 읽으면 null */
+const getShopImageUrl = (shopId: number, revalidate?: number) =>
+  mobileApiClient<{ imageUrl: string | null }>(`/shops/${encodeURIComponent(shopId)}`, { revalidate })
+    .then((shop) => shop.imageUrl)
+    .catch(() => null);
+
 /** 최근 공개 라멘로그에 나온 가게를 최신순으로 limit곳 */
 export const getRecentRamenLogShops = async (
   limit = 4,
@@ -263,5 +269,14 @@ export const getRecentRamenLogShops = async (
       lastVisitedAt: log.date,
     });
   }
-  return [...shops.values()];
+  const recent = [...shops.values()];
+  // 사진 없이 남긴 기록이면 로그 응답에 가게 사진이 없어 빈 아이콘으로 보인다. 가게 대표 사진으로 채운다
+  await Promise.all(
+    recent
+      .filter((shop) => !shop.imageUrl)
+      .map(async (shop) => {
+        shop.imageUrl = await getShopImageUrl(shop.id, options.revalidate);
+      }),
+  );
+  return recent;
 };
