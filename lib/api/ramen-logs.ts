@@ -2,7 +2,7 @@ import { mobileApiClient } from "@/lib/api/client";
 
 /**
  * 라멘로그는 앱과 같은 서버 API(v2, `/api/v2/ramen-logs`)를 읽는다.
- * 웹 로그인 토큰으로는 v2를 쓸 수 없어 공개 기록만 비로그인으로 읽고, 공감·댓글 쓰기·수정·삭제는 앱에서 한다.
+ * 웹 로그인 토큰으로는 v2를 쓸 수 없어 공개 기록만 비로그인으로 읽고, 기록·공감·댓글 쓰기·수정·삭제는 앱에서 한다.
  */
 
 export type RamenLogSort = "LATEST" | "LIKES";
@@ -94,8 +94,11 @@ interface CursorPage<T> {
 }
 
 export interface RamenLogAuthor {
-  /** 탈퇴한 회원은 null */
-  id: number | null;
+  /**
+   * 웹 프로필(`/user/{id}`) ID. 웹 프로필이 없는 회원은 null이다:
+   * 탈퇴한 회원(서버가 id를 주지 않음)과 앱에서만 가입한 회원(ID가 APP_ONLY_MEMBER_ID_START 이상).
+   */
+  profileId: number | null;
   name: string;
   imageUrl?: string;
 }
@@ -147,6 +150,14 @@ export interface RecentRamenLogShop {
   lastVisitedAt: string;
 }
 
+/**
+ * 앱에서 가입한 회원 ID는 이 번호부터 시작한다(서버 V45 마이그레이션, 2026-10-31 운영 변경).
+ * 이보다 작은 ID의 앱 회원은 웹 회원을 같은 ID로 복사한 사람이라 웹 프로필이 있고,
+ * 이 이상은 웹(v1) 회원이 아니라 웹 프로필을 열면 "정보를 볼 수 없는 사용자"가 된다.
+ * 앱 회원 프로필을 비로그인으로 읽는 v2 API가 없어 링크하지 않는다.
+ */
+const APP_ONLY_MEMBER_ID_START = 10_000_000;
+
 /** 서버 커서 페이지의 최대 크기(CursorPage.MAX_SIZE) */
 const MAX_PAGE_SIZE = 50;
 const WITHDRAWN_AUTHOR_NAME = "탈퇴한 회원";
@@ -173,11 +184,14 @@ const toTasteNotes = (codes: string[] | null): TasteNotes => {
   return notes;
 };
 
-const toAuthor = (author: MobileRamenLogAuthor): RamenLogAuthor => ({
-  id: author.id === null ? null : Number(author.id),
-  name: author.nickname || WITHDRAWN_AUTHOR_NAME,
-  imageUrl: author.avatarUrl || undefined,
-});
+const toAuthor = (author: MobileRamenLogAuthor): RamenLogAuthor => {
+  const id = author.id === null ? null : Number(author.id);
+  return {
+    profileId: id !== null && id < APP_ONLY_MEMBER_ID_START ? id : null,
+    name: author.nickname || WITHDRAWN_AUTHOR_NAME,
+    imageUrl: author.avatarUrl || undefined,
+  };
+};
 
 const toRamenLog = (log: MobileRamenLogSummary): RamenLog => {
   const imageUrls = log.imageUrls ?? [];
@@ -203,32 +217,31 @@ const toRamenLog = (log: MobileRamenLogSummary): RamenLog => {
   };
 };
 
-const getFeedPage = (params: {
-  sort?: RamenLogSort;
-  ramenType?: string;
-  shopId?: number;
-  cursor?: string | null;
-  size?: number;
-}, revalidate?: number) =>
+const getFeedPage = (params: RamenLogFeedParams, revalidate?: number) =>
   mobileApiClient<CursorPage<MobileRamenLogSummary>>("/ramen-logs", {
     query: {
       sort: params.sort,
       ramenType: params.ramenType,
       shopId: params.shopId,
+      authorId: params.authorId,
       cursor: params.cursor,
       size: params.size,
     },
     revalidate,
   });
 
-/** 공개 라멘로그 피드(앱 라운지와 같은 목록) */
-export const getRamenLogs = async (params: {
+export interface RamenLogFeedParams {
   sort?: RamenLogSort;
   ramenType?: string;
   shopId?: number;
+  /** 이 회원의 공개 기록만 */
+  authorId?: number | string;
   cursor?: string | null;
   size?: number;
-} = {}): Promise<RamenLogPage> => {
+}
+
+/** 공개 라멘로그 피드(앱 라운지와 같은 목록). authorId를 주면 그 회원의 공개 기록만 온다 */
+export const getRamenLogs = async (params: RamenLogFeedParams = {}): Promise<RamenLogPage> => {
   const page = await getFeedPage(params);
   return {
     items: (page.items ?? []).map(toRamenLog),
@@ -249,33 +262,6 @@ export const getRamenLog = async (logId: number): Promise<RamenLogDetail> => {
       createdAt: comment.createdAt,
     })),
   };
-};
-
-/**
- * 한 회원의 공개 라멘로그.
- * 앱 API에는 회원별 목록이 없어 공개 피드를 최신순으로 넘기며 그 회원의 기록만 고른다.
- * 한 번 부를 때마다 size개 이상을 모으거나 피드 끝까지 읽고, 다음에 이어 읽을 커서를 돌려준다.
- */
-export const getUserRamenLogs = async (
-  userId: number | string,
-  params: { cursor?: string | null; size?: number } = {},
-): Promise<RamenLogPage> => {
-  const authorId = String(userId);
-  const size = params.size ?? 8;
-  const items: RamenLog[] = [];
-  let cursor = params.cursor ?? null;
-  let hasNext = true;
-
-  while (items.length < size && hasNext) {
-    const page = await getFeedPage({ sort: "LATEST", cursor, size: MAX_PAGE_SIZE });
-    for (const log of page.items ?? []) {
-      if (log.author.id === authorId) items.push(toRamenLog(log));
-    }
-    cursor = page.nextCursor;
-    hasNext = page.hasNext && Boolean(page.nextCursor);
-  }
-
-  return { items, nextCursor: hasNext ? cursor : null, hasNext };
 };
 
 /** 최근 공개 라멘로그에 나온 가게를 최신순으로 limit곳 */

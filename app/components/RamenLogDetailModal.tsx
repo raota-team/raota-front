@@ -34,7 +34,7 @@ export default function RamenLogDetailModal({ log, onClose }: { log: RamenLog; o
         imageUrls: shown.imageUrls,
         menuName: shown.menuName,
         user: shown.author.name,
-        userId: shown.author.id,
+        userId: shown.author.profileId,
         userImageUrl: shown.author.imageUrl,
         restaurantName: shown.shop.name,
         restaurantId: shown.shop.id,

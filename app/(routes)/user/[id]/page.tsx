@@ -25,7 +25,7 @@ import {
   ActivityVisibility,
   MyProfileData,
 } from '@/lib/api/user';
-import { getUserRamenLogs, type RamenLog } from '@/lib/api/ramen-logs';
+import { getRamenLogs, type RamenLog } from '@/lib/api/ramen-logs';
 import { getUploadTicket, uploadFileToStorage } from '@/lib/api/files';
 import { compressImage } from '@/lib/utils/image-optimization';
 import Loading from '@/app/loading';
@@ -197,7 +197,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       let res;
       if (activeTab === 'logs') {
         // 내 프로필도 공개 기록만 보인다(비공개 기록은 앱에서 본다)
-        const result = await getUserRamenLogs(userIdFromPath, { cursor: page === 0 ? null : logCursorRef.current, size: 8 });
+        const result = await getRamenLogs({ authorId: userIdFromPath, sort: 'LATEST', cursor: page === 0 ? null : logCursorRef.current, size: 8 });
         logCursorRef.current = result.nextCursor;
         res = { data: { items: result.items, page: { number: page, hasNext: result.hasNext } } };
       } else if (isOwnProfile) {
@@ -655,7 +655,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         {activeTab === 'logs' && isOwnProfile && (
           <div className="mb-6 border-b border-stone-100 pb-5">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[#e60000]">공개 라멘로그</p>
-            <p className="mt-1 text-xs font-medium text-stone-400">공개로 남긴 기록만 보여요. 비공개 기록과 수정·삭제는 라오타 앱에서 할 수 있어요.</p>
+            <p className="mt-1 text-xs font-medium text-stone-400">공개로 남긴 기록만 보여요. 기록·좋아요·댓글·수정·삭제는 라오타 앱에서 할 수 있어요.</p>
           </div>
         )}
 

@@ -312,9 +312,13 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, disableNavigati
                   </ul>
                 )}
                 {commentCount > previewComments.length && (
-                  <p className="mt-3 text-[11px] font-bold text-stone-400">나머지 댓글과 댓글 쓰기는 라오타 앱에서 할 수 있어요.</p>
+                  <p className="mt-3 text-[11px] font-bold text-stone-400">나머지 댓글은 라오타 앱에서 볼 수 있어요.</p>
                 )}
               </div>
+            )}
+
+            {photo.likes !== undefined && (
+              <p className="mt-3 px-1 text-[11px] font-bold text-stone-400">좋아요·댓글은 라오타 앱에서 남길 수 있어요.</p>
             )}
           </aside>
         )}

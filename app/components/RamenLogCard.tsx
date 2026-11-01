@@ -141,11 +141,11 @@ export default function RamenLogCard({
         )}
 
         <div className={`mt-auto flex items-center justify-between ${isCompactMobile ? 'pt-0 sm:pt-4' : 'pt-4'}`}>
-          {log.author.id === null ? (
+          {log.author.profileId === null ? (
             <span className="flex min-w-0 items-center gap-2">{authorBadge}</span>
           ) : (
             <Link
-              href={`/user/${log.author.id}`}
+              href={`/user/${log.author.profileId}`}
               className="flex min-w-0 items-center gap-2"
               onClick={(event) => event.stopPropagation()}
             >
