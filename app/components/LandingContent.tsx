@@ -8,12 +8,14 @@ import UserProfileCard from './UserProfileCard';
 import AnimatedCounter from './AnimatedCounter';
 import TrendingTagsRanking from './TrendingTagsRanking';
 import { Do_Hyeon } from 'next/font/google';
-import { useRecentVerifiedShops } from '@/hooks/queries/useDiscovery';
-import type { RecentVerifiedShopResponse } from '@/lib/api/discovery';
+import { useRecentRamenLogShops } from '@/hooks/queries/useDiscovery';
+import type { RecentRamenLogShop } from '@/lib/api/ramen-logs';
 import ResilientImage from './ResilientImage';
 import UpcomingFeatures from './UpcomingFeatures';
+import { formatRamenLogDate } from './RamenLogCard';
 import {
   Sparkles,
+  Calendar,
   Camera,
   Users,
   Search,
@@ -39,7 +41,7 @@ const HOME_STATS = {
 };
 
 export type HomeInitialData = {
-  recentShops?: { success: boolean; data: RecentVerifiedShopResponse[] };
+  recentShops?: RecentRamenLogShop[];
 };
 
 export default function LandingContent({
@@ -59,14 +61,14 @@ export default function LandingContent({
     return () => clearTimeout(timer);
   }, []);
   
-  // 서버 연동 데이터
-  const { data: recentShopsData } = useRecentVerifiedShops(
+  // 앱 공개 라멘로그 피드에서 최근 기록된 가게
+  const { data: recentShopsData } = useRecentRamenLogShops(
     4,
     initialData?.recentShops,
   );
 
   const homeNotices = notices.slice(0, 3);
-  const recentVerifiedShops = recentShopsData?.data || [];
+  const recentVerifiedShops = recentShopsData ?? [];
   const heroSearchHref = heroSearchQuery.trim()
     ? `/shops?aiKeyword=${encodeURIComponent(heroSearchQuery.trim())}`
     : "/shops";
@@ -256,8 +258,8 @@ export default function LandingContent({
                     <div className="flex min-w-0 items-center justify-between gap-2 text-[11px] text-[#666666] md:text-xs">
                       <span className="truncate font-bold text-[#25282b]">{shop.location}</span>
                       <div className="flex shrink-0 items-center gap-1 text-[#666666]">
-                        <Camera className="h-3 w-3" />
-                        <span className="font-medium">인증샷 <b className="text-[#25282b]">{shop.photoCount || 0}</b>개</span>
+                        <Calendar className="h-3 w-3" />
+                        <span className="font-medium">{formatRamenLogDate(shop.lastVisitedAt)} 방문</span>
                       </div>
                     </div>
                   </div>

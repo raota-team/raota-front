@@ -80,17 +80,6 @@ export interface MyPostSummary {
   commentCount: number;
 }
 
-// 내 사진
-export interface MyPhotoSummary {
-  photo_id: number;
-  image_url: string;
-  menuName: string;
-  restaurant_id: number;
-  restaurant_name: string;
-  uploaded_at: string;
-  description?: string;
-}
-
 // 내 댓글
 export interface MyCommentSummary {
   commentId: number;
@@ -256,10 +245,6 @@ export const getMyComments = async (page = 0, size = 10) => {
   return await apiClient<PaginatedResponse<MyCommentSummary>>(`/users/me/comments`, { query: { page, size } });
 };
 
-export const getMyPhotos = async (page = 0, size = 20) => {
-  return await apiClient<PaginatedResponse<MyPhotoSummary>>(`/users/me/photos`, { query: { page, size } });
-};
-
 /** 타 사용자 활동 내역 조회 */
 export const getUserVisits = async (userId: number | string, page = 0, size = 20) => {
   return await apiClient<PaginatedResponse<VisitSummary>>(`/users/${userId}/visits`, { query: { page, size } });
@@ -271,10 +256,6 @@ export const getUserPosts = async (userId: number | string, page = 0, size = 10)
 
 export const getUserComments = async (userId: number | string, page = 0, size = 20) => {
   return await apiClient<PaginatedResponse<MyCommentSummary>>(`/users/${userId}/comments`, { query: { page, size } });
-};
-
-export const getUserPhotos = async (userId: number | string, page = 0, size = 20) => {
-  return await apiClient<PaginatedResponse<MyPhotoSummary>>(`/users/${userId}/photos`, { query: { page, size } });
 };
 
 /** 프로필 수정 */

@@ -56,6 +56,42 @@ const buildUrl = (path: string, query?: Record<string, QueryValue>) => {
   return queryString ? `${path}?${queryString}` : path;
 };
 
+type MobileApiEnvelope<T> =
+  | { success: true; data: T }
+  | { success: false; error?: { code?: string; message?: string } | null };
+
+/**
+ * 앱(v2, `/api/v2`) 공개 읽기 전용 요청. 앱과 같은 서버 API를 읽는다.
+ * 웹 로그인 토큰은 앱 토큰이 아니라서 v2에 보내면 공개 API도 401이 난다. 그래서 토큰과 쿠키를 보내지 않는다.
+ * 앱 봉투({ success, data })를 풀어 data만 돌려준다.
+ */
+export const mobileApiClient = async <T>(
+  path: string,
+  options: { query?: Record<string, QueryValue>; revalidate?: number } = {},
+): Promise<T> => {
+  const response = await fetch(buildUrl(`${getApiBaseUrl()}/api/v2${path}`, options.query), {
+    headers: { Accept: "application/json" },
+    credentials: "omit",
+    ...(options.revalidate === undefined
+      ? { cache: "no-store" as const }
+      : { next: { revalidate: options.revalidate } }),
+  });
+
+  const contentType = response.headers.get("content-type") || "";
+  const payload = contentType.includes("application/json")
+    ? (await response.json()) as MobileApiEnvelope<T>
+    : null;
+
+  if (!response.ok || !payload || payload.success !== true) {
+    const message = payload && payload.success === false && payload.error?.message
+      ? payload.error.message
+      : `Request failed with status ${response.status}`;
+    throw new ApiClientError(message, response.status, payload);
+  }
+
+  return payload.data;
+};
+
 // 동시 다발적인 401 발생 시 한 번만 refresh를 수행하기 위한 간단한 잠금 장치
 let refreshPromise: Promise<string> | null = null;
 

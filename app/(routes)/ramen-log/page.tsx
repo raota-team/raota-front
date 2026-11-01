@@ -2,8 +2,6 @@
 
 import { useCallback, useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
 import {
   Camera,
   ChevronDown,
@@ -11,30 +9,19 @@ import {
   Plus,
   Search,
   Store,
+  UtensilsCrossed,
 } from 'lucide-react';
-import RamenLogModal, { type RamenLogFormData } from '@/app/components/RamenLogModal';
 import { openRamenLogAppPrompt } from '@/app/components/AppPreRegisterModal';
-import RamenLogCard, {
-  formatRamenLogDate,
-  tasteNoteLabels,
-  tasteNoteOrder,
-} from '@/app/components/RamenLogCard';
+import RamenLogCard from '@/app/components/RamenLogCard';
+import RamenLogDetailModal from '@/app/components/RamenLogDetailModal';
 import { useApp } from '@/app/context/AppContext';
-import { getAccessToken } from '@/lib/auth/accessToken';
 import { useRamenShops } from '@/hooks/queries/useRamenShops';
 import {
-  deleteRamenLog,
   getRamenLogs,
-  toggleRamenLogLike,
-  toRevisitValue,
-  updateRamenLog,
+  RAMEN_LOG_TYPES,
   type RamenLog,
-  type RamenLogPageInfo,
-  type RamenLogRequest,
   type RamenLogSort,
 } from '@/lib/api/ramen-logs';
-
-const PhotoModal = dynamic(() => import('@/app/components/PhotoModal'), { ssr: false });
 
 const MOBILE_PAGE_SIZE = 5;
 const DESKTOP_PAGE_SIZE = 8;
@@ -43,32 +30,14 @@ const FEATURED_INTERVAL = 8;
 
 const sortOptions = [
   { value: 'LATEST', label: '최신순' },
-  { value: 'POPULAR', label: '인기순' },
+  { value: 'LIKES', label: '인기순' },
 ] as const;
 
-const toRamenLogRequest = (data: RamenLogFormData): RamenLogRequest => {
-  if (!data.shopId) {
-    throw new Error('라멘 가게를 선택해주세요.');
-  }
-
-  return {
-    shopId: data.shopId,
-    menuName: data.menuName,
-    ramenType: data.ramenType,
-    imageUrl: data.imageUrl,
-    visitedAt: data.visitedAt,
-    note: data.note || undefined,
-    tasteNotes: data.tasteNotes,
-    revisit: toRevisitValue(data.revisit),
-    public: data.isPublic,
-  };
-};
-
 export default function RamenLogPage() {
-  const router = useRouter();
-  const { showConfirm, showToast } = useApp();
+  const { showToast } = useApp();
   const [logItems, setLogItems] = useState<RamenLog[]>([]);
-  const [pageInfo, setPageInfo] = useState<RamenLogPageInfo | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasNext, setHasNext] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   
   // Custom dropdown states
@@ -78,14 +47,15 @@ export default function RamenLogPage() {
   const [shopSearchQuery, setShopSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const [selectedRamenType, setSelectedRamenType] = useState<string | null>(null);
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+  const typeDropdownRef = useRef<HTMLDivElement>(null);
+
   const [sortBy, setSortBy] = useState<RamenLogSort>('LATEST');
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const sortDropdownRef = useRef<HTMLDivElement>(null);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [selectedLog, setSelectedLog] = useState<RamenLog | null>(null);
-  const [editingLog, setEditingLog] = useState<RamenLog | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [pageSize, setPageSize] = useState<number | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -95,7 +65,7 @@ export default function RamenLogPage() {
   const { data: shopsData } = useRamenShops({ page: 0, size: 100, sort: "NAME" });
   const listShops = shopsData?.shops ?? [];
   const selectedShop = listShops.find(s => s.id === selectedShopId);
-  const hasActiveFilter = Boolean(selectedShopId || debouncedSearchQuery);
+  const hasActiveFilter = Boolean(selectedShopId || selectedRamenType);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -113,6 +83,9 @@ export default function RamenLogPage() {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsShopDropdownOpen(false);
       }
+      if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target as Node)) {
+        setIsTypeDropdownOpen(false);
+      }
       if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
         setIsSortDropdownOpen(false);
       }
@@ -120,13 +93,6 @@ export default function RamenLogPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery.trim());
-    }, 300);
-    return () => window.clearTimeout(timer);
-  }, [searchQuery]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
@@ -139,9 +105,10 @@ export default function RamenLogPage() {
     return () => mediaQuery.removeEventListener('change', updatePageSize);
   }, []);
 
-  const loadLogs = useCallback(async (page: number, replace: boolean) => {
+  const loadLogs = useCallback(async (cursor: string | null) => {
     if (pageSize === null) return;
 
+    const replace = cursor === null;
     const requestSequence = replace
       ? ++requestSequenceRef.current
       : requestSequenceRef.current;
@@ -151,21 +118,23 @@ export default function RamenLogPage() {
 
     try {
       const result = await getRamenLogs({
-        page,
+        cursor,
         size: pageSize,
         sort: sortBy,
         shopId: selectedShopId || undefined,
-        keyword: debouncedSearchQuery || undefined,
+        ramenType: selectedRamenType || undefined,
       });
 
       if (requestSequence !== requestSequenceRef.current) return;
       setLogItems((current) => replace ? result.items : [...current, ...result.items]);
-      setPageInfo(result.page);
+      setNextCursor(result.nextCursor);
+      setHasNext(result.hasNext);
     } catch (error) {
       console.error('Failed to fetch ramen logs:', error);
       if (replace) {
         setLogItems([]);
-        setPageInfo(null);
+        setNextCursor(null);
+        setHasNext(false);
         showToast('라멘로그를 불러오지 못했습니다.', 'error');
       }
     } finally {
@@ -174,83 +143,28 @@ export default function RamenLogPage() {
         setIsLoadingMore(false);
       }
     }
-  }, [debouncedSearchQuery, pageSize, selectedShopId, showToast, sortBy]);
+  }, [pageSize, selectedRamenType, selectedShopId, showToast, sortBy]);
 
   useEffect(() => {
     if (pageSize === null) return;
-    loadLogs(0, true);
+    loadLogs(null);
   }, [loadLogs, pageSize]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
-    if (!target || !pageInfo?.hasNext || isLoadingMore || isInitialLoading) return;
+    if (!target || !hasNext || !nextCursor || isLoadingMore || isInitialLoading) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
-        loadLogs(pageInfo.number + 1, false);
+        loadLogs(nextCursor);
       },
       { rootMargin: '240px 0px' },
     );
 
     observer.observe(target);
     return () => observer.disconnect();
-  }, [isInitialLoading, isLoadingMore, loadLogs, pageInfo]);
-
-  const handleUpdateLog = async (data: RamenLogFormData) => {
-    if (!editingLog) return;
-
-    const updated = await updateRamenLog(editingLog.id, toRamenLogRequest(data));
-    setLogItems((current) =>
-      updated.isPublic
-        ? current.map((log) => log.id === updated.id ? updated : log)
-        : current.filter((log) => log.id !== updated.id),
-    );
-    setSelectedLog((current) => current?.id === updated.id ? updated : current);
-    setEditingLog(null);
-    showToast('라멘로그를 수정했습니다.', 'success');
-  };
-
-  const handleLikeChange = async (logId: number) => {
-    if (!getAccessToken()) {
-      showConfirm('로그인이 필요한 기능입니다.\n로그인 페이지로 이동하시겠습니까?', () => {
-        router.push('/login');
-      });
-      throw new Error('Login required');
-    }
-
-    const result = await toggleRamenLogLike(logId);
-    setLogItems((current) =>
-      current.map((log) =>
-        log.id === logId
-          ? { ...log, likes: result.likeCount, isLiked: result.liked }
-          : log,
-      ),
-    );
-    setSelectedLog((current) =>
-      current?.id === logId
-        ? { ...current, likes: result.likeCount, isLiked: result.liked }
-        : current,
-    );
-  };
-
-  const handleEditLog = (logId: number) => {
-    const log = logItems.find((item) => item.id === logId);
-    if (!log) return;
-    setSelectedLog(null);
-    setEditingLog(log);
-  };
-
-  const handleDeleteLog = async (logId: number) => {
-    await deleteRamenLog(logId);
-    setLogItems((current) => current.filter((log) => log.id !== logId));
-    setSelectedLog(null);
-    setPageInfo((current) => current ? {
-      ...current,
-      totalElements: Math.max(0, current.totalElements - 1),
-    } : current);
-    showToast('라멘로그를 삭제했습니다.', 'success');
-  };
+  }, [hasNext, isInitialLoading, isLoadingMore, loadLogs, nextCursor]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -282,17 +196,39 @@ export default function RamenLogPage() {
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-col gap-3 min-w-0 flex-1 sm:flex-row sm:items-center">
-              <div className="relative min-w-0 w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-                <label htmlFor="ramen-log-search" className="sr-only">가게, 메뉴 또는 맛 기록 검색</label>
-                <input
-                  id="ramen-log-search"
-                  type="search"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="가게, 메뉴, 맛 기록 검색"
-                  className="h-11 w-full rounded-sm border border-stone-200 bg-white pl-9 pr-3 text-sm font-bold text-[#25282b] outline-none transition-colors placeholder:text-stone-400 focus:border-[#e60000]"
-                />
+              {/* Ramen Type Dropdown (앱 라운지의 라멘 종류 필터와 같다) */}
+              <div className="relative min-w-0 w-full sm:w-48" ref={typeDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+                  aria-label="라멘 종류 선택"
+                  aria-expanded={isTypeDropdownOpen}
+                  className="flex h-11 w-full items-center justify-between gap-2 rounded-sm border border-stone-200 bg-white px-3 py-2.5 text-sm font-bold text-[#25282b] transition-colors hover:border-[#e60000]"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <UtensilsCrossed className="w-4 h-4 text-[#e60000] shrink-0" />
+                    <span className="truncate">{selectedRamenType || '전체 종류'}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-stone-400 shrink-0 transition-transform ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isTypeDropdownOpen && (
+                  <div className="absolute left-0 right-0 z-30 mt-2 max-h-72 overflow-y-auto rounded-sm border border-stone-300 bg-white py-1">
+                    {[null, ...RAMEN_LOG_TYPES].map((type) => (
+                      <button
+                        key={type ?? 'all'}
+                        type="button"
+                        onClick={() => {
+                          setSelectedRamenType(type);
+                          setIsTypeDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-2.5 text-left text-sm hover:bg-stone-50 ${selectedRamenType === type ? 'font-semibold text-[#e60000]' : 'text-stone-700'}`}
+                      >
+                        {type ?? '전체 종류'}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-row gap-2 sm:shrink-0 w-full sm:w-auto">
@@ -405,17 +341,12 @@ export default function RamenLogPage() {
 
       <main className="mx-auto max-w-7xl px-4 pt-6 pb-10 sm:px-6 sm:pt-8 sm:pb-12 lg:px-8 lg:pt-10 lg:pb-16">
         <section className="min-w-0">
-          <div className="mb-7 flex flex-col gap-2 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#e60000]">공개 노트</p>
-              <h2 className="mt-1 text-2xl font-black text-[#25282b] sm:text-3xl">라멘러들의 기록</h2>
-              <p className="mt-1 text-sm font-medium leading-6 text-stone-500">
-                저장하고, 다시 보고, 취향을 비교하기 좋은 한 그릇 로그입니다.
-              </p>
-            </div>
-            <span className="shrink-0 text-xs font-black text-stone-400">
-              {pageInfo?.totalElements ?? 0}개 로그
-            </span>
+          <div className="mb-7 min-w-0 sm:mb-8">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#e60000]">공개 노트</p>
+            <h2 className="mt-1 text-2xl font-black text-[#25282b] sm:text-3xl">라멘러들의 기록</h2>
+            <p className="mt-1 text-sm font-medium leading-6 text-stone-500">
+              저장하고, 다시 보고, 취향을 비교하기 좋은 한 그릇 로그입니다.
+            </p>
           </div>
 
           {isInitialLoading ? (
@@ -455,7 +386,7 @@ export default function RamenLogPage() {
                       featured={isFeatured}
                       compactMobile
                       featuredMobile={isFeaturedMobile}
-                      onClick={(item) => setSelectedLog(item as RamenLog)}
+                      onClick={setSelectedLog}
                     />
                   </div>
                 );
@@ -477,7 +408,7 @@ export default function RamenLogPage() {
                   다음 라멘로그 불러오는 중
                 </div>
               )}
-              {!pageInfo?.hasNext && !isLoadingMore && (
+              {!hasNext && !isLoadingMore && (
                 <p className="text-xs font-bold text-stone-300">모든 라멘로그를 확인했습니다.</p>
               )}
             </div>
@@ -485,50 +416,8 @@ export default function RamenLogPage() {
         </section>
       </main>
 
-      <RamenLogModal
-        isOpen={Boolean(editingLog)}
-        onClose={() => setEditingLog(null)}
-        onCreate={handleUpdateLog}
-        initialLog={editingLog ? {
-          shopName: editingLog.shop.name,
-          shopId: editingLog.shop.id,
-          menuName: editingLog.menuName,
-          ramenType: editingLog.ramenType,
-          visitedAt: editingLog.date,
-          imageUrl: editingLog.imageUrl,
-          imageName: '',
-          note: editingLog.note,
-          tasteNotes: editingLog.tasteNotes,
-          revisit: editingLog.revisit,
-          isPublic: editingLog.isPublic ?? true,
-        } : undefined}
-      />
-
       {selectedLog && (
-        <PhotoModal
-          photo={{
-            id: selectedLog.id,
-            imageUrl: selectedLog.imageUrl,
-            menuName: selectedLog.menuName,
-            user: selectedLog.author.name,
-            userId: selectedLog.author.id,
-            userImageUrl: selectedLog.author.imageUrl,
-            restaurantName: selectedLog.shop.name,
-            restaurantId: selectedLog.shop.id,
-            date: formatRamenLogDate(selectedLog.date),
-            comment: selectedLog.note,
-            revisit: selectedLog.revisit,
-            likes: selectedLog.likes,
-            isLiked: selectedLog.isLiked,
-            tasteNotes: tasteNoteOrder
-              .filter((key) => selectedLog.tasteNotes[key].length > 0)
-              .map((key) => ({ label: tasteNoteLabels[key], values: selectedLog.tasteNotes[key] })),
-          }}
-          onClose={() => setSelectedLog(null)}
-          onLikeChange={handleLikeChange}
-          onEdit={handleEditLog}
-          onDelete={handleDeleteLog}
-        />
+        <RamenLogDetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />
       )}
     </div>
   );

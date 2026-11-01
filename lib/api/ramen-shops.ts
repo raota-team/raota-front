@@ -38,8 +38,6 @@ interface ApiRamenShop {
   votes?: number | string;
   visits?: number | string; // 신규 필드 추가
   viewCount?: number | string;
-  ramenLogCount?: number | string;
-  ramenLogPreviewImageUrls?: string[] | null;
   menus?: Array<{ name?: string; votes?: number | string }>;
   menu_list?: ApiMenuItem[];
   normal_menus?: ApiMenuItem[];
@@ -266,10 +264,6 @@ const normalizeShop = (shop: ApiRamenShop, index: number): Shop => {
       view_count: toNumber(shop.stats?.view_count ?? shop.viewCount, 0),
       bookmark_count: toNumber(shop.stats?.bookmark_count, 0),
     },
-    ramenLogCount: toNumber(shop.ramenLogCount, 0),
-    ramenLogPreviewImageUrls: Array.isArray(shop.ramenLogPreviewImageUrls)
-      ? shop.ramenLogPreviewImageUrls.filter((url): url is string => typeof url === "string" && url.length > 0).slice(0, 3)
-      : [],
     instagram_url: shop.instagram_url || "",
     catchTableUrl: shop.catchTableUrl || "",
     isBookmarked: Boolean(shop.isBookmarked ?? shop.is_bookmarked),
@@ -363,36 +357,6 @@ export const getVoteStatus = async (shopId: number): Promise<any> => {
   );
   // 응답 데이터에 voted 필드가 포함되어 내려옴
   return payload.data;
-};
-
-/** 가게 사진 목록 조회 */
-export const getShopPhotos = async (shopId: number, page = 0, size = 6): Promise<any> => {
-  const res = await apiClient<any>(buildApiUrl(`/ramen-shops/${shopId}/photos`), {
-    query: { page, size, sort: ["uploadedAt,desc"] }
-  });
-  
-  // 제공해주신 스웨거 응답 명세 및 메뉴 네임 연동
-  if (res && res.data && res.data.items) {
-    return res.data.items.map((item: any) => ({
-      id: item.photo_id,
-      uploaderId: item.uploaderId ?? item.uploader_id ?? item.userId ?? item.user_id ?? item.memberId ?? item.member_id,
-      userId: item.uploaderId ?? item.uploader_id ?? item.userId ?? item.user_id ?? item.memberId ?? item.member_id,
-      user: item.uploader_nickname || "익명",
-      imageUrl: item.image_url,
-      menuName: item.menuName || item.menu_name || "라멘", // 메뉴 네임 사용
-      date: item.uploaded_at ? new Date(item.uploaded_at).toLocaleDateString('ko-KR') : "-",
-      comment: item.oneLineComment || ""
-    }));
-  }
-  return [];
-};
-
-/** 인증샷 삭제 */
-export const deleteProofPicture = async (shopId: number, photoId: number): Promise<any> => {
-  return await apiClient(
-    buildApiUrl(`/ramen-shops/${shopId}/photos/${photoId}`),
-    { method: "DELETE" }
-  );
 };
 
 /** 가게 정보 제보하기 */

@@ -2,24 +2,23 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  type RecentVerifiedShopResponse,
   type WeekendRecommendationResponse,
-  getRecentVerifiedShops,
   getPopularShopsToday,
   getHomeTips,
   getWeekendRecommendations,
   generateWeekendRecommendations,
 } from "@/lib/api/discovery";
+import { getRecentRamenLogShops, type RecentRamenLogShop } from "@/lib/api/ramen-logs";
 
 type DiscoveryResponse<T> = { success: boolean; data: T };
 
-export const useRecentVerifiedShops = (
+export const useRecentRamenLogShops = (
   limit: number = 4,
-  initialData?: DiscoveryResponse<RecentVerifiedShopResponse[]>,
+  initialData?: RecentRamenLogShop[],
 ) => {
   return useQuery({
-    queryKey: ["discovery", "recent-verified-shops", limit],
-    queryFn: () => getRecentVerifiedShops(limit),
+    queryKey: ["discovery", "recent-ramen-log-shops", limit],
+    queryFn: () => getRecentRamenLogShops(limit),
     staleTime: 1000 * 60 * 1, // 1 minute
     initialData,
   });

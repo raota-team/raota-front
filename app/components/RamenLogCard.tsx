@@ -1,46 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Heart, Store, UserRound } from 'lucide-react';
-import type { TasteNoteKey, TasteNotes } from '@/app/components/RamenLogModal';
-import { normalizeTasteNoteValue } from '@/lib/utils/ramen-log-taste-notes';
+import { Heart, MessageCircle, Store, UserRound } from 'lucide-react';
+import { TASTE_NOTE_GROUPS, type RamenLog } from '@/lib/api/ramen-logs';
 import ResilientImage from './ResilientImage';
 import RamenLogImage from './RamenLogImage';
-
-export type RamenLogItem = {
-  id: number;
-  author: { id: number; name: string; imageUrl?: string };
-  shop: { id?: number; name: string; location?: string };
-  menuName: string;
-  ramenType?: string;
-  imageUrl: string;
-  date: string;
-  note?: string;
-  tasteNotes?: TasteNotes;
-  revisit?: '자주 감' | '가끔 생각남' | '한번이면 충분';
-  likes?: number;
-  isLiked?: boolean;
-  isPublic?: boolean;
-};
-
-export const tasteNoteLabels: Record<TasteNoteKey, string> = {
-  broth: '국물',
-  noodle: '면',
-  seasoning: '간',
-  topping: '토핑',
-};
-
-export const tasteNoteOrder: TasteNoteKey[] = ['broth', 'noodle', 'seasoning', 'topping'];
-
-export const emptyTasteNotes = (): TasteNotes => ({
-  broth: [],
-  noodle: [],
-  seasoning: [],
-  topping: [],
-});
-
-export const getTasteNoteValues = (tasteNotes?: TasteNotes) =>
-  tasteNoteOrder.flatMap((key) => tasteNotes?.[key]?.map(normalizeTasteNoteValue) ?? []);
 
 export const formatRamenLogDate = (value: string) => {
   const date = new Date(value);
@@ -55,15 +19,34 @@ export default function RamenLogCard({
   compactMobile = false,
   featuredMobile = false,
 }: {
-  log: RamenLogItem;
-  onClick?: (log: RamenLogItem) => void;
+  log: RamenLog;
+  onClick?: (log: RamenLog) => void;
   featured?: boolean;
   compactMobile?: boolean;
   featuredMobile?: boolean;
 }) {
-  const tasteSummary = getTasteNoteValues(log.tasteNotes);
+  const tasteSummary = TASTE_NOTE_GROUPS.flatMap(({ key }) => log.tasteNotes[key]);
   const visibleTasteNotes = tasteSummary.slice(0, featured ? 4 : 2);
   const isCompactMobile = compactMobile && !featuredMobile;
+  const authorBadge = (
+    <>
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200 bg-stone-100 sm:h-7 sm:w-7">
+        {log.author.imageUrl ? (
+          <ResilientImage
+            src={log.author.imageUrl}
+            alt={log.author.name}
+            width={28}
+            height={28}
+            sizes="28px"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <UserRound className="h-3 w-3 text-stone-400 sm:h-3.5 sm:w-3.5" />
+        )}
+      </span>
+      <span className="truncate text-[11px] font-semibold text-[#7e7e7e] sm:text-xs">{log.author.name}</span>
+    </>
+  );
 
   return (
     <article
@@ -96,8 +79,14 @@ export default function RamenLogCard({
           <span className={`flex items-center gap-1 rounded-full bg-[#25282b]/70 font-bold text-white sm:px-2.5 sm:py-1 sm:text-xs ${
             isCompactMobile ? 'px-2 py-0.5 text-[9px]' : 'px-2.5 py-1 text-[10px]'
           }`}>
-            <Heart className={`h-3 w-3 ${log.isLiked ? 'fill-current text-[#e60000]' : ''}`} />
-            {log.likes ?? 0}
+            <Heart className="h-3 w-3" />
+            {log.likes}
+            {log.commentCount > 0 && (
+              <>
+                <MessageCircle className="ml-1 h-3 w-3" />
+                {log.commentCount}
+              </>
+            )}
           </span>
         </div>
 
@@ -107,23 +96,16 @@ export default function RamenLogCard({
           isCompactMobile ? 'p-3' : 'p-4'
         } ${featured ? 'sm:p-7' : 'sm:p-5'}`}>
           <div className={`flex min-w-0 items-center gap-1.5 ${isCompactMobile ? 'mb-1' : 'mb-1.5'}`}>
-            {log.shop.id ? (
-              <Link
-                href={`/shop/${log.shop.id}`}
-                className="group/shop flex min-w-0 items-center gap-1.5 text-white/80 hover:text-white"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <Store className={`${isCompactMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'} shrink-0 sm:h-3.5 sm:w-3.5`} />
-                <span className={`truncate font-bold sm:text-sm ${isCompactMobile ? 'text-[10px]' : 'text-xs'}`}>
-                  {log.shop.name}
-                </span>
-              </Link>
-            ) : (
-              <span className="flex min-w-0 items-center gap-1.5 text-white/80">
-                <Store className={`${isCompactMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'} shrink-0 sm:h-3.5 sm:w-3.5`} />
-                <span className={`truncate font-bold sm:text-sm ${isCompactMobile ? 'text-[10px]' : 'text-xs'}`}>{log.shop.name}</span>
+            <Link
+              href={`/shop/${log.shop.id}`}
+              className="group/shop flex min-w-0 items-center gap-1.5 text-white/80 hover:text-white"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <Store className={`${isCompactMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'} shrink-0 sm:h-3.5 sm:w-3.5`} />
+              <span className={`truncate font-bold sm:text-sm ${isCompactMobile ? 'text-[10px]' : 'text-xs'}`}>
+                {log.shop.name}
               </span>
-            )}
+            </Link>
           </div>
           <h2 className={`line-clamp-2 font-bold tracking-[-0.02em] ${
             isCompactMobile ? 'text-base leading-tight' : featured ? 'text-2xl leading-tight' : 'text-xl leading-tight'
@@ -159,27 +141,17 @@ export default function RamenLogCard({
         )}
 
         <div className={`mt-auto flex items-center justify-between ${isCompactMobile ? 'pt-0 sm:pt-4' : 'pt-4'}`}>
-          <Link
-            href={`/user/${log.author.id}`}
-            className="flex min-w-0 items-center gap-2"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200 bg-stone-100 sm:h-7 sm:w-7">
-              {log.author.imageUrl ? (
-                <ResilientImage
-                  src={log.author.imageUrl}
-                  alt={log.author.name}
-                  width={28}
-                  height={28}
-                  sizes="28px"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <UserRound className="h-3 w-3 text-stone-400 sm:h-3.5 sm:w-3.5" />
-              )}
-            </span>
-            <span className="truncate text-[11px] font-semibold text-[#7e7e7e] sm:text-xs">{log.author.name}</span>
-          </Link>
+          {log.author.id === null ? (
+            <span className="flex min-w-0 items-center gap-2">{authorBadge}</span>
+          ) : (
+            <Link
+              href={`/user/${log.author.id}`}
+              className="flex min-w-0 items-center gap-2"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {authorBadge}
+            </Link>
+          )}
         </div>
       </div>
     </article>

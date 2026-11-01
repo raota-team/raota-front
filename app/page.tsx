@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import LandingContent, { type HomeInitialData } from './components/LandingContent';
+import LandingContent from './components/LandingContent';
+import { getRecentRamenLogShops } from '@/lib/api/ramen-logs';
 
 export const metadata: Metadata = {
   title: {
@@ -12,30 +13,9 @@ export const metadata: Metadata = {
   },
 };
 
-const fetchPublicHomeData = async <T,>(
-  path: string,
-  revalidate: number,
-): Promise<T | undefined> => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!apiBaseUrl) return undefined;
-
-  try {
-    const response = await fetch(`${apiBaseUrl}${path}`, {
-      next: { revalidate },
-    });
-
-    if (!response.ok) return undefined;
-    return await response.json() as T;
-  } catch {
-    return undefined;
-  }
-};
-
 export default async function HomePage() {
-  const recentShops = await fetchPublicHomeData<HomeInitialData['recentShops']>(
-    '/api/v1/shops/recent-verified?limit=4',
-    60,
-  );
+  // 서버에서 실패하면 브라우저가 다시 불러온다
+  const recentShops = await getRecentRamenLogShops(4, { revalidate: 60 }).catch(() => undefined);
 
   return (
     <LandingContent

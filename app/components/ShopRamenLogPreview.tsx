@@ -18,7 +18,6 @@ export default function ShopRamenLogPreview({
   onWrite,
 }: ShopRamenLogPreviewProps) {
   const [logs, setLogs] = useState<RamenLog[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const requestSequenceRef = useRef(0);
@@ -29,10 +28,9 @@ export default function ShopRamenLogPreview({
     setHasError(false);
 
     try {
-      const result = await getRamenLogs({ page: 0, size: 6, sort: "POPULAR", shopId });
+      const result = await getRamenLogs({ size: 3, sort: "LIKES", shopId });
       if (requestSequence !== requestSequenceRef.current) return;
-      setLogs(result.items.slice(0, 3));
-      setTotalCount(result.page.totalElements);
+      setLogs(result.items);
     } catch (error) {
       console.error("Failed to fetch shop ramen logs:", error);
       if (requestSequence !== requestSequenceRef.current) return;
@@ -63,11 +61,6 @@ export default function ShopRamenLogPreview({
             이 가게의 한 그릇들
           </h2>
         </div>
-        {!isLoading && totalCount > 0 && (
-          <span className="shrink-0 rounded-full bg-stone-100 px-2.5 py-1 text-[10px] font-black text-stone-600">
-            {totalCount.toLocaleString("ko-KR")}개 기록
-          </span>
-        )}
       </div>
 
       {isLoading ? (
@@ -126,10 +119,10 @@ export default function ShopRamenLogPreview({
             )}
             <Link
               href={ramenLogUrl}
-              aria-label={`${shopName} 라멘로그 ${totalCount}개 보기`}
+              aria-label={`${shopName} 라멘로그 모두 보기`}
               className="mt-4 inline-flex w-full items-center justify-between rounded-sm bg-[#e60000] px-4 py-3 text-sm font-black text-white transition-opacity hover:opacity-90"
             >
-              <span>라멘로그 {totalCount.toLocaleString("ko-KR")}개 보기</span>
+              <span>라멘로그 모두 보기</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

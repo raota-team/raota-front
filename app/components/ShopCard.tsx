@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Eye, MapPin, Camera } from 'lucide-react';
+import { Eye, MapPin, Camera } from 'lucide-react';
 import { Shop } from '@/app/types';
 import ResilientImage from './ResilientImage';
 
@@ -10,9 +10,6 @@ interface ShopCardProps {
 }
 
 const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
-  const ramenLogCount = shop.ramenLogCount;
-  const ramenLogPreviewImageUrls = shop.ramenLogPreviewImageUrls.slice(0, 3);
-
   return (
     <article
       className="group relative flex min-h-32 cursor-pointer flex-row overflow-hidden rounded-md border border-stone-200 bg-white transition-colors duration-200 hover:border-[#e60000] hover:bg-stone-50 md:min-h-0 md:flex-col"
@@ -50,43 +47,6 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
             <span className="flex items-center"><Camera className="mr-1 h-3 w-3" />{shop.stats.visit_count}</span>
           </div>
         </div>
-
-        {ramenLogCount > 0 && (
-          <Link
-            href={`/ramen-log?shopId=${shop.id}&shopName=${encodeURIComponent(shop.name)}`}
-            aria-label={`${shop.name} 라멘 로그 ${ramenLogCount}개 보러가기`}
-            className="pointer-events-auto relative z-10 mt-2 flex min-h-11 items-center gap-2.5 border-t border-stone-200 pt-2 text-[#25282b] transition-colors hover:text-[#e60000] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e60000] focus-visible:ring-offset-2 md:mt-4 md:gap-3 md:pt-4"
-          >
-            {ramenLogPreviewImageUrls.length > 0 && (
-              <span className="flex shrink-0 -space-x-2">
-                {ramenLogPreviewImageUrls.map((imageUrl, index) => (
-                  <span
-                    key={`${imageUrl}-${index}`}
-                    className="relative h-8 w-8 overflow-hidden rounded-full border-2 border-white bg-stone-100 md:h-10 md:w-10"
-                    style={{ zIndex: ramenLogPreviewImageUrls.length - index }}
-                  >
-                    <ResilientImage
-                      src={imageUrl}
-                      alt=""
-                      fill
-                      sizes="40px"
-                      className="object-cover"
-                    />
-                  </span>
-                ))}
-              </span>
-            )}
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[10px] font-bold text-[#7e7e7e] md:text-xs">
-                이 가게의 라멘 로그
-              </span>
-              <span className="mt-0.5 flex items-center gap-1 whitespace-nowrap text-xs font-bold md:text-sm">
-                {ramenLogCount}개 보러가기
-                <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-              </span>
-            </span>
-          </Link>
-        )}
       </div>
     </article>
   );
