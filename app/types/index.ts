@@ -65,8 +65,6 @@ export interface Shop {
   userPhotos: UserPhoto[];
   business_hours: BusinessHours;
   stats: ShopStats;
-  ramenLogCount: number;
-  ramenLogPreviewImageUrls: string[];
   instagram_url: string;
   catchTableUrl: string;
   isBookmarked: boolean;

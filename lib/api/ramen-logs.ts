@@ -1,253 +1,267 @@
-import type { TasteNotes } from "@/app/components/RamenLogModal";
-import type { RamenLogItem } from "@/app/components/RamenLogCard";
-import { apiClient } from "@/lib/api/client";
-import { isRamenLogFallbackImage } from "@/lib/constants/images";
-import { normalizeTasteNoteValue } from "@/lib/utils/ramen-log-taste-notes";
+import { mobileApiClient } from "@/lib/api/client";
 
-export type RamenLogSort = "LATEST" | "POPULAR";
-export type RamenLogRevisit = "DEFINITELY" | "SOMETIMES" | "ONCE_ENOUGH";
+/**
+ * 라멘로그는 앱과 같은 서버 API(v2, `/api/v2/ramen-logs`)를 읽는다.
+ * 웹 로그인 토큰으로는 v2를 쓸 수 없어 공개 기록만 비로그인으로 읽고, 기록·공감·댓글 쓰기·수정·삭제는 앱에서 한다.
+ */
+
+export type RamenLogSort = "LATEST" | "LIKES";
+export type RamenLogRevisit = "OFTEN" | "SOMETIMES" | "ONCE_IS_ENOUGH";
 export type RamenLogRevisitLabel = "자주 감" | "가끔 생각남" | "한번이면 충분";
+export type TasteNoteKey = "broth" | "noodle" | "seasoning" | "topping";
+export type TasteNotes = Record<TasteNoteKey, string[]>;
 
-export interface RamenLogDto {
-  id: number;
-  author: {
-    id: number;
-    name: string;
-    imageUrl?: string | null;
-  };
-  shop: {
-    id: number;
-    name: string;
-    location?: string | null;
-  };
-  menuName: string;
-  ramenType: string;
-  imageUrl: string;
-  createdAt: string;
-  visitedAt?: string | null;
-  note?: string | null;
-  tasteNotes?: Partial<TasteNotes> | null;
-  revisit: RamenLogRevisit;
-  likeCount: number;
-  liked: boolean;
-  public: boolean;
-  mine: boolean;
+/** 앱 기록 화면과 같은 라멘 종류(라운지 필터 순서) */
+export const RAMEN_LOG_TYPES = [
+  "쇼유",
+  "돈코츠",
+  "이에케",
+  "시오",
+  "미소",
+  "토리파이탄",
+  "니보시",
+  "지로",
+  "츠케멘",
+  "탄탄멘",
+  "마제소바",
+  "아부라소바",
+  "기타",
+] as const;
+
+/** 맛 태그 코드(BROTH_01…)의 분류와 이름표. 서버 MobileTasteNote와 같은 순서다 */
+export const TASTE_NOTE_GROUPS: Array<{ key: TasteNoteKey; label: string; code: string; options: string[] }> = [
+  { key: "broth", label: "국물", code: "BROTH", options: ["진해요", "깔끔해요", "감칠맛 좋아요", "기름져요", "어패류 향"] },
+  { key: "noodle", label: "면", code: "NOODLE", options: ["탄력 있어요", "단단해요", "부드러워요", "국물이 잘 배어요", "양 많아요"] },
+  { key: "seasoning", label: "간", code: "SEASONING", options: ["딱 좋아요", "슴슴해요", "짭짤해요", "매콤해요", "밥 생각나요"] },
+  { key: "topping", label: "토핑", code: "TOPPING", options: ["차슈 좋아요", "계란 좋아요", "멘마 좋아요", "파 향 좋아요", "구성 알차요"] },
+];
+
+/** 앱 기록의 5축 점수(1~5). 웹에서 앱으로 옮겨 온 옛 기록은 없다(null) */
+export interface RamenLogScores {
+  satisfaction: number;
+  brothDensity: number;
+  noodleFirmness: number;
+  topping: number;
+  revisit: number;
 }
 
-export type RamenLog = RamenLogItem & {
-  ramenType: string;
-  note: string;
-  tasteNotes: TasteNotes;
-  revisit: RamenLogRevisitLabel;
-  likes: number;
-  mine: boolean;
-};
-
-export interface RamenLogRequest {
-  shopId: number;
-  menuName: string;
-  ramenType: string;
-  imageUrl: string;
-  visitedAt: string;
-  note?: string;
-  tasteNotes?: Partial<TasteNotes>;
-  revisit: RamenLogRevisit;
-  public: boolean;
-}
-
-export interface RamenLogPageInfo {
-  number: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
-}
-
-export interface RamenLogPage {
-  items: RamenLog[];
-  page: RamenLogPageInfo;
-}
-
-export interface RamenLogShop {
-  id: number;
-  name: string;
+interface MobileRamenLogAuthor {
+  id: string | null;
+  nickname: string | null;
+  avatarUrl: string | null;
   logCount: number;
 }
 
-type ApiResponse<T> = {
-  status: string;
-  message?: string | null;
-  data: T;
+interface MobileRamenLogSummary {
+  id: string;
+  author: MobileRamenLogAuthor;
+  shop: { id: string; name: string; branchName: string | null; region: string | null };
+  menuName: string;
+  ramenType: string;
+  visitedAt: string;
+  imageUrls: string[] | null;
+  note: string | null;
+  tasteNoteCodes: string[] | null;
+  revisitIntention: RamenLogRevisit;
+  visibility: "PUBLIC" | "PRIVATE";
+  scores: RamenLogScores | null;
+  likeCount: number;
+  commentCount: number;
+  isLiked: boolean;
+  isMine: boolean;
+  createdAt: string;
+}
+
+interface MobileRamenLogComment {
+  id: string;
+  logId: string;
+  author: MobileRamenLogAuthor;
+  content: string;
+  createdAt: string;
+  isMine: boolean;
+}
+
+interface MobileRamenLogDetail extends MobileRamenLogSummary {
+  updatedAt: string;
+  commentsPreview: MobileRamenLogComment[] | null;
+  commentsNextCursor: string | null;
+}
+
+interface CursorPage<T> {
+  items: T[] | null;
+  nextCursor: string | null;
+  hasNext: boolean;
+}
+
+/** 작성자는 이름과 프로필 사진만 보여준다. 웹은 회원별 기록을 보여주지 않는다(앱에서 본다) */
+export interface RamenLogAuthor {
+  name: string;
+  imageUrl?: string;
+}
+
+export interface RamenLog {
+  id: number;
+  author: RamenLogAuthor;
+  shop: { id: number; name: string; location?: string };
+  menuName: string;
+  ramenType: string;
+  /** 대표 사진(첫 장). 사진이 없으면 null */
+  imageUrl: string | null;
+  /** 최대 3장 */
+  imageUrls: string[];
+  /** 방문일(YYYY-MM-DD) */
+  date: string;
+  note: string;
+  tasteNotes: TasteNotes;
+  revisit: RamenLogRevisitLabel;
+  scores: RamenLogScores | null;
+  likes: number;
+  commentCount: number;
+}
+
+export interface RamenLogComment {
+  id: number;
+  author: RamenLogAuthor;
+  content: string;
+  createdAt: string;
+}
+
+export type RamenLogDetail = RamenLog & {
+  /** 댓글 미리보기(등록순). 나머지는 앱에서 본다 */
+  comments: RamenLogComment[];
 };
 
-type ApiPageResponse<T> = ApiResponse<{
-  items: T[];
-  page: RamenLogPageInfo;
-}>;
+export interface RamenLogPage {
+  items: RamenLog[];
+  nextCursor: string | null;
+  hasNext: boolean;
+}
 
-const emptyTasteNotes = (): TasteNotes => ({
-  broth: [],
-  noodle: [],
-  seasoning: [],
-  topping: [],
-});
+/** 최근 라멘로그가 남은 가게(홈 "최근 기록된 라멘집") */
+export interface RecentRamenLogShop {
+  id: number;
+  name: string;
+  location?: string;
+  imageUrl: string | null;
+  lastVisitedAt: string;
+}
+
+/** 서버 커서 페이지의 최대 크기(CursorPage.MAX_SIZE) */
+const MAX_PAGE_SIZE = 50;
+const WITHDRAWN_AUTHOR_NAME = "탈퇴한 회원";
+
+const TASTE_NOTE_BY_CODE = new Map<string, { key: TasteNoteKey; label: string }>(
+  TASTE_NOTE_GROUPS.flatMap(({ key, code, options }) =>
+    options.map((label, index) => [`${code}_${String(index + 1).padStart(2, "0")}`, { key, label }] as const),
+  ),
+);
 
 const revisitLabelMap: Record<RamenLogRevisit, RamenLogRevisitLabel> = {
-  DEFINITELY: "자주 감",
+  OFTEN: "자주 감",
   SOMETIMES: "가끔 생각남",
-  ONCE_ENOUGH: "한번이면 충분",
+  ONCE_IS_ENOUGH: "한번이면 충분",
 };
 
-const revisitValueMap: Record<RamenLogRevisitLabel, RamenLogRevisit> = {
-  "자주 감": "DEFINITELY",
-  "가끔 생각남": "SOMETIMES",
-  "한번이면 충분": "ONCE_ENOUGH",
+/** 서버 맛 태그 코드 → 분류별 이름표. 모르는 코드는 버린다(앱과 같다) */
+const toTasteNotes = (codes: string[] | null): TasteNotes => {
+  const notes: TasteNotes = { broth: [], noodle: [], seasoning: [], topping: [] };
+  for (const code of codes ?? []) {
+    const note = TASTE_NOTE_BY_CODE.get(code);
+    if (note && !notes[note.key].includes(note.label)) notes[note.key].push(note.label);
+  }
+  return notes;
 };
 
-export const toRevisitLabel = (value: RamenLogRevisit): RamenLogRevisitLabel =>
-  revisitLabelMap[value] ?? "가끔 생각남";
-
-export const toRevisitValue = (value: RamenLogRevisitLabel): RamenLogRevisit =>
-  revisitValueMap[value] ?? "SOMETIMES";
-
-export const normalizeRamenLog = (log: RamenLogDto): RamenLog => {
-  const defaults = emptyTasteNotes();
-  const tasteNotes = log.tasteNotes ?? {};
-
-  return {
-    id: Number(log.id),
-    author: {
-      id: Number(log.author?.id),
-      name: log.author?.name || "익명",
-      imageUrl: log.author?.imageUrl || undefined,
-    },
-    shop: {
-      id: Number(log.shop?.id),
-      name: log.shop?.name || "가게 정보 없음",
-      location: log.shop?.location || undefined,
-    },
-    menuName: log.menuName || "메뉴 기록",
-    ramenType: log.ramenType || "기타",
-    imageUrl: log.imageUrl,
-    date: log.visitedAt || log.createdAt,
-    note: log.note || "",
-    tasteNotes: {
-      broth: (tasteNotes.broth ?? defaults.broth).map(normalizeTasteNoteValue),
-      noodle: (tasteNotes.noodle ?? defaults.noodle).map(normalizeTasteNoteValue),
-      seasoning: (tasteNotes.seasoning ?? defaults.seasoning).map(normalizeTasteNoteValue),
-      topping: (tasteNotes.topping ?? defaults.topping).map(normalizeTasteNoteValue),
-    },
-    revisit: toRevisitLabel(log.revisit),
-    likes: Number(log.likeCount) || 0,
-    isLiked: Boolean(log.liked),
-    isPublic: Boolean(log.public),
-    mine: Boolean(log.mine),
-  };
-};
-
-const normalizePage = (page: RamenLogPageInfo): RamenLogPageInfo => ({
-  number: Number(page?.number) || 0,
-  size: Number(page?.size) || 8,
-  totalElements: Number(page?.totalElements) || 0,
-  totalPages: Number(page?.totalPages) || 0,
-  hasNext: Boolean(page?.hasNext),
-  hasPrevious: Boolean(page?.hasPrevious),
+const toAuthor = (author: MobileRamenLogAuthor): RamenLogAuthor => ({
+  name: author.nickname || WITHDRAWN_AUTHOR_NAME,
+  imageUrl: author.avatarUrl || undefined,
 });
 
-const normalizeRamenLogPage = (
-  items: RamenLogDto[] = [],
-  page?: RamenLogPageInfo,
-): RamenLogPage => {
-  const visibleItems = items.filter((log) => !isRamenLogFallbackImage(log.imageUrl));
-  const hiddenCount = items.length - visibleItems.length;
-  const normalizedPage = normalizePage(page);
-
+const toRamenLog = (log: MobileRamenLogSummary): RamenLog => {
+  const imageUrls = log.imageUrls ?? [];
   return {
-    items: visibleItems.map(normalizeRamenLog),
-    page: {
-      ...normalizedPage,
-      totalElements: Math.max(0, normalizedPage.totalElements - hiddenCount),
+    id: Number(log.id),
+    author: toAuthor(log.author),
+    shop: {
+      id: Number(log.shop.id),
+      name: log.shop.name,
+      location: [log.shop.branchName, log.shop.region].filter(Boolean).join(" · ") || undefined,
     },
+    menuName: log.menuName,
+    ramenType: log.ramenType,
+    imageUrl: imageUrls[0] ?? null,
+    imageUrls,
+    date: log.visitedAt,
+    note: log.note ?? "",
+    tasteNotes: toTasteNotes(log.tasteNoteCodes),
+    revisit: revisitLabelMap[log.revisitIntention] ?? "가끔 생각남",
+    scores: log.scores,
+    likes: log.likeCount,
+    commentCount: log.commentCount,
   };
 };
 
-export const getRamenLogs = async (params: {
-  page?: number;
-  size?: number;
+const getFeedPage = (params: RamenLogFeedParams, revalidate?: number) =>
+  mobileApiClient<CursorPage<MobileRamenLogSummary>>("/ramen-logs", {
+    query: {
+      sort: params.sort,
+      ramenType: params.ramenType,
+      shopId: params.shopId,
+      cursor: params.cursor,
+      size: params.size,
+    },
+    revalidate,
+  });
+
+export interface RamenLogFeedParams {
   sort?: RamenLogSort;
+  ramenType?: string;
   shopId?: number;
-  keyword?: string;
-} = {}): Promise<RamenLogPage> => {
-  const response = await apiClient<ApiPageResponse<RamenLogDto>>("/ramen-logs", {
-    query: params,
-  });
-
-  return normalizeRamenLogPage(response.data?.items ?? [], response.data?.page);
-};
-
-export const getRamenLog = async (logId: number): Promise<RamenLog> => {
-  const response = await apiClient<ApiResponse<RamenLogDto>>(`/ramen-logs/${logId}`);
-  return normalizeRamenLog(response.data);
-};
-
-export const updateRamenLog = async (
-  logId: number,
-  request: RamenLogRequest,
-): Promise<RamenLog> => {
-  const response = await apiClient<ApiResponse<RamenLogDto>>(`/ramen-logs/${logId}`, {
-    method: "PATCH",
-    body: request,
-  });
-  return response.data ? normalizeRamenLog(response.data) : getRamenLog(logId);
-};
-
-export const deleteRamenLog = async (logId: number): Promise<void> => {
-  await apiClient(`/ramen-logs/${logId}`, { method: "DELETE" });
-};
-
-export const toggleRamenLogLike = async (
-  logId: number,
-): Promise<{ liked: boolean; likeCount: number }> => {
-  const response = await apiClient<ApiResponse<{ liked: boolean; likeCount: number }>>(
-    `/ramen-logs/${logId}/likes`,
-    { method: "POST" },
-  );
-  return response.data;
-};
-
-export const getMyRamenLogs = async (params: {
-  page?: number;
+  cursor?: string | null;
   size?: number;
-  shopId?: number;
-} = {}): Promise<RamenLogPage> => {
-  const response = await apiClient<ApiPageResponse<RamenLogDto>>("/users/me/ramen-logs", {
-    query: params,
-  });
-  return normalizeRamenLogPage(response.data?.items ?? [], response.data?.page);
+}
+
+/** 공개 라멘로그 피드(앱 라운지와 같은 목록) */
+export const getRamenLogs = async (params: RamenLogFeedParams = {}): Promise<RamenLogPage> => {
+  const page = await getFeedPage(params);
+  return {
+    items: (page.items ?? []).map(toRamenLog),
+    nextCursor: page.nextCursor,
+    hasNext: page.hasNext,
+  };
 };
 
-export const getUserRamenLogs = async (
-  userId: number | string,
-  params: { page?: number; size?: number; shopId?: number } = {},
-): Promise<RamenLogPage> => {
-  const response = await apiClient<ApiPageResponse<RamenLogDto>>(
-    `/users/${userId}/ramen-logs`,
-    { query: params },
-  );
-  return normalizeRamenLogPage(response.data?.items ?? [], response.data?.page);
+/** 라멘로그 상세. 댓글 미리보기가 함께 온다 */
+export const getRamenLog = async (logId: number): Promise<RamenLogDetail> => {
+  const log = await mobileApiClient<MobileRamenLogDetail>(`/ramen-logs/${encodeURIComponent(logId)}`);
+  return {
+    ...toRamenLog(log),
+    comments: (log.commentsPreview ?? []).map((comment) => ({
+      id: Number(comment.id),
+      author: toAuthor(comment.author),
+      content: comment.content,
+      createdAt: comment.createdAt,
+    })),
+  };
 };
 
-export const getMyRamenLogShops = async (): Promise<RamenLogShop[]> => {
-  const response = await apiClient<ApiResponse<RamenLogShop[]>>("/users/me/ramen-logs/shops");
-  return response.data ?? [];
-};
-
-export const getUserRamenLogShops = async (
-  userId: number | string,
-): Promise<RamenLogShop[]> => {
-  const response = await apiClient<ApiResponse<RamenLogShop[]>>(
-    `/users/${userId}/ramen-logs/shops`,
-  );
-  return response.data ?? [];
+/** 최근 공개 라멘로그에 나온 가게를 최신순으로 limit곳 */
+export const getRecentRamenLogShops = async (
+  limit = 4,
+  options: { revalidate?: number } = {},
+): Promise<RecentRamenLogShop[]> => {
+  const page = await getFeedPage({ sort: "LATEST", size: MAX_PAGE_SIZE }, options.revalidate);
+  const shops = new Map<number, RecentRamenLogShop>();
+  for (const log of (page.items ?? []).map(toRamenLog)) {
+    if (shops.size >= limit) break;
+    if (shops.has(log.shop.id)) continue;
+    shops.set(log.shop.id, {
+      id: log.shop.id,
+      name: log.shop.name,
+      location: log.shop.location,
+      imageUrl: log.imageUrl,
+      lastVisitedAt: log.date,
+    });
+  }
+  return [...shops.values()];
 };

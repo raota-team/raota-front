@@ -1,13 +1,5 @@
 import { apiClient } from "./client";
 
-export interface RecentVerifiedShopResponse {
-  id: string | number;
-  name: string;
-  location: string;
-  imageUrl: string;
-  photoCount: number;
-}
-
 export interface WeekendRecommendationResponse {
   id: string | number;
   name: string;
@@ -33,10 +25,6 @@ export interface CommunityHomePostResponse {
   commentCount: number;
   createdAt: string;
 }
-
-export const getRecentVerifiedShops = async (limit: number = 4): Promise<{ success: boolean; data: RecentVerifiedShopResponse[] }> => {
-  return apiClient<{ success: boolean; data: RecentVerifiedShopResponse[] }>(`/api/v1/shops/recent-verified?limit=${limit}`);
-};
 
 export const getPopularShopsToday = async (limit: number = 5): Promise<{ success: boolean; data: PopularShopTodayResponse[] }> => {
   return apiClient<{ success: boolean; data: PopularShopTodayResponse[] }>(`/api/v1/discovery/popular-shops/today?limit=${limit}`);

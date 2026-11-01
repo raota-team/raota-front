@@ -2,17 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, User, MapPin, Calendar, Trash2, Flame, ThumbsUp, CircleCheck, Heart, Pencil, MoreHorizontal } from 'lucide-react';
-import { useApp } from '@/app/context/AppContext';
+import { X, User, MapPin, Calendar, Flame, ThumbsUp, CircleCheck, Heart, MessageCircle } from 'lucide-react';
 import { RAMEN_LOG_FALLBACK_IMAGE, isRamenLogFallbackImage } from '@/lib/constants/images';
-import { normalizeTasteNoteValue } from '@/lib/utils/ramen-log-taste-notes';
+import type { RamenLogComment, RamenLogScores } from '@/lib/api/ramen-logs';
 
 interface Photo {
-  id?: number;            // 삭제를 위한 고유 ID
-  imageUrl: string;
+  id?: number;
+  imageUrl: string | null;
+  /** 라멘로그 사진(최대 3장). 2장 이상이면 썸네일로 넘겨 본다 */
+  imageUrls?: string[];
   menuName: string;
   user?: string;           // 업로더 닉네임
-  userId?: number;         // 업로더 ID
   userImageUrl?: string;   // 업로더 프로필 이미지
   restaurantName?: string; // 식당 이름
   restaurantId?: number;   // 식당 이동 ID
@@ -24,26 +24,36 @@ interface Photo {
     label: string;
     values: string[];
   }>;
+  scores?: RamenLogScores | null;
   likes?: number;
-  isLiked?: boolean;
+  commentCount?: number;
+  comments?: RamenLogComment[];
 }
 
 interface PhotoModalProps {
   photo: Photo | null;
   onClose: () => void;
-  onDelete?: (photoId: number) => Promise<void>; // 삭제 콜백 추가
-  onEdit?: (photoId: number) => void;
-  disableNavigation?: boolean;
-  onLikeChange?: (photoId: number, likes: number, isLiked: boolean) => void | Promise<void>;
 }
 
-const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdit, disableNavigation = false, onLikeChange }) => {
+/** 앱 라운지의 맛 평가 다섯 줄과 같은 이름과 말 */
+const SCORE_ROWS: Array<{ key: Exclude<keyof RamenLogScores, 'revisit'>; label: string; words: string[] }> = [
+  { key: 'satisfaction', label: '전체 만족도', words: ['아쉬웠어요', '그저 그랬어요', '괜찮았어요', '맛있었어요', '인생 라멘이에요'] },
+  { key: 'brothDensity', label: '육수 농도', words: ['아주 맑음', '맑은 편', '중간', '진한 편', '아주 진함'] },
+  { key: 'noodleFirmness', label: '면 삶기', words: ['아주 부드럽게', '부드러운 편', '중간', '단단한 편', '아주 단단하게'] },
+  { key: 'topping', label: '토핑', words: ['아쉬움', '조금 아쉬움', '보통', '좋음', '훌륭함'] },
+];
+
+const tasteGroupMeta: Record<string, { icon: string }> = {
+  국물: { icon: '🍜' },
+  면: { icon: '🥢' },
+  간: { icon: '🧂' },
+  토핑: { icon: '🥚' },
+};
+
+const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
   const router = useRouter();
-  const { currentUser, showConfirm } = useApp();
   const [imgError, setImgError] = useState(false);
-  const [isLiked, setIsLiked] = useState(Boolean(photo?.isLiked));
-  const [likeCount, setLikeCount] = useState(photo?.likes ?? 0);
-  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,71 +80,29 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
   }, [photo]);
 
   useEffect(() => {
-    setIsLiked(Boolean(photo?.isLiked));
-    setLikeCount(photo?.likes ?? 0);
-    setIsActionMenuOpen(false);
-  }, [photo?.id, photo?.isLiked, photo?.likes]);
+    setActiveImageIndex(0);
+    setImgError(false);
+  }, [photo?.id]);
 
   if (!photo) return null;
 
-  // 본인 사진 여부 확인
-  const currentUserId = currentUser?.user_id ?? currentUser?.id;
-  const isMine = Boolean(currentUserId && photo.userId && Number(currentUserId) === Number(photo.userId));
-
   const handleRestaurantClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (disableNavigation || photo.isUserPhoto || !photo.restaurantId) return;
+    if (photo.isUserPhoto || !photo.restaurantId) return;
 
     onClose();
     router.push(`/shop/${photo.restaurantId}`);
   };
 
-  const handleUserClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (disableNavigation || photo.isUserPhoto || !photo.userId) return;
-
-    onClose();
-    router.push(`/user/${photo.userId}`);
-  };
-
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!photo.id || !onDelete) return;
-
-    showConfirm("이 라멘로그를 삭제하시겠습니까?\n삭제한 기록은 되돌릴 수 없습니다.", async () => {
-      await onDelete(photo.id!);
-      onClose();
-    });
-  };
-
+  const imageUrls = photo.imageUrls?.length ? photo.imageUrls : [photo.imageUrl];
+  const activeImageUrl = imageUrls[activeImageIndex] ?? imageUrls[0];
   const hasComment = Boolean(photo.comment?.trim());
-  const showFallbackImage = imgError || isRamenLogFallbackImage(photo.imageUrl);
+  const showFallbackImage = imgError || isRamenLogFallbackImage(activeImageUrl);
   const hasDetails = !photo.isUserPhoto && Boolean(
     photo.restaurantName || photo.user || hasComment || photo.tasteNotes?.length,
   );
-  const canManageLog = isMine && !photo.isUserPhoto && (onEdit || onDelete);
-
-  const tasteGroupMeta: Record<string, { icon: string }> = {
-    국물: { icon: '🍜' },
-    면: { icon: '🥢' },
-    간: { icon: '🧂' },
-    토핑: { icon: '🥚' },
-  };
-
-  const handleLikeClick = async () => {
-    const nextIsLiked = !isLiked;
-    const nextLikeCount = Math.max(0, likeCount + (nextIsLiked ? 1 : -1));
-    setIsLiked(nextIsLiked);
-    setLikeCount(nextLikeCount);
-    if (!photo.id || !onLikeChange) return;
-
-    try {
-      await onLikeChange(photo.id, nextLikeCount, nextIsLiked);
-    } catch {
-      setIsLiked(isLiked);
-      setLikeCount(likeCount);
-    }
-  };
+  const commentCount = photo.commentCount ?? 0;
+  const previewComments = photo.comments ?? [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6">
@@ -157,54 +125,6 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
         style={hasDetails ? { WebkitOverflowScrolling: 'touch' } : undefined}
       >
         <div className="sticky top-3 z-20 ml-auto flex h-0 w-fit gap-1.5 pr-3 md:absolute md:right-4 md:top-4 md:h-auto md:pr-0">
-          {canManageLog && (
-            <div className="relative">
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setIsActionMenuOpen((current) => !current);
-                }}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-stone-600 ring-1 ring-stone-200/70 backdrop-blur transition-colors hover:bg-white hover:text-[#25282b] sm:h-9 sm:w-9"
-                aria-label="라멘로그 관리 메뉴"
-                aria-expanded={isActionMenuOpen}
-              >
-                <MoreHorizontal className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-              {isActionMenuOpen && (
-                <div className="absolute right-0 top-10 w-32 overflow-hidden rounded-sm border border-stone-200 bg-white py-1 text-sm font-bold text-stone-600">
-                  {onEdit && (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setIsActionMenuOpen(false);
-                        if (!photo.id) return;
-                        onEdit(photo.id);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-stone-50 hover:text-[#25282b]"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                      수정하기
-                    </button>
-                  )}
-                  {onDelete && (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        setIsActionMenuOpen(false);
-                        handleDeleteClick(event);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-stone-500 transition-colors hover:bg-red-50 hover:text-[#e60000]"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      삭제하기
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
           <button
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-stone-600 ring-1 ring-stone-200/70 backdrop-blur transition-colors hover:bg-white hover:text-[#e60000] sm:h-9 sm:w-9"
@@ -218,11 +138,33 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
           hasDetails ? 'aspect-[4/3] min-h-0 shrink-0 md:aspect-auto md:h-[min(96vh,44rem)]' : 'h-full'
         }`}>
           <img
-            src={showFallbackImage ? RAMEN_LOG_FALLBACK_IMAGE : photo.imageUrl}
+            src={showFallbackImage ? RAMEN_LOG_FALLBACK_IMAGE : activeImageUrl!}
             alt={photo.menuName}
             className={`h-full w-full ${showFallbackImage ? "bg-[#f2f2f2] object-contain p-[18%]" : "object-cover"}`}
             onError={() => setImgError(true)}
           />
+          {imageUrls.length > 1 && (
+            <div className="absolute inset-x-0 bottom-3 flex justify-center gap-2">
+              {imageUrls.map((url, index) => (
+                <button
+                  key={`${url}-${index}`}
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setImgError(false);
+                    setActiveImageIndex(index);
+                  }}
+                  aria-label={`${index + 1}번째 사진 보기`}
+                  aria-pressed={index === activeImageIndex}
+                  className={`h-12 w-12 overflow-hidden rounded-sm ring-2 transition-opacity ${
+                    index === activeImageIndex ? 'ring-white' : 'opacity-70 ring-transparent hover:opacity-100'
+                  }`}
+                >
+                  <img src={url ?? RAMEN_LOG_FALLBACK_IMAGE} alt="" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {hasDetails && (
@@ -247,8 +189,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                 {photo.restaurantName && (
                   <button
                     onClick={handleRestaurantClick}
-                    disabled={disableNavigation}
-                    className={`flex items-center gap-1.5 ${!disableNavigation ? 'hover:text-[#e60000]' : ''}`}
+                    className="flex items-center gap-1.5 hover:text-[#e60000]"
                   >
                     <MapPin className="h-3.5 w-3.5" />
                     {photo.restaurantName}
@@ -260,16 +201,10 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                 </span>
               </div>
 
-              {(photo.user || onLikeChange) && (
+              {(photo.user || photo.likes !== undefined) && (
                 <div className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-stone-100 pt-3 md:-mr-10">
                   {photo.user ? (
-                    <button
-                      onClick={handleUserClick}
-                      disabled={disableNavigation}
-                      className={`flex min-w-0 items-center gap-2 text-sm font-black text-stone-600 ${
-                        !disableNavigation ? 'hover:text-[#e60000]' : ''
-                      }`}
-                    >
+                    <span className="flex min-w-0 items-center gap-2 text-sm font-black text-stone-600">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200 bg-stone-100">
                         {photo.userImageUrl ? (
                           <img src={photo.userImageUrl} alt={photo.user} className="h-full w-full object-cover" />
@@ -278,25 +213,22 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                         )}
                       </span>
                       <span className="truncate">{photo.user}</span>
-                    </button>
+                    </span>
                   ) : (
                     <span />
                   )}
 
-                  {onLikeChange && (
-                    <button
-                      type="button"
-                      onClick={handleLikeClick}
-                      aria-pressed={isLiked}
-                      className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-bold transition-colors ${
-                        isLiked
-                          ? 'border-red-100 bg-red-50 text-[#e60000]'
-                          : 'border-stone-200 bg-stone-50 text-stone-400 hover:border-red-100 hover:bg-red-50 hover:text-[#e60000]'
-                      }`}
-                    >
-                      <Heart className={`h-3.5 w-3.5 ${isLiked ? 'fill-current' : ''}`} />
-                      <span>{likeCount}</span>
-                    </button>
+                  {photo.likes !== undefined && (
+                    <span className="inline-flex shrink-0 items-center gap-3 text-xs font-bold text-stone-500">
+                      <span className="inline-flex items-center gap-1" aria-label={`공감 ${photo.likes}개`}>
+                        <Heart className="h-3.5 w-3.5" />
+                        {photo.likes}
+                      </span>
+                      <span className="inline-flex items-center gap-1" aria-label={`댓글 ${commentCount}개`}>
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        {commentCount}
+                      </span>
+                    </span>
                   )}
                 </div>
               )}
@@ -305,7 +237,23 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
             {hasComment && (
               <div className="mt-3 rounded-sm border border-stone-200 bg-white p-4">
                 <p className="text-xs font-black uppercase tracking-[0.12em] text-[#e60000]">이 한 그릇의 기억</p>
-                <p className="mt-2 text-sm font-medium leading-6 text-stone-700">“{photo.comment}”</p>
+                <p className="mt-2 whitespace-pre-line text-sm font-medium leading-6 text-stone-700">“{photo.comment}”</p>
+              </div>
+            )}
+
+            {photo.scores && (
+              <div className="mt-3 rounded-sm border border-stone-200 bg-white p-4">
+                <p className="mb-3 text-xs font-black uppercase tracking-[0.12em] text-[#e60000]">맛 평가</p>
+                <dl className="space-y-2">
+                  {SCORE_ROWS.map(({ key, label, words }) => (
+                    <div key={key} className="flex items-center justify-between gap-3 text-xs">
+                      <dt className="font-bold text-stone-500">{label}</dt>
+                      <dd className="font-black text-[#25282b]">
+                        {words[Math.min(5, Math.max(1, Math.round(photo.scores![key]))) - 1]}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
             )}
 
@@ -324,13 +272,36 @@ const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose, onDelete, onEdi
                           key={value}
                           className="rounded-full bg-stone-50 px-2.5 py-1 text-[11px] font-bold text-stone-600 ring-1 ring-stone-200"
                         >
-                          {normalizeTasteNoteValue(value)}
+                          {value}
                         </span>
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
+            )}
+
+            {commentCount > 0 && (
+              <div className="mt-3 rounded-sm border border-stone-200 bg-white p-4">
+                <p className="mb-3 text-xs font-black uppercase tracking-[0.12em] text-[#e60000]">댓글 {commentCount}</p>
+                {previewComments.length > 0 && (
+                  <ul className="space-y-3">
+                    {previewComments.map((comment) => (
+                      <li key={comment.id} className="border-t border-stone-100 pt-3 first:border-t-0 first:pt-0">
+                        <p className="text-[11px] font-black text-stone-600">{comment.author.name}</p>
+                        <p className="mt-1 whitespace-pre-line text-sm leading-6 text-stone-700">{comment.content}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {commentCount > previewComments.length && (
+                  <p className="mt-3 text-[11px] font-bold text-stone-400">나머지 댓글은 라오타 앱에서 볼 수 있어요.</p>
+                )}
+              </div>
+            )}
+
+            {photo.likes !== undefined && (
+              <p className="mt-3 px-1 text-[11px] font-bold text-stone-400">좋아요·댓글은 라오타 앱에서 남길 수 있어요.</p>
             )}
           </aside>
         )}
